@@ -20,6 +20,7 @@ public sealed class MadHacker : RoleBase, IKiller, IKillFlashSeeable, IDeathReas
             "mh",
             OptionSort: (2, 5),
             isDesyncImpostor: true,
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Tracker)
         );
     public MadHacker(PlayerControl player)

@@ -24,6 +24,7 @@ public sealed class WolfBoy : RoleBase, IKiller, ISchrodingerCatOwner
             "#727171",
             (2, 3),
             true,
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
     public WolfBoy(PlayerControl player)

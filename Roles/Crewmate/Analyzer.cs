@@ -22,6 +22,7 @@ public sealed class Analyzer : RoleBase
             "NC",
             "#9da6ee",
             (3, 10),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
     public Analyzer(PlayerControl player)

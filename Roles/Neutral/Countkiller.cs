@@ -20,6 +20,7 @@ public sealed class CountKiller : RoleBase, ILNKiller, ISchrodingerCatOwner, IAd
             "#FF1493",
             (2, 0),
             true,
+            from: From.TownOfHost_K,
             assignInfo: new RoleAssignInfo(CustomRoles.CountKiller, CustomRoleTypes.Neutral)
             {
                 AssignCountRule = new(1, 1, 1)

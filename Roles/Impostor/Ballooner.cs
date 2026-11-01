@@ -19,6 +19,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
             3900,
             SetupOptionItem,
             "Ba",
+            from: From.TownOfHost_K,
             OptionSort: (3, 0),
             Desc: () => string.Format(GetString("BalloonerDesc"), OptionChargeWalk.GetFloat(), OptionChargeStep.GetFloat(), OptionMaxBoomDis.GetFloat(),
             OptionAfterMeetingRemoveCharge.GetFloat(), OptionSuicide.GetBool() ? GetString("BalloonerDescSuicide") : "")

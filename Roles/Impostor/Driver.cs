@@ -19,6 +19,7 @@ public sealed class Driver : RoleBase, IImpostor, IKillFlashSeeable, IDeathReaso
             SetupOptionItems,
             "dr",
             OptionSort: (0, 0),
+            from: From.TownOfHost_K,
             tab: TabGroup.Combinations,
             assignInfo: new RoleAssignInfo(CustomRoles.Driver, CustomRoleTypes.Impostor)
             {

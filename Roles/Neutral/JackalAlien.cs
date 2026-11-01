@@ -29,6 +29,7 @@ public sealed class JackalAlien : RoleBase, IMeetingTimeAlterable, ILNKiller, IS
                 (1, 1),
                 true,
                 countType: CountTypes.Jackal,
+                from: From.TownOfHost_K,
                 assignInfo: new RoleAssignInfo(CustomRoles.JackalAlien, CustomRoleTypes.Neutral)
                 {
                     AssignCountRule = new(1, 1, 1)

@@ -144,6 +144,7 @@ namespace TownOfHost
                         case DontReportreson.Other: return "<size=120%><#bd9391>×</color></size>";
                         case DontReportreson.Eat: return "<size=120%><#6f4204>×</color></size>";
                         case DontReportreson.Impostor: return "<size=120%><#ff1919>×</color></size>";
+                        case DontReportreson.Havoc: return "<size=120%><#b54200>×</color></size>";
                     }
                 }
 

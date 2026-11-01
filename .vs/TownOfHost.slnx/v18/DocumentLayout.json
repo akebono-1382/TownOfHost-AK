@@ -1,0 +1,62 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\tiram\\TownOfHost-K\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\sheriff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\sheriff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\wolfboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\wolfboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Sheriff.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\Sheriff.cs",
+              "RelativeDocumentMoniker": "Roles\\Crewmate\\Sheriff.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\Sheriff.cs",
+              "RelativeToolTip": "Roles\\Crewmate\\Sheriff.cs",
+              "ViewState": "AgIAAMUAAAAAAAAAAAAlwM8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T08:33:20.293Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "WolfBoy.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\WolfBoy.cs",
+              "RelativeDocumentMoniker": "Roles\\Crewmate\\WolfBoy.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\WolfBoy.cs",
+              "RelativeToolTip": "Roles\\Crewmate\\WolfBoy.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAmwFIAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T08:30:42.598Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

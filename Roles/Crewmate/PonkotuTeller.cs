@@ -23,6 +23,7 @@ public sealed class PonkotuTeller : RoleBase, ISelfVoter
             "po",
             "#6b3ec3",
             (3, 1),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Scientist)
         );
     public PonkotuTeller(PlayerControl player)

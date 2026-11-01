@@ -22,6 +22,7 @@ public sealed class ShrineMaiden : RoleBase, ISelfVoter
             "SM",
             "#b7282e",
             (3, 4),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Scientist)
         );
     public ShrineMaiden(PlayerControl player)

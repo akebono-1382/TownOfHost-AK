@@ -15,9 +15,9 @@ public sealed class Crewmate : RoleBase
             "#8cffff",
             assignInfo: new RoleAssignInfo(CustomRoles.Crewmate, CustomRoleTypes.Crewmate)
             {
-                IsInitiallyAssignableCallBack =
-                    () => false
-            }, from: From.AmongUs
+                IsInitiallyAssignableCallBack =() => false
+            },
+            from: From.AmongUs
         );
     public Crewmate(PlayerControl player)
     : base(

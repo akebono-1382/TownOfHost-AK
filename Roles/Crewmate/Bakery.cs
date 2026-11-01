@@ -20,6 +20,7 @@ public sealed class Bakery : RoleBase
             "bak",
             "#8f6121",
             (4, 2),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
     public Bakery(PlayerControl player)

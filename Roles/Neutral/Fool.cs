@@ -20,6 +20,7 @@ public sealed class Fool : RoleBase, IKiller, IAdditionalWinner
             "#8b6d61",
             (3, 0),
             true,
+            from: From.TownOfHost_K,
             tab: TabGroup.Combinations,
             assignInfo: new RoleAssignInfo(CustomRoles.Fool, CustomRoleTypes.Neutral)
             {

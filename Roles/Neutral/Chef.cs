@@ -23,6 +23,7 @@ public sealed class Chef : RoleBase, IKiller, IAdditionalWinner
             "#c79b2c",
             (3, 1),
             true,
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
     public Chef(PlayerControl player)

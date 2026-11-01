@@ -823,7 +823,7 @@ public enum CustomRoles
     NekoKabocha,
     EvilHacker,
     Insider,
-    //TOH-k
+    //TOH-A
     Bomber,
     TeleportKiller,
     AntiReporter,
@@ -862,6 +862,8 @@ public enum CustomRoles
     UnFortuner,
     Bloodlust,
     EvilButtoner,
+
+    RocketLauncher,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,
@@ -869,7 +871,7 @@ public enum CustomRoles
     MadSnitch,
     MadAvenger,
     SKMadmate,
-    //TOH-k
+    //TOH-A
     MadJester,
     MadTeller,
     MadBait,
@@ -903,7 +905,7 @@ public enum CustomRoles
     Doctor,
     Seer,
     TimeManager,
-    //TOH-K
+    //TOH-A
     Gasp,
     VentMaster,
     ToiletFan,
@@ -956,7 +958,7 @@ public enum CustomRoles
     Terrorist,
     Executioner,
     Jackal,
-    //TOHk
+    //TOHA
     Remotekiller,
     Chef,
     JackalMafia,
@@ -984,6 +986,7 @@ public enum CustomRoles
     Fool,
     JackalWolf,
     TaskPlayerB,
+    Havoc,
     //DEBUG only Neutral.
     //HideAndSeek
     HASFox,

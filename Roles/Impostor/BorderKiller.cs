@@ -19,6 +19,7 @@ public sealed class BorderKiller : RoleBase, IImpostor
             SetupOptionItem,
             "Br",
             OptionSort: (8, 1),
+            from: From.TownOfHost_K,
             Desc: () =>
             {
                 return string.Format(GetString("BorderKillerDesc"), OptionMissionKillcount.GetInt());

@@ -19,6 +19,7 @@ public sealed class Altair : RoleBase, IKiller, ISchrodingerCatOwner, IAdditiona
             "#b0c4de",
             (3, 1),
             true,
+            from: From.TownOfHost_K,
             countType: CountTypes.MilkyWay,
             combination: CombinationRoles.VegaandAltair
         );

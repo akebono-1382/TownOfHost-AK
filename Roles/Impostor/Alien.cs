@@ -34,6 +34,7 @@ public sealed class Alien : RoleBase, IMeetingTimeAlterable, IImpostor, INekomat
                 SetupOptionItem,
                 "Al",
                 OptionSort: (1, 0),
+                from: From.TownOfHost_K,
                 introSound: () => GetIntroSound(RoleTypes.Shapeshifter)
             );
     public Alien(PlayerControl player)

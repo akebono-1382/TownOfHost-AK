@@ -22,6 +22,7 @@ namespace TownOfHost.Roles.Neutral
                 true,
                 introSound: () => GetIntroSound(RoleTypes.Impostor),
                 countType: CountTypes.Remotekiller,
+                from: From.TownOfHost_K,
                 assignInfo: new RoleAssignInfo(CustomRoles.Remotekiller, CustomRoleTypes.Neutral)
                 {
                     AssignCountRule = new(1, 1, 1)

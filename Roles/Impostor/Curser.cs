@@ -18,6 +18,7 @@ public sealed class Curser : RoleBase, IImpostor
             6600,
             SetupCustomOption,
             "cs",
+            from: From.TownOfHost_K,
             OptionSort: (7, 2)
         );
     public Curser(PlayerControl player)

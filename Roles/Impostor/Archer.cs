@@ -23,6 +23,7 @@ public sealed class Archer : RoleBase, IImpostor, IUsePhantomButton
             SetUpOptionItem,
             "ar",
             OptionSort: (3, 11),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Shapeshifter)
         );
     public Archer(PlayerControl player)

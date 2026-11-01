@@ -22,6 +22,7 @@ public sealed class EvilSatellite : RoleBase, IImpostor
             3400,
             SetupOptionItem,
             "Es",
+            from: From.TownOfHost_K,
             OptionSort: (2, 3)
         );
     public EvilSatellite(PlayerControl player)

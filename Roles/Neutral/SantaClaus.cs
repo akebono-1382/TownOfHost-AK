@@ -24,6 +24,7 @@ public sealed class SantaClaus : RoleBase, IAdditionalWinner
             "Sac",
             "#e05050",
             (5, 4),
+            from: From.TownOfHost_K,
             Desc: () =>
             {
                 return string.Format(GetString("SantaClausDesc"), OptWinGivePresentCount.GetInt(), OptAddWin.GetBool() ? GetString("AddWin") : GetString("SoloWin"));

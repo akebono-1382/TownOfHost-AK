@@ -19,6 +19,7 @@ public sealed class Decrescendo : RoleBase, IImpostor
             SetupOptionItem,
             "De",
             OptionSort: (8, 2),
+            from: From.TownOfHost_K,
             Desc: () =>
             {
                 var killcool = OptionNomalKillCool.GetFloat();

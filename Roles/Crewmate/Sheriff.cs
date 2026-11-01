@@ -66,7 +66,7 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
     public float CurrentKillCooldown = 30;
     public static readonly string[] KillOption =
     {
-        "SheriffCanKillAll", "SheriffCanKillSeparately"
+        "SheriffCanKillAll", "SheriffCanKillSeparately", "Off"
     };
 
     public ISchrodingerCatOwner.TeamType SchrodingerCatChangeTo => ISchrodingerCatOwner.TeamType.Crew;
@@ -205,6 +205,8 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
     public static bool CanBeKilledBy(PlayerControl player)
     {
         var cRole = player.GetCustomRole();
+
+        if (!player.IsLovers() && player.Is(CustomRoleTypes.Neutral) && CanKillNeutrals.GetValue() is 2) return false;
 
         if (player.GetRoleClass() is SchrodingerCat schrodingerCat)
         {

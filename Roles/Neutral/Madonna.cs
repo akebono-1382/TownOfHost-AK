@@ -23,6 +23,7 @@ public sealed class Madonna : RoleBase, ISelfVoter
             "Ma",
             "#f09199",
             (5, 0),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Scientist),
             assignInfo: new RoleAssignInfo(CustomRoles.Madonna, CustomRoleTypes.Neutral)
             {

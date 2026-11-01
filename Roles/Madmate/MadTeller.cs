@@ -23,6 +23,7 @@ public sealed class MadTeller : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
             SetupOptionItem,
             "Mt",
             OptionSort: (3, 1),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Scientist)
         );
     public MadTeller(PlayerControl player)

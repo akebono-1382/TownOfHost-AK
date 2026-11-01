@@ -26,6 +26,7 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
             "#d288ee",
             (6, 0),
             false,
+            from: From.TownOfHost_K,
             countType: CountTypes.Fox,
             assignInfo: new RoleAssignInfo(CustomRoles.Fox, CustomRoleTypes.Neutral)
             {

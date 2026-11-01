@@ -25,9 +25,9 @@ public sealed class Noisemaker : RoleBase
     public static OptionItem NoisemakerImpostorAlert;
     public static void SetUpCustomOption()
     {
-        NoisemakerAlertDuration = FloatOptionItem.Create(RoleInfo, 353, "NoisemakerAlertDuration", new(0f, 180f, 1f), 15f, false)
+        NoisemakerAlertDuration = FloatOptionItem.Create(RoleInfo, 3, "NoisemakerAlertDuration", new(0f, 180f, 1f), 15f, false)
         .SetValueFormat(OptionFormat.Seconds);
-        NoisemakerImpostorAlert = BooleanOptionItem.Create(RoleInfo, 354, "NoisemakerImpostorAlert", false, false);
+        NoisemakerImpostorAlert = BooleanOptionItem.Create(RoleInfo, 4, "NoisemakerImpostorAlert", false, false);
     }
     public override void ApplyGameOptions(IGameOptions opt)
     {

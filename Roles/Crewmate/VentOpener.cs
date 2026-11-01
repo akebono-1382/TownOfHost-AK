@@ -21,6 +21,7 @@ public sealed class VentOpener : RoleBase
             "vo",
             "#fbe000",
             (9, 5),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Engineer)
         );
     public VentOpener(PlayerControl player)

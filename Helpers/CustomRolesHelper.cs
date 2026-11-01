@@ -363,6 +363,7 @@ namespace TownOfHost
         TaskPlayer,
         GrimReaper,
         Fox,
-        MilkyWay
+        MilkyWay,
+        Havoc
     }
 }

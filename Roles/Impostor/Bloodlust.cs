@@ -21,6 +21,7 @@ public sealed class Bloodlust : RoleBase, IImpostor
             SetupOptionItem,
             "bl",
             OptionSort: (8, 3),
+            from: From.TownOfHost_K,
             Desc: () => string.Format(GetString("BloodlustDesc"), OptionTimeUntilRed.GetFloat())
         );
 

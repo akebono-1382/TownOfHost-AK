@@ -23,6 +23,7 @@ public sealed class PhantomThief : RoleBase, IKiller, IKillFlashSeeable, IRoomTa
             (6, 3),
             true,
             introSound: () => GetIntroSound(RoleTypes.Phantom),
+            from: From.TownOfHost_K,
             Desc: () =>
             {
                 var Preview = "";

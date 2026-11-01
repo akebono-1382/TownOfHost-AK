@@ -22,7 +22,8 @@ public sealed class Turncoat : RoleBase, IKiller
             SetupOptionItem,
             "Tu",
             "#371a1a",
-            (7, 1)
+            (7, 1),
+            from: From.TownOfHost_K
         );
     public Turncoat(PlayerControl player)
     : base(
@@ -55,7 +56,7 @@ public sealed class Turncoat : RoleBase, IKiller
         OptionCanShapeShift = BooleanOptionItem.Create(RoleInfo, 13, "JesterCanUseShapeshift", false, false);
         OptionCooldown = FloatOptionItem.Create(RoleInfo, 14, GeneralOption.Cooldown, new(0f, 180f, 0.5f), 30f, false, OptionCanShapeShift)
                 .SetValueFormat(OptionFormat.Seconds);
-        OptionDuration = FloatOptionItem.Create(RoleInfo, 15, GeneralOption.Duration, new(0f, 180f, 0.5f), 5f, false, OptionCanShapeShift)
+        OptionDuration = FloatOptionItem.Create(RoleInfo, 15, GeneralOption.ShapeDuration, new(0f, 180f, 0.5f), 5f, false, OptionCanShapeShift)
                 .SetZeroNotation(OptionZeroNotation.Infinity)
                 .SetValueFormat(OptionFormat.Seconds);
         OptionCanTargetImpostor = BooleanOptionItem.Create(RoleInfo, 10, OptionName.TurncoatCanTargetImpostor, false, false);

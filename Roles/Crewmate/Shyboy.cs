@@ -19,6 +19,7 @@ public sealed class Shyboy : RoleBase
             "Sy",
             "#00fa9a",
             (8, 0),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
     public Shyboy(PlayerControl player)

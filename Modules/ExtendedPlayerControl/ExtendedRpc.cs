@@ -17,6 +17,56 @@ namespace TownOfHost
 {
     static class ExtendedRpc
     {
+        /// <summary>
+        /// pcのスキンと帽子・バイザー・ペットを、seerの視点からだけ非表示にする。
+        /// </summary>
+        /// <param name="seer">この人の視点からだけ、pcのスキン等が非表示になる</param>
+        public static void RpcHideSkinAndPet(this PlayerControl pc, PlayerControl seer)
+        {
+            if (Options.firstturnmeeting && MeetingStates.FirstMeeting) return;
+            if (GameStates.IsLobby) return;
+
+            if (seer.PlayerId == PlayerControl.LocalPlayer.PlayerId)
+            {
+                pc.SetSkin("", pc.CurrentOutfit.ColorId);
+                pc.SetHat("", pc.CurrentOutfit.ColorId);
+                pc.SetVisor("", pc.CurrentOutfit.ColorId);
+                pc.SetPet("", pc.CurrentOutfit.ColorId);
+                return;
+            }
+
+
+
+            if (seer.GetClientId() == -1) return;
+            var sender = CustomRpcSender.Create("DHideSkinAndPet", SendOption.Reliable);
+
+            sender.StartMessage(seer.GetClientId());
+
+
+
+            sender.StartRpc(pc.NetId, RpcCalls.SetHatStr)
+            .Write("")
+            .Write(pc.GetNextRpcSequenceId(RpcCalls.SetHatStr))
+            .EndRpc();
+
+            sender.StartRpc(pc.NetId, RpcCalls.SetSkinStr)
+            .Write("")
+            .Write(pc.GetNextRpcSequenceId(RpcCalls.SetSkinStr))
+            .EndRpc();
+
+            sender.StartRpc(pc.NetId, RpcCalls.SetVisorStr)
+            .Write("")
+            .Write(pc.GetNextRpcSequenceId(RpcCalls.SetVisorStr))
+            .EndRpc();
+
+            sender.StartRpc(pc.NetId, RpcCalls.SetPetStr)
+            .Write("")
+            .Write(pc.GetNextRpcSequenceId(RpcCalls.SetPetStr))
+            .EndRpc();
+
+            sender.EndMessage();
+            sender.SendMessage();
+        }
 
         /// <summary>
         /// 役職変える奴。

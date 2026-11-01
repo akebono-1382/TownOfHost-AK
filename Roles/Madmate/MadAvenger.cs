@@ -21,6 +21,7 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
             SetupOptionItem,
             "mAe",
             OptionSort: (4, 0),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Impostor)
         );
     public MadAvenger(PlayerControl player)

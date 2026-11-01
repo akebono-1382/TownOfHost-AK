@@ -18,6 +18,7 @@ public sealed class SpeedStar : RoleBase, IImpostor, IUsePhantomButton
             20800,
             SetUpOptionItem,
             "SS",
+            from: From.TownOfHost_K,
             OptionSort: (6, 12)
         );
     public SpeedStar(PlayerControl player)

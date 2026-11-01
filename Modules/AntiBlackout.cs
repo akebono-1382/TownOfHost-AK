@@ -282,6 +282,9 @@ namespace TownOfHost
                     }
                     var setrole = (IDesycImpostor && Player != pc) ? (!isalive ? RoleTypes.CrewmateGhost : RoleTypes.Crewmate) : role;
 
+                    if (isalive && Player != pc && Player.Is(CustomRoles.Havoc) && pc.Is(CustomRoles.Havoc))
+                        setrole = RoleTypes.Impostor;
+
                     if (pc.PlayerId == Player.PlayerId)
                     {
                         if (pc.GetRoleClass()?.AfterMeetingRole is not null && pc.IsAlive()

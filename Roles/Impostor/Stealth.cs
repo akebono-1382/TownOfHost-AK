@@ -31,7 +31,8 @@ public sealed class Stealth : RoleBase, IImpostor, IUsePhantomButton
         "st",
         OptionSort: (6, 6),
         introSound: () => GetIntroSound(RoleTypes.Phantom),
-        from: From.TownOfHost);
+        from: From.TownOfHost
+        );
     private static LogHandler logger = Logger.Handler(nameof(Stealth));
 
     #region カスタムオプション

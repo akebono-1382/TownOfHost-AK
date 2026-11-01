@@ -19,6 +19,7 @@ public sealed class MadReduced : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
             SetupOptionItem,
             "mre",
             OptionSort: (3, 1),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Impostor)
         );
     public MadReduced(PlayerControl player)

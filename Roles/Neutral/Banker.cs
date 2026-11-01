@@ -22,6 +22,7 @@ public sealed class Banker : RoleBase, IKiller, IAdditionalWinner
             "#489972",
             (5, 5),
             true,
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Tracker),
             Desc: () =>
             {

@@ -20,10 +20,20 @@ public class SingleRoleDescription : RoleDescription
     {
         get
         {
-            if (RoleInfo.Desc == null) return Translator.GetString(DescriptionKey);
+            var desc = Translator.GetString(DescriptionKey);
+            if (RoleInfo.RoleName is CustomRoles.Monochromer)
+            {
+                desc = "\n" + Translator.GetString("SkinWarning") + "\n" + desc;
+            }
+            else if (RoleInfo.RoleName is CustomRoles.Camouflager)
+            {
+                desc = "\n" + Translator.GetString("SkinWarning") + "\n" + Translator.GetString("CamoWarn") + "\n" + desc;
+            }
+
+            if (RoleInfo.Desc == null) return desc;
             var CustomDescription = RoleInfo.Desc();
 
-            if (CustomDescription == null) return Translator.GetString(DescriptionKey);
+            if (CustomDescription == null) return desc;
             return CustomDescription;
         }
     }

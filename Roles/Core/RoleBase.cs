@@ -586,6 +586,7 @@ public abstract class RoleBase : IDisposable
         CanUseSabotage,
         CanCreateSideKick,
         Duration,
+        ShapeDuration,
         cantaskcount,
         MeetingMaxTime,
         PlayShapeAnimate,
@@ -607,5 +608,6 @@ public abstract class RoleBase : IDisposable
         Eat,
         Other,
         Impostor,
+        Havoc,
     }
 }

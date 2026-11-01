@@ -17,6 +17,7 @@ public sealed class VentBeginner : RoleBase
             SetupOptionItem,
             "vb",
             "#ff6666",
+            from: From.TownOfHost_K,
             introSound: () => DestroyableSingleton<HudManager>.Instance.TaskCompleteSound
         );
     public VentBeginner(PlayerControl player)

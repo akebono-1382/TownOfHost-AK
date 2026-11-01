@@ -26,9 +26,9 @@ public sealed class Scientist : RoleBase
     public static OptionItem ScientistBatteryCharge;
     public static void SetUpCustomOption()
     {
-        ScientistCooldown = FloatOptionItem.Create(RoleInfo, 253, "ScientistCooldown", new(0f, 180f, 0.5f), 15f, false)
+        ScientistCooldown = FloatOptionItem.Create(RoleInfo, 3, "ScientistCooldown", new(0f, 180f, 0.5f), 15f, false)
         .SetValueFormat(OptionFormat.Seconds);
-        ScientistBatteryCharge = FloatOptionItem.Create(RoleInfo, 254, "ScientistBatteryCharge", new(0f, 180f, 0.5f), 5f, false)
+        ScientistBatteryCharge = FloatOptionItem.Create(RoleInfo, 4, "ScientistBatteryCharge", new(0f, 180f, 0.5f), 5f, false)
                 .SetValueFormat(OptionFormat.Seconds);
     }
     public override void ApplyGameOptions(IGameOptions opt)

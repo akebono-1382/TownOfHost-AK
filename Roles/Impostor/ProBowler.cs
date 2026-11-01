@@ -25,6 +25,7 @@ public sealed class ProBowler : RoleBase, IImpostor, IUsePhantomButton
             SetupOptionItem,
             "Pb",
             OptionSort: (3, 4),
+            from: From.TownOfHost_K,
             Desc: () => string.Format(GetString("ProBowlerDesc"), OptionBowling.GetBool() ? GetString("ProBowlerDescBowl") : GetString("ProBowlerDescTeleport"), OptionDeathReasonIsFall.GetBool() ? GetString("DeathReason.Fall") : GetString("DeathReason.Kill"), OptionMaxUseCount.GetInt())
 
         );

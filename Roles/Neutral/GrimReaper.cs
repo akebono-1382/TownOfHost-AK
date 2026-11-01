@@ -48,6 +48,7 @@ namespace TownOfHost.Roles.Neutral
         public static OptionItem OptionCanUseSabotage;
         private static OptionItem OptionGrimReaperCanButtom;
         private static OptionItem OptionGrimActiveTime;
+        private static OptionItem OptImpVision;
         private static float KillCooldown;
         public static bool CanVent;
         public static bool CanUseSabotage;
@@ -67,9 +68,14 @@ namespace TownOfHost.Roles.Neutral
                 .SetValueFormat(OptionFormat.Seconds);
             OptionGrimActiveTime = FloatOptionItem.Create(RoleInfo, 8, OptionName.GrimReaperGrimActiveTime, new(3, 300, 1), 15, false).SetValueFormat(OptionFormat.Seconds);
             OptionCanVent = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.CanVent, true, false);
+            OptImpVision = BooleanOptionItem.Create(RoleInfo, 15, GeneralOption.ImpostorVision, true, false);
             OptionCanUseSabotage = BooleanOptionItem.Create(RoleInfo, 12, GeneralOption.CanUseSabotage, false, false);//正味サボ使用不可でもいい気がする
             OptionGrimReaperCanButtom = BooleanOptionItem.Create(RoleInfo, 14, OptionName.GrimReaperCanButtom, false, false);
-            RoleAddAddons.Create(RoleInfo, 15);
+            RoleAddAddons.Create(RoleInfo, 20, NeutralKiller: true);
+        }
+        public override void ApplyGameOptions(IGameOptions opt)
+        {
+            opt.SetVision(OptImpVision?.GetBool() ?? true);
         }
         public float CalculateKillCooldown() => KillCooldown;
         public bool CanUseSabotageButton() => CanUseSabotage;

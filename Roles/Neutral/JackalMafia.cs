@@ -24,6 +24,7 @@ namespace TownOfHost.Roles.Neutral
                 "#00b4eb",
                 (1, 2),
                 true,
+                from: From.TownOfHost_K,
                 countType: CountTypes.Jackal,
                 assignInfo: new RoleAssignInfo(CustomRoles.JackalMafia, CustomRoleTypes.Neutral)
                 {

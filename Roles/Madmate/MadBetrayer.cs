@@ -22,6 +22,7 @@ public sealed class MadBetrayer : RoleBase, IKiller, ISchrodingerCatOwner
             (4, 2),
             true,
             introSound: () => GetIntroSound(RoleTypes.Shapeshifter),
+            from: From.TownOfHost_K,
             assignInfo: new RoleAssignInfo(CustomRoles.MadBetrayer, CustomRoleTypes.Madmate)
             {
                 AssignCountRule = new(1, 1, 1)

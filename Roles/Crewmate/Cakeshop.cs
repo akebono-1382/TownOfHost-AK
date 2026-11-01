@@ -25,6 +25,7 @@ public sealed class Cakeshop : RoleBase, INekomata
             "cs",
             "#aacbff",
             (0, 15),
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
     public Cakeshop(PlayerControl player)

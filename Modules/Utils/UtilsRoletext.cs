@@ -675,6 +675,7 @@ namespace TownOfHost
                             CountTypes.Remotekiller => GetRoleColorAndtext(CustomRoles.Remotekiller),
                             CountTypes.Fox => GetRoleColorAndtext(CustomRoles.Fox),
                             CountTypes.MilkyWay => Roles.Neutral.Vega.TeamText,
+                            CountTypes.Havoc => GetRoleColorAndtext(CustomRoles.Havoc),
                             _ => "...?",
                         };
                         return string.Format(GetString("fortuihourole"), playername, team, GetString("fortuihouisrole"));

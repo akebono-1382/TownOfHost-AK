@@ -23,10 +23,11 @@ public sealed class JackalDoll : RoleBase
             "jacd",
             "#00b4eb",
             (1, 4),
-                assignInfo: new RoleAssignInfo(CustomRoles.Jackaldoll, CustomRoleTypes.Neutral)
-                {
-                    AssignCountRule = new(0, 15, 1)
-                }
+            from: From.TownOfHost_K,
+            assignInfo: new RoleAssignInfo(CustomRoles.Jackaldoll, CustomRoleTypes.Neutral)
+            {
+                AssignCountRule = new(0, 15, 1)
+            }
         );
     public JackalDoll(PlayerControl player)
     : base(

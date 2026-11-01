@@ -27,6 +27,7 @@ public sealed class Missioneer : RoleBase, IKiller, ISelfVoter, IAdditionalWinne
             "#b1ae8f",
             (5, 6),
             true,
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Detective)
         );
     public Missioneer(PlayerControl player)

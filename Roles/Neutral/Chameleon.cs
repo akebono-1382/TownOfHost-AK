@@ -21,6 +21,7 @@ public sealed class Chameleon : RoleBase, IAdditionalWinner
             SetUpOptionItem,
             "Ch",
             "#357a39",
+            from: From.TownOfHost_K,
             OptionSort: (6, 4)
         );
     public Chameleon(PlayerControl player)

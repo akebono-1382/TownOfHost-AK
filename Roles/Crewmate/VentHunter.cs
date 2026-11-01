@@ -23,6 +23,7 @@ public sealed class VentHunter : RoleBase
             "vh",
             "#83FFF2",
             (9, 6),
+            from: From.TownOfHost_K,
             introSound: () => PlayerControl.LocalPlayer.KillSfx
         );
     public VentHunter(PlayerControl player)

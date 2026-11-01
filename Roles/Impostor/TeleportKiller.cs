@@ -22,6 +22,7 @@ public sealed class TeleportKiller : RoleBase, IImpostor
             4300,
             SetupOptionItem,
             "tk",
+            from: From.TownOfHost_K,
             OptionSort: (3, 5)
         );
     public TeleportKiller(PlayerControl player)

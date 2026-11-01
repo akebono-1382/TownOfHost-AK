@@ -23,6 +23,7 @@ namespace TownOfHost.Roles.Impostor
                 6700,
                 SetupOptionItem,
                 "Lm",
+                from: From.TownOfHost_K,
                 OptionSort: (7, 3)
             );
         public Limiter(PlayerControl player)

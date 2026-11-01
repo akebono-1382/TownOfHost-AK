@@ -20,6 +20,7 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
             4000,
             SetupOptionItem,
             "mc",
+            from: From.TownOfHost_K,
             OptionSort: (3, 2)
         );
     public Magician(PlayerControl player)

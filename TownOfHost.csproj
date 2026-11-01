@@ -1,13 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-    <Description>fork by Town Of Host</Description>
+    <Description>fork by Town Of Host-K</Description>
     <Authors>tukasa0001(EmptyBottle), integral0131</Authors>
     <langVersion>preview</langVersion>
-    <AssemblyName>TownOfHost-K</AssemblyName>
+    <AssemblyName>TownOfHost-AK</AssemblyName>
     <NoWarn>MSB3246</NoWarn>
+	<AmongUs>C:\Program Files (x86)\Steam\steamapps\common\Among Us TOHP</AmongUs>
   </PropertyGroup>
 
   <ItemGroup>

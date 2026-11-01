@@ -19,10 +19,10 @@ public sealed class Madmate : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
             "mm",
             OptionSort: (1, 0),
             introSound: () => GetIntroSound(RoleTypes.Impostor),
-                assignInfo: new RoleAssignInfo(CustomRoles.Madmate, CustomRoleTypes.Madmate)
-                {
-                    AssignCountRule = new(0, 15, 1)
-                },
+            assignInfo: new RoleAssignInfo(CustomRoles.Madmate, CustomRoleTypes.Madmate)
+            {
+                AssignCountRule = new(0, 15, 1)
+            },
             from: From.au_libhalt_net
         );
     public Madmate(PlayerControl player)

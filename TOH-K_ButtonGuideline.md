@@ -1,12 +1,12 @@
 ## CustomButtonGuieline/Resouseフォルダにある画像等について
 
-`Resources`内の`TOH-K`フォルダはTownOfHost-Kの開発者/サポーターが作成したものです。
+`Resources`内の`TOH-A`フォルダはTownOfHost-AKの開発者/サポーターが作成したものです。
 
 Buttonフォルダ、Labelフォルダ、Tabフォルダ(一部除く)<br>
 `ShowOption`,`pin`<br>
 上記の画像は夜藍が大体作ってます。<br>
 <br>
-上記のファイル内の夜藍が作成した画像は**TownOfHost-K**を使用している動画、募集画像等に基本使っていただいてOKです。<br>
+上記のファイル内の夜藍が作成した画像は**TownOfHost-AK**を使用している動画、募集画像等に基本使っていただいてOKです。<br>
 ただし、以下の禁止、注意事項を必ず守ってください。<br>
 <br>
 ### <禁止事項>
@@ -20,16 +20,16 @@ Buttonフォルダ、Labelフォルダ、Tabフォルダ(一部除く)<br>
 
 ### <要相談>
 ・SNSのアイコンにしたい！ヘッダーにしたい！って時<br>
-・TownOfHost-Kのフォークで使用する場合(配布、リリース、配信等、SNS等で他人に見られる可能性がある場合等、連絡してください)<br>
-・TownOfHost-K以外のMod・サービスで使用する場合(身内間のMod・サービスでも連絡してください)<br>
+・TownOfHost-AKのフォークで使用する場合(配布、リリース、配信等、SNS等で他人に見られる可能性がある場合等、連絡してください)<br>
+・TownOfHost-AK以外のMod・サービスで使用する場合(身内間のMod・サービスでも連絡してください)<br>
 ・Discord等での絵文字/スタンプにする場合<br>
 ・その他ここに記載がない使用方法<br>
 
 **上記に当てはまる場合はDiscord(@yoran_furanoshi)で直接連絡ください。**<br>
 
 ### <聞かなくてもいいよ！自由に使ってね！>
-・**TownOfHost-Kを使用している**動画または配信のサムネイルでの使用  ※TownOfHost-Kの動画/配信じゃないのに使うのはNG<br>
-・**転載でなく**、**TownOfHost-Kを使用している**募集画像等で使用する <br>
+・**TownOfHost-AKを使用している**動画または配信のサムネイルでの使用  ※TownOfHost-AKの動画/配信じゃないのに使うのはNG<br>
+・**転載でなく**、**TownOfHost-AKを使用している**募集画像等で使用する <br>
 　(SNS等でKやるよっ！って告知する時に**自分で作った**画像添付してもいいよ。**ただ、画像をそのまま掲載するのはNG**)<br>
 
 ### 例外
@@ -50,12 +50,12 @@ Buttonフォルダ、Labelフォルダ、Tabフォルダ(一部除く)<br>
 ### 夜藍以外の製作物
 ・`TabIcon_MainSettings`,`TabIcon_S_MainSettings`<br>
 　`COPY_STG`,`LOAD_STG`,`RESET_STG`,`Spawn_Mark`<br>
-　`TownOfHost-K`<br>
+　`TownOfHost-AK`<br>
 上記の物は恐らくけーわいが製作したものです。<br>
 
-※`TownOfHost-K_A`はけーわいと夜藍だったはずなので両方に聞いてください。<br>
+※`TownOfHost-AK_A`はけーわいと夜藍だったはずなので両方に聞いてください。<br>
 
 仮に下記記載のwikiページとで矛盾点がある場合、<br>
 wikiページの方を優先してください。<br>
 
-Wikiページ => https://github.com/KYMario/TownOfHost-K/wiki/%E3%83%9C%E3%82%BF%E3%83%B3%E7%AD%89%E3%81%AE%E7%94%BB%E5%83%8F%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6
+Wikiページ => https://github.com/akebono-1382/TownOfHost-AK/wiki/%E3%83%9C%E3%82%BF%E3%83%B3%E7%AD%89%E3%81%AE%E7%94%BB%E5%83%8F%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6

@@ -27,6 +27,7 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
             "#f8cd46",
             (2, 1),
             true,
+            from: From.TownOfHost_K,
             introSound: () => GetIntroSound(RoleTypes.Crewmate)
         );
 

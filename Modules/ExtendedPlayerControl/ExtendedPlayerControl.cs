@@ -418,6 +418,8 @@ namespace TownOfHost
                 var tage = playerInfo.Object;
 
                 if (tage == null || tage.inVent || !tage.IsAlive()) continue;
+                if (pc.Is(CustomRoles.Havoc) && tage.Is(CustomRoles.Havoc)) continue;
+
                 if (!SuddenDeathMode.NowSuddenDeathTemeMode && IsOneclick && tage.GetCustomRole().GetCustomRoleTypes() == roletype && roletype is CustomRoleTypes.Impostor
                 && !tage.Is(CustomRoles.OneWolf) && !pc.Is(CustomRoles.OneWolf) && !pc.Is(CustomRoles.Amnesiac)) continue;
                 if (SuddenDeathMode.NowSuddenDeathTemeMode)

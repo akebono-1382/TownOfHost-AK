@@ -14,9 +14,10 @@ namespace TownOfHost.Roles.Impostor
                 CustomRoles.EvilButtoner,
                 () => RoleTypes.Phantom,
                 CustomRoleTypes.Impostor,
-                25400,
+                25800,
                 SetupOptionItem,
                 "Evb",
+                from: From.TownOfHost_K,
                 OptionSort: (2, 4)
             );
         public EvilButtoner(PlayerControl player)

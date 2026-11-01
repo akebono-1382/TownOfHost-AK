@@ -20,6 +20,7 @@ public sealed class EvilTeller : RoleBase, IImpostor, IUsePhantomButton
             3700,
             SetUpOptionItem,
             "Et",
+            from: From.TownOfHost_K,
             OptionSort: (2, 6)
         );
     public EvilTeller(PlayerControl player)

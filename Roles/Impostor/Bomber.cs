@@ -22,6 +22,7 @@ namespace TownOfHost.Roles.Impostor
                 SetupOptionItem,
                 "bb",
                 OptionSort: (3, 1),
+                from: From.TownOfHost_K,
                 Desc: () => string.Format(GetString("BomberDesc"), OptionBomberExplosion.GetInt(), OptionKillDelay.GetFloat())
             );
         public Bomber(PlayerControl player)
