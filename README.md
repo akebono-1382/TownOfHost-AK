@@ -1,6 +1,6 @@
 # Town Of Host-AK
 
-[![Discord](./Images/TownOfHostK_readme.png)](https://discord.gg/uMmFRpGHgt)
+[![Discord]()](https://discord.gg/uMmFRpGHgt)
 
 <p align="center"><a href="https://github.com/akebono-1382/TownOfHost-AK/releases/"><img src="https://badgen.net/github/release/akebono-1382/TownOfHost-AK"></a></p>
 
