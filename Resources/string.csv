@@ -1462,7 +1462,7 @@
 "AmnesiacCanUseSabotage","Can Use Sabotage After Realize","思い出すとサボタージュを起こせるようになる"
 "AmnesiacIsWolfboy","Mode<#727171>WolfBoy</color>","<#727171>狼少年</color>だと思い込む"
 "EvilSatelliteRandom","Shuffle Room","経路をランダムに表示する"
-"CurserCurseKillCooldown","Target Killed Killcool","ターゲット切った時のキルクール"
+"CurserCurseKillCooldown","Target Killed Killcool","ターゲットをキルした時のキルクール"
 "CurserCurseCount","AbilityTime","呪える回数"
 "ProBowlerMaxUseCount","Max Use","穴を掘れる最大数"
 "ProBowlerBowling","Bowling Animate","穴に向かって転がる"

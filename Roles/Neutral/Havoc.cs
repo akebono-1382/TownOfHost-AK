@@ -310,7 +310,7 @@ public sealed class Havoc : RoleBase, ILNKiller, ISchrodingerCatOwner, IUsePhant
         foreach (var db in Object.FindObjectsOfType<DeadBody>())
         {
             var id = db.ParentId;
-            if (EatedPlayers.Contains(id)) continue;
+            if (EatedPlayers.Contains(id) || Vulture.staticEatedPlayers.Contains(id)) continue;
             var pos = db.TruePosition;
             var dist = Vector2.Distance(myPos, pos);
             if (dist > EatRange) continue;

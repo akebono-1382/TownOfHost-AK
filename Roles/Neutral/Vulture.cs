@@ -79,7 +79,7 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
     int EatCount;//食べたかず
     Dictionary<byte, Vector2> DiePlayerPos = new();//死体の矢印
     Dictionary<byte, float> Viperkilledplayers = new();//とける予定の死体
-    static List<byte> staticEatedPlayers = new();//食べられたおにく
+    public static List<byte> staticEatedPlayers = new();//食べられたおにく
     int turneat;
     enum OptionName
     {
