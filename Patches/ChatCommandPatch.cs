@@ -196,12 +196,7 @@ namespace TownOfHost
                             case "jackal":
                             case "ジャッカル":
                                 GameManager.Instance.enabled = false;
-                                CustomWinnerHolder.WinnerTeam = CustomWinner.Jackal;
-                                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackal);
-                                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalMafia);
-                                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalAlien);
-                                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalWolf);
-                                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackaldoll);
+                                ExtendedPlayerControl.JackalWin();
                                 GameManager.Instance.RpcEndGame(GameOverReason.ImpostorsByKill, false);
                                 break;
                             case "廃村":

@@ -55,15 +55,11 @@ public abstract class GameEndPredicate
                     case CustomRoles.JackalAlien:
                     case CustomRoles.JackalWolf:
                         CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Jackal, byte.MaxValue);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackal);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalMafia);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalAlien);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackaldoll);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalWolf);
+                        ExtendedPlayerControl.JackalWin();
                         if (Options.OptionSabotageFinAllKill.GetBool())
                             PlayerCatch.AllAlivePlayerControls.Do(pc =>
                             {
-                                if (pc.Is(CountTypes.Jackal) is false)
+                                if (pc.IsJackal() is false)
                                 {
                                     pc.GetPlayerState().DeathReason = CustomDeathReason.Kill;
                                     pc.RpcMurderPlayer(pc);
@@ -166,16 +162,12 @@ public abstract class GameEndPredicate
                     case CustomRoles.JackalMafia:
                     case CustomRoles.JackalAlien:
                     case CustomRoles.JackalWolf:
-                        CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Jackal, byte.MaxValue);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackal);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalMafia);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalAlien);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackaldoll);
-                        CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalWolf);
+                        CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Jackal, byte.MaxValue);]
+                        ExtendedPlayerControl.JackalWin();
                         if (Options.OptionSabotageFinAllKill.GetBool())
                             PlayerCatch.AllAlivePlayerControls.Do(pc =>
                             {
-                                if (pc.Is(CountTypes.Jackal) is false)
+                                if (pc.IsJackal() is false)
                                 {
                                     pc.GetPlayerState().DeathReason = CustomDeathReason.Kill;
                                     pc.RpcMurderPlayer(pc);

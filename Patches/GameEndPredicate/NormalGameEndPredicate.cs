@@ -107,11 +107,7 @@ namespace TownOfHost
             {
                 reason = GameOverReason.ImpostorsByKill;
                 CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Jackal, byte.MaxValue);
-                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackal);
-                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalMafia);
-                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalAlien);
-                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackaldoll);
-                CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalWolf);
+                ExtendedPlayerControl.JackalWin();
             }
             else if (Imp == 0 && Jackal == 0 && MilkyWay == 0 && MadBetrayer == 0 && Havoc == 0 && FoxAndCrew <= Remotekiller)
             {

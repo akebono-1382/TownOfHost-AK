@@ -441,6 +441,40 @@ namespace TownOfHost
             if (ta == pc) return null;
             return ta;
         }
+        public static void JackalWin()
+        {
+            CustomWinnerHolder.WinnerTeam = CustomWinner.Jackal;
+            CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackal);
+            CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalMafia);
+            CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalAlien);
+            CustomWinnerHolder.WinnerRoles.Add(CustomRoles.JackalWolf);
+            CustomWinnerHolder.WinnerRoles.Add(CustomRoles.Jackaldoll);
+        }
+
+        public static bool IsJackal(this PlayerControl pc)
+        {
+            var role = pc.GetCustomRole();
+
+            return role is
+                CustomRoles.Jackal or
+                CustomRoles.JackalMafia or
+                CustomRoles.JackalAlien or
+                CustomRoles.JackalWolf or
+                CustomRoles.Jackaldoll
+                ;
+        }
+
+        public static bool IsJackal(this CustomRoles role)
+        {
+            return role is
+                CustomRoles.Jackal or
+                CustomRoles.JackalMafia or
+                CustomRoles.JackalAlien or
+                CustomRoles.JackalWolf or
+                CustomRoles.Jackaldoll
+                ;
+        }
+
         public static bool IsNeutralKiller(this CustomRoles role)
         {
             return
