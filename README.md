@@ -61,7 +61,7 @@ AmongUsバージョン : **19.0.0**~<br>
 勧誘部屋に遭遇した場合は勧誘先に無闇に参加せずまずは開発者にお知らせください。厳正に対処いたします。<br>
 
 ## TOH-Aでの処罰、利用不可について
-v.5.1.61.1以降より[SuperNewRoles](https://github.com/SuperNewRoles/SuperNewRoles/)様等一部のModに搭載されていた<br>
+TOHK v.5.1.61.1以降より[SuperNewRoles](https://github.com/SuperNewRoles/SuperNewRoles/)様等一部のModに搭載されていた<br>
 ブラックリストをTown Of Host-AKでも適応するようにいたしました。<br>
 
 > [!note]
@@ -122,37 +122,15 @@ HostModなので部屋主のみModを導入すれば、<br>
 > - 棒読みちゃんを起動してる時のみ読み上げ設定をONにしてください (自動でOFFになります)
 > - [TOHA_DATA\options.txt](#オプションファイル)からポートを設定できます。
 
-#### 外部リンク
-　TownOfHost-AK<br>
-　　[Twitter(X)](https://x.com/TOHAserver_k)<br>
-
 **TownOfHost-AKの開発者**<br>
-　暇な人 KY/けーわい<br>
-　　[Youtube](https://www.youtube.com/@MTGC_KY)<br>
-　　[Twitter(X)](https://x.com/ky_mario_ky)<br>
-
-　タイガー<br>
-　　[Youtube](https://www.youtube.com/@torataiga-)<br>
-　　[Twitter(X)](https://x.com/TVppJ90s9G2sPkq)<br>
-
-　夜藍<br>
-　　[Youtube](https://www.youtube.com/@Yoran_Furan)<br>
-　　[Twitter(X)](https://x.com/Yoran_FuranOshi)<br>
-
-　ねむa<br>
-　　[Twitter(X)](https://x.com/nemu_adatoomou)<br>
-
-　はろん<br>
-　　[Twitter(X)](https://x.com/HellWeen11)<br>
-
-**TownOfHost-AKのサポーター**<br>
-　りぃりぃ<br>
-　　[Twitter(X)](https://x.com/rixirixi0202)<br>
 
 ※本家TownOfHost様の開発者はここでは省略させていただきます
 #### クレジット
 [Town Of Host](https://github.com/tukasa0001/TownOfHost)<br>
 　Fork元の本家です。<br>TownOfHost様にある機能はTownOfHost-AKでも大体実装されています<br>
+
+[Town Of Host-AK](https://github.com/KYMario/TownOfHost-K)<br>
+　Fork元です。<br>TownOfHost-K様にある機能はTownOfHost-AKでも大体実装されています<br>
 
 [Town Of Host_Y](https://github.com/Yumenopai/TownOfHost_Y)<br>
 　会議時の役職表示、会議拡張、ワーカホリック,属性名、一部役職を参考/移植させて頂きました！<br>
@@ -180,10 +158,10 @@ TOR_GM_Haoming_Edition<br>
 　イビルトラッカー、シュレディンガーの猫等を参考/移植させていただきました<br>
 
 [Nebula On The Ship](https://github.com/Dolly1016/Nebula/)<br>
-　ドクター、スナイパーを参考/移植させていただきました<br>
+　ドクター、スナイパー、ハボックを参考/移植させていただきました<br>
 
 [au.libhalt.net](https://au.libhalt.net/)<br>
-　マッドジェスターの参考/移植させていただきました<br>
+　マッドジェスターを参考/移植させていただきました<br>
 
 [ExtremeRoles](https://github.com/yukieiji/ExtremeRoles)<br>
-　アサシンとマーリンの参考/移植をさせていただきました。<br>
+　アサシンとマーリンを参考/移植をさせていただきました。<br>
