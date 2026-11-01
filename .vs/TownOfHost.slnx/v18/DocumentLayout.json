@@ -3,12 +3,64 @@
   "WorkspaceRootPath": "C:\\Users\\tiram\\TownOfHost-K\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\sheriff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\sheriff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:readme.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\patches\\gameendpredicate\\normalgameendpredicate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:patches\\gameendpredicate\\normalgameendpredicate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\modules\\extendedplayercontrol\\extendedplayercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:modules\\extendedplayercontrol\\extendedplayercontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\patches\\gameendpredicate\\gameendpredicate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:patches\\gameendpredicate\\gameendpredicate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\patches\\chatcommandpatch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:patches\\chatcommandpatch.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\wolfboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\wolfboy.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\neutral\\havoc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\neutral\\havoc.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\neutral\\vulture.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\neutral\\vulture.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\modules\\translator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:modules\\translator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\resources\\string.csv||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:resources\\string.csv||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\allarounder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\allarounder.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\express.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\express.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\roles\\crewmate\\sheriff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:roles\\crewmate\\sheriff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|c:\\users\\tiram\\townofhost-k\\.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{1FC72121-C82A-F097-6BE3-3B951E5B6959}|TownOfHost.csproj|solutionrelative:.gitignore||{3B902123-F8A7-4915-9F01-361F908088D0}"
     }
   ],
   "DocumentGroupContainers": [
@@ -23,19 +75,188 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "README.md",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\README.md",
+              "RelativeDocumentMoniker": "README.md",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\README.md",
+              "RelativeToolTip": "README.md",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAHIAAABDAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-11-01T09:35:50.131Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "main.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\main.cs",
+              "RelativeDocumentMoniker": "main.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\main.cs",
+              "RelativeToolTip": "main.cs",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:35:47.426Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "NormalGameEndPredicate.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Patches\\GameEndPredicate\\NormalGameEndPredicate.cs",
+              "RelativeDocumentMoniker": "Patches\\GameEndPredicate\\NormalGameEndPredicate.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Patches\\GameEndPredicate\\NormalGameEndPredicate.cs",
+              "RelativeToolTip": "Patches\\GameEndPredicate\\NormalGameEndPredicate.cs",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAewGUAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:35:06.336Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "GameEndPredicate.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Patches\\GameEndPredicate\\GameEndPredicate.cs",
+              "RelativeDocumentMoniker": "Patches\\GameEndPredicate\\GameEndPredicate.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Patches\\GameEndPredicate\\GameEndPredicate.cs",
+              "RelativeToolTip": "Patches\\GameEndPredicate\\GameEndPredicate.cs",
+              "ViewState": "AgIAAC8AAAAAAAAAAAAAAD0AAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:33:37.601Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "ChatCommandPatch.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Patches\\ChatCommandPatch.cs",
+              "RelativeDocumentMoniker": "Patches\\ChatCommandPatch.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Patches\\ChatCommandPatch.cs",
+              "RelativeToolTip": "Patches\\ChatCommandPatch.cs",
+              "ViewState": "AgIAALgAAAAAAAAAAAAewMYAAABCAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:33:08.101Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ExtendedPlayerControl.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Modules\\ExtendedPlayerControl\\ExtendedPlayerControl.cs",
+              "RelativeDocumentMoniker": "Modules\\ExtendedPlayerControl\\ExtendedPlayerControl.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Modules\\ExtendedPlayerControl\\ExtendedPlayerControl.cs",
+              "RelativeToolTip": "Modules\\ExtendedPlayerControl\\ExtendedPlayerControl.cs",
+              "ViewState": "AgIAALABAAAAAAAAAAAYwL4BAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:31:17.915Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "Havoc.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Neutral\\Havoc.cs",
+              "RelativeDocumentMoniker": "Roles\\Neutral\\Havoc.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Neutral\\Havoc.cs",
+              "RelativeToolTip": "Roles\\Neutral\\Havoc.cs",
+              "ViewState": "AgIAAJoBAAAAAAAAAAAiwKoBAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:13:58.983Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "Vulture.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Neutral\\Vulture.cs",
+              "RelativeDocumentMoniker": "Roles\\Neutral\\Vulture.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Neutral\\Vulture.cs",
+              "RelativeToolTip": "Roles\\Neutral\\Vulture.cs",
+              "ViewState": "AgIAAEYAAAAAAAAAAAAywFEAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T09:13:46.414Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "Translator.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Modules\\Translator.cs",
+              "RelativeDocumentMoniker": "Modules\\Translator.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Modules\\Translator.cs*",
+              "RelativeToolTip": "Modules\\Translator.cs*",
+              "ViewState": "AgIAAHEAAAAAAAAAAAAlwHkAAAAXAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T08:45:40.98Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "string.csv",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Resources\\string.csv",
+              "RelativeDocumentMoniker": "Resources\\string.csv",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Resources\\string.csv",
+              "RelativeToolTip": "Resources\\string.csv",
+              "ViewState": "AgIAAKgFAAAAAAAAAAAnwLUFAABMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002120|",
+              "WhenOpened": "2026-11-01T08:45:19.944Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "AllArounder.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\AllArounder.cs",
+              "RelativeDocumentMoniker": "Roles\\Crewmate\\AllArounder.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\AllArounder.cs",
+              "RelativeToolTip": "Roles\\Crewmate\\AllArounder.cs",
+              "ViewState": "AgIAABYAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T08:45:11.652Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Express.cs",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\Express.cs",
+              "RelativeDocumentMoniker": "Roles\\Crewmate\\Express.cs",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\Express.cs",
+              "RelativeToolTip": "Roles\\Crewmate\\Express.cs",
+              "ViewState": "AgIAACcAAAAAAAAAAAAYwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-11-01T08:45:08.66Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": ".gitignore",
+              "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\.gitignore",
+              "RelativeDocumentMoniker": ".gitignore",
+              "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\.gitignore",
+              "RelativeToolTip": ".gitignore",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAMAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-11-01T08:39:12.942Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "Sheriff.cs",
               "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\Sheriff.cs",
               "RelativeDocumentMoniker": "Roles\\Crewmate\\Sheriff.cs",
               "ToolTip": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\Sheriff.cs",
               "RelativeToolTip": "Roles\\Crewmate\\Sheriff.cs",
-              "ViewState": "AgIAAMUAAAAAAAAAAAAlwM8AAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAADEAAAAAAAAAAAAewH8AAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-11-01T08:33:20.293Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 6,
               "Title": "WolfBoy.cs",
               "DocumentMoniker": "C:\\Users\\tiram\\TownOfHost-K\\Roles\\Crewmate\\WolfBoy.cs",
               "RelativeDocumentMoniker": "Roles\\Crewmate\\WolfBoy.cs",

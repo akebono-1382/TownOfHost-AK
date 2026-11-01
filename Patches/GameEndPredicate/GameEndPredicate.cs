@@ -162,7 +162,7 @@ public abstract class GameEndPredicate
                     case CustomRoles.JackalMafia:
                     case CustomRoles.JackalAlien:
                     case CustomRoles.JackalWolf:
-                        CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Jackal, byte.MaxValue);]
+                        CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Jackal, byte.MaxValue);
                         ExtendedPlayerControl.JackalWin();
                         if (Options.OptionSabotageFinAllKill.GetBool())
                             PlayerCatch.AllAlivePlayerControls.Do(pc =>
