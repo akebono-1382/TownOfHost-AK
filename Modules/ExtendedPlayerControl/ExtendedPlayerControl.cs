@@ -455,6 +455,7 @@ namespace TownOfHost
                 CustomRoles.Remotekiller or
                 CustomRoles.CountKiller or
                 CustomRoles.Fool or
+                CustomRoles.Havoc or
                 CustomRoles.Altair;
         }
         public static bool IsNeutralKiller(this PlayerControl player)
