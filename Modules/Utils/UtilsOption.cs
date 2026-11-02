@@ -478,6 +478,7 @@ namespace TownOfHost
                         case "GiveAntiTeleporter": continue;
                         case "GiveLighting": continue;
                         case "GiveMoon": continue;
+                        case "GiveTrapping": continue;
                         case "GiveElector": continue;
                         case "GiveInfoPoor": continue;
                         case "GiveNonReport": continue;
@@ -489,6 +490,7 @@ namespace TownOfHost
                         case "GiveClumsy": continue;
                         case "GiveSlacker": continue;
                         case "GiveSunglasses": continue;
+
                         default: if (getbool) continue; break;
                     }
                 }
@@ -699,6 +701,7 @@ namespace TownOfHost
             if (player.Is(CustomRoles.Lighting)) SendMessage(GetAddonsHelp(CustomRoles.Lighting), player.PlayerId, AddRoleInfoTitle);
             if (player.Is(CustomRoles.Moon)) SendMessage(GetAddonsHelp(CustomRoles.Moon), player.PlayerId, AddRoleInfoTitle);
             if (player.Is(CustomRoles.Notice)) SendMessage(GetAddonsHelp(CustomRoles.Notice), player.PlayerId, AddRoleInfoTitle);
+            if (player.Is(CustomRoles.Trapping)) SendMessage(GetAddonsHelp(CustomRoles.Trapping), player.PlayerId, AddRoleInfoTitle);
 
             //デバフ
             if (player.Is(CustomRoles.News)) SendMessage(GetAddonsHelp(CustomRoles.News), player.PlayerId, AddRoleInfoTitle);
@@ -763,6 +766,7 @@ namespace TownOfHost
                 CustomRoles.Lighting => AddonInfo(role, "＊", From.TownOfHost_Y),
                 CustomRoles.Moon => AddonInfo(role, "э"),
                 CustomRoles.Notice => AddonInfo(role, "Ｎo"),
+                CustomRoles.Trapping => AddonInfo(role, "Ｔr"),
                 //デバフ
                 CustomRoles.Amnesia => AddonInfo(role),
                 CustomRoles.SlowStarter => AddonInfo(role, "Ｓs"),

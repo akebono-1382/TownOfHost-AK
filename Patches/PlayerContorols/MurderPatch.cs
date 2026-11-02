@@ -42,9 +42,11 @@ namespace TownOfHost
         public static bool CheckForInvalidMurdering(MurderInfo info, bool force = false)
         {
             (var killer, var target) = info.AttemptTuple;
-            // Killerが既に死んでいないかどうか
-            if (force == false)
+            bool ignoreAliveCheck = Florist.FlowerPlayers.ContainsKey(target.PlayerId);
+
+            if (force == false && !ignoreAliveCheck)
             {
+                // Killerが既に死んでいないかどうか
                 if (!killer.IsAlive())
                 {
                     Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()}は死亡しているためキャンセルされました。", "CheckMurder");
@@ -72,13 +74,13 @@ namespace TownOfHost
                 return false;
             }
             // 会議中のキルでないか
-            if (MeetingHud.Instance != null || (GameStates.CalledMeeting && !force))
+            if (MeetingHud.Instance != null || (GameStates.CalledMeeting && !force) && !ignoreAliveCheck)
             {
                 Logger.Info("会議が始まっていたため、キルをキャンセルしました。", "CheckMurder");
                 return false;
             }
 
-            if (force == false)
+            if (force == false && !ignoreAliveCheck)
             {
                 // 連打キルでないか
                 float minTime = Mathf.Max(Main.LagTime, AmongUsClient.Instance.Ping / 1000f * 6f); //※AmongUsClient.Instance.Pingの値はミリ秒(ms)なので÷1000
@@ -93,18 +95,18 @@ namespace TownOfHost
             TimeSinceLastKill[killer.PlayerId] = 0f;
 
             // HideAndSeek_キルボタンが使用可能か
-            if ((Options.CurrentGameMode == CustomGameMode.HideAndSeek || Options.IsStandardHAS) && Options.HideAndSeekKillDelayTimer > 0)
+            if ((Options.CurrentGameMode == CustomGameMode.HideAndSeek || Options.IsStandardHAS) && Options.HideAndSeekKillDelayTimer > 0 && !ignoreAliveCheck)
             {
                 Logger.Info("HideAndSeekの待機時間中だったため、キルをキャンセルしました。", "CheckMurder");
                 return false;
             }
-            if (GameModeManager.IsStandardClass() && Options.firstturnmeeting && MeetingStates.FirstMeeting)
+            if (GameModeManager.IsStandardClass() && Options.firstturnmeeting && MeetingStates.FirstMeeting && !ignoreAliveCheck)
             {
                 Logger.Info(killer.GetNameWithRole().RemoveHtmlTags() + "が強制会議前にキルしようとしたから弾いたぞ！", "CheckMurder");
                 return false;
             }
             // キルが可能なプレイヤーか(遠隔は除く)
-            if (!info.IsFakeSuicide && !killer.CanUseKillButton() && !killer.Is(CustomRoles.UltraStar))
+            if (!info.IsFakeSuicide && !killer.CanUseKillButton() && !killer.Is(CustomRoles.UltraStar) && !ignoreAliveCheck)
             {
                 Logger.Info(killer.GetNameWithRole().RemoveHtmlTags() + "はKillできないので、キルはキャンセルされました。", "CheckMurder");
                 return false;

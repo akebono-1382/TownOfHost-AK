@@ -1,5 +1,7 @@
 using AmongUs.GameOptions;
-
+using TownOfHost.Roles.AddOns.Common;
+using TownOfHost.Roles.AddOns.Impostor;
+using TownOfHost.Roles.AddOns.Neutral;
 using TownOfHost.Roles.Core;
 
 namespace TownOfHost.Roles.Crewmate;
@@ -49,27 +51,46 @@ public sealed class Trapper : RoleBase
         Awakening = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.TaskAwakening, false, false);
         AwakeningTask = IntegerOptionItem.Create(RoleInfo, 12, GeneralOption.AwakeningTaskcount, new(1, 255, 1), 5, false, Awakening);
     }
-    public override void OnMurderPlayerAsTarget(MurderInfo info)
-    {
-        if (!Awakened) return;
-        if (info.IsSuicide) return;
 
-        var killer = info.AttemptKiller;
+    public static void BlockMove(PlayerControl killer, PlayerControl victim)
+    {
+        var istrap = victim.GetRoleClass() is Trapper t && t.Awakened;
+        var lastit = victim.Is(CustomRoles.LastImpostor) && LastImpostor.GiveTrapping.GetBool();
+        var lastnt = victim.Is(CustomRoles.LastNeutral) && LastNeutral.GiveTrapping.GetBool();
+
+        if (!istrap && !victim.Is(CustomRoles.Trapping) && !lastit && !lastnt) return;
+
+        var blocktime = 0f;
+
+        if (istrap) blocktime += BlockMoveTime;
+        if (victim.Is(CustomRoles.Trapping)) blocktime += Trapping.BlockMoveTime.GetFloat();
+        if (lastit) blocktime += LastImpostor.BlockMoveTime.GetFloat();
+        if (lastnt) blocktime += LastNeutral.BlockMoveTime.GetFloat();
+
         var tmpSpeed = Main.AllPlayerSpeed[killer.PlayerId];
         Main.AllPlayerSpeed[killer.PlayerId] = Main.MinSpeed;
         ReportDeadBodyPatch.CanReport[killer.PlayerId] = false;
         killer.MarkDirtySettings();
-        IsTraping = true;
-        Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[0]);
+
+        if (victim.GetRoleClass() is Trapper trap)
+        {
+            trap.IsTraping = true;
+            Achievements.RpcCompleteAchievement(trap.Player.PlayerId, 0, achievements[0]);
+        }
         _ = new LateTask(() =>
         {
-            IsTraping = false;
+            if (victim.GetRoleClass() is Trapper trap)
+            {
+                trap.IsTraping = false;
+                Achievements.RpcCompleteAchievement(trap.Player.PlayerId, 0, achievements[0]);
+            }
             Main.AllPlayerSpeed[killer.PlayerId] = tmpSpeed;
             ReportDeadBodyPatch.CanReport[killer.PlayerId] = true;
             killer.MarkDirtySettings();
             RPC.PlaySoundRPC(killer.PlayerId, Sounds.TaskComplete);
-        }, BlockMoveTime, "Trapper BlockMove");
+        }, blocktime, "Trapper BlockMove");
     }
+
     public override CustomRoles Misidentify() => Awakened ? CustomRoles.NotAssigned : CustomRoles.Crewmate;
     public override bool OnCompleteTask(uint taskid)
     {

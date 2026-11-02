@@ -79,6 +79,8 @@
 "EvilBlender","EvilBlender","イビルブレンダー"
 "EvilButtoner","EvilButtoner","イビルボタナー"
 "RocketLauncher","Rocket Launcher","ロケットランチャー"
+"Explosioner",""Explosioner","エクスプロージョナー"
+"Florist","Florist","フローリスト"
 "#ImpostorName"
 
 "# マッドメイト系役職"
@@ -288,6 +290,7 @@
 "Stack","Stack","スタック"
 "Absorb","Absorb","アブソーブ"
 "Notice","Notice","ノーティス"
+"Trapping","Trapping","トラッピング"
 
 "# デバフ属性"
 "SlowStarter","SlowStarter","スロースターター"
@@ -568,6 +571,7 @@
 "PowerfulInfo","Power is Power!!","パワーがあれば問題無し!!"
 "StackInfo","Add-onBundle","属性の詰め合わセット"
 "AbsorbInfo","absorb for a short while","スポンジも驚く吸収力"
+"TrappingInfo","Trap your enemies","敵を罠にはめよう","引诱敌人落入你的陷阱当中","誘捕你的敵人","Ловите своих врагов","Prenda os seus inimigos","Prenda os seus inimigos"
 
 "# デバフ属性"
 "SlowStarterInfo","I'm sure he'll do it later","んー...後5分だけぇ..."
@@ -881,6 +885,7 @@
 "StackInfoLong","The attributes you set will be applied at the start of the game.","設定した属性がゲーム開始時に付与される。"
 "PowerfulInfoLong","An attribute granted only to roles capable of performing kills. \nThe kill power of a standard kill becomes 2.","キル可能役職にのみ付与される属性。\n通常キルのキルパワーが2になる。"
 "AbsorbInfoLong","Prevents you from being killed while the number of survivors remains above the set threshold or until the set number of days has passed.","設定人数以上が生存または、設定日数までの間、キルをガードする。"
+"TrappingInfoLong","Add-ons:\nWhen you are killed, you immobilize your killer for a configurable amount of time.","(属性):\nキルされると、キルした人を数秒間移動不可+通報不可にすることができる。\nトラッパーに付与された場合、トラッパーの移動不可秒数 + この役職の移動不可秒数間移動不可になる。\nラストインポスター・属性付与設定等で重複付与された場合、属性付与設定側の移動不可秒数 + この属性全体の設定の移動不可秒数間移動不可になる。","(船员阵营):\n陷阱师被击杀时，凶手一段时间内将不能移动。","(船員):\n如果設限者被殺,殺他的兇手將會被困在原地幾秒(可以設定)","(Член Экипажа):\nПосле того как Охотника убьют, то его убийца будет обездвижен на несколько секунд. (время зависит от настроек)","(Tripulantes): \nAo ser morto, imobilize o seu assassino por um certo período. (configurável)",""
 
 "# デバフ属性"
 "SlowStarterInfoLong","Add-ons:\nGive to Impostor Only.\nCan't make a kill until the number of imposters is reduced.","(属性):\nインポスターにしか付与されない。\n味方の生存人数が一定人数を下回るまでキルできない。"
@@ -1450,7 +1455,7 @@
 "EarnestWolfOverKillDistance","overkill Killdistance","オーバーキルモードのキルディスタンス"
 "EarnestWolfOverKillDontKillM","OverKill Not KillMotion","オーバーキルモード中、キルモーションを表示しない"
 "EarnestWolfOverKillCantReport",OverKill Cant Report,"オーバーキルでキルされると死体通報ができない"
-"blastrange","BomberExplosion Range","爆発範囲"
+"blastrange","Explosion Range","爆発範囲"
 "AmnesiacCantKillImpostor","Can't Kill Impostor","インポスターをキルできない"
 "AmnesiacMatchSettingstoSheriff","Option Role","設定を思い込んでいる役職に合わせる"
 "AmnesiacRealize","Can Realize","思い出すことができる"
@@ -1499,6 +1504,11 @@
 "ArcherArrowSpeed","Arrow Speed","矢の速度"
 "EvilBlenderSabotageLimittime","Sabotage limit","窒息死するまでの時間"
 "EvilButtonerCanUseMeCall","Can hold a meeting in your","自身名義で会議を開ける"
+"ExplosionerKillCount","","爆発に必要なキル回数"
+"ExplosionerDead","","爆発時に死亡する"
+"FloristDeadPoint","","死亡する成長回数"
+"FloristTurnPoint","","会議ごとの成長回数"
+"FloristUsePoint","","ワンクリック使用時の成長回数"
 
 "## MadMate Role Setting"
 "MadmateOption","MadMate Options","マッドメイト系役職の設定"
@@ -1872,7 +1882,9 @@
 "GiveClumsy","Give <#942343>Clumsy</color>","<#942343>クラムシー</color>を付与する"
 "GiveSlacker","Give <#980098>Slacker</color>","<#980098>スラッカー</color>を付与する"
 "GiveSunglasses","Give<#2e103d>Sunglasses</color>","<#2e103d>サングラス</color>を付与する"
-"GivePowerful","Give<#f08e39>Powerful</color>",<#f08e39>"パワフル</color>を付与する"
+"GivePowerful","Give<#f08e39>Powerful</color>","<#f08e39>パワフル</color>を付与する"
+"GiveTrapping","Give<#5a8fd0>Trapping</color>","<#5a8fd0>トラッピング</color>を付与する"
+
 "GiveGuesserInfo","Guess the position and make the kill.","役職を推測してキルを行う"
 "GiveWatchingInfo","Anonymous voting is turned off.","匿名投票がOFFになる"
 "GiveManagementInfo","You can see the progress of tasks.","タスク進捗が分かる"
@@ -1896,6 +1908,7 @@
 "GiveSlackerInfo","Unable to repair emergency sabo","緊急サボを修復できない"
 "GiveSunglassesInfo","Vision is slightly reduced","視界が少し減少する"
 "GiveOpportunist","Give Opportunist","生存していると追加勝利できる"
+"GiveTrappingInfo","","キルされるとキラーを一定時間移動不可にする"
 "LastNeutralCantaskWin","Crew task wins can also win.","クルーのタスク勝利でも勝利できる"
 "LastNeutralCanCrewWin","Crew victories outside of the task can also win.","タスク以外のクルー勝利でも勝利できる"
 "ConverMode","Conver Mode","使用出来ない招集"

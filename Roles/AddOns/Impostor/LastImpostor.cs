@@ -35,6 +35,9 @@ namespace TownOfHost.Roles.AddOns.Impostor
         public static OptionItem GiveTiebreaker;
         //パワフル
         public static OptionItem GivePowerful;
+        //トラッピング
+        public static OptionItem GiveTrapping;
+        public static OptionItem BlockMoveTime;
         public static void SetupCustomOption()
         {
             SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.LastImpostor, new(1, 1, 1), fromtext: UtilsOption.GetFrom(From.TownOfHost));
@@ -64,6 +67,9 @@ namespace TownOfHost.Roles.AddOns.Impostor
             AutopsyCanSeeComms = BooleanOptionItem.Create(Id + 28, "CanUseActiveComms", true, TabGroup.Addons, false).SetParent(GiveAutopsy).SetParentRole(CustomRoles.LastImpostor);
             GiveTiebreaker = BooleanOptionItem.Create(Id + 29, "GiveTiebreaker", false, TabGroup.Addons, false).SetParent(CustomRoleSpawnChances[CustomRoles.LastImpostor]).SetParentRole(CustomRoles.LastImpostor);
             GivePowerful = BooleanOptionItem.Create(Id + 30, "GivePowerful", false, TabGroup.Addons, false).SetSubRoleOptionItem(CustomRoles.LastImpostor);
+            GiveTrapping = BooleanOptionItem.Create(Id + 31, "GiveTrapping", false, TabGroup.Addons, false).SetSubRoleOptionItem(CustomRoles.LastImpostor);
+            BlockMoveTime = FloatOptionItem.Create(Id + 32, "TrapperBlockMoveTime", new(0f, 180f, 0.5f), 10f, TabGroup.Addons, false)
+                .SetParent(GiveTrapping).SetValueFormat(OptionFormat.Seconds).SetSubRoleOptionItem(CustomRoles.LastImpostor);
         }
         public static void Init()
         {

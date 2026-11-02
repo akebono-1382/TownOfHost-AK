@@ -415,7 +415,7 @@ namespace TownOfHost.Roles
         private static CustomRoleTypes GetAssignRoleType(this CustomRoles role) =>
             role.GetRoleAssignInfo()?.AssignRoleType ?? role.GetCustomRoleTypes();
         private static bool IsAssignable(this CustomRoles role)
-            => role.GetRoleAssignInfo()?.IsInitiallyAssignable ?? true;
+            => (role.GetRoleAssignInfo()?.IsInitiallyAssignable ?? true) && !CustomRoleManager.SealedRoles.Contains(role);
         /// <summary>
         /// アサインの抽選回数
         /// </summary>

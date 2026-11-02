@@ -199,6 +199,7 @@ public abstract class RoleDescription
                 case "GiveAntiTeleporter":
                 case "GiveLighting":
                 case "GiveMoon":
+                case "GiveTrapping":
                 case "GiveElector":
                 case "GiveInfoPoor":
                 case "GiveNonReport":

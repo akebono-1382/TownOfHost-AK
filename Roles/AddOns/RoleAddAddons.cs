@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Rewired.Utils.Classes.Data;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Crewmate;
 using TownOfHost.Roles.Madmate;
@@ -76,6 +77,9 @@ namespace TownOfHost
         // サングラス
         public OptionItem GiveSunglasses;
         public OptionItem SunglassesVisionmagnification;
+        //トラッピング
+        public OptionItem GiveTrapping;
+        public OptionItem BlockMoveTime;
         public RoleAddAddons(int idStart, TabGroup tab, CustomRoles role, CustomRoles RoleName = CustomRoles.NotAssigned, bool NeutralKiller = false, bool MadMate = false, bool DefaaultOn = false)
         {
             this.IsImpostor = role.IsImpostor();
@@ -134,10 +138,20 @@ namespace TownOfHost
             GiveTransparent = BooleanOptionItem.Create(idStart++, "GiveTransparent", false, tab, false).SetParentRole(role).SetParent(GiveAddons);
             GiveWater = BooleanOptionItem.Create(idStart++, "GiveWater", MadMate, tab, false).SetParentRole(role).SetParent(GiveAddons);
             GiveClumsy = BooleanOptionItem.Create(idStart++, "GiveClumsy", MadMate, tab, false).SetParentRole(role).SetParent(GiveAddons);
-            GiveSlacker = BooleanOptionItem.Create(idStart++, "GiveSlacker", false, tab, false).SetParentRole(role).SetParent(GiveAddons);
+            GiveSlacker = BooleanOptionItem.Create(idStart++, "GiveSlacker", false, tab, false)
+                .SetParentRole(role).SetParent(GiveAddons);
             GiveSunglasses = BooleanOptionItem.Create(idStart++, "GiveSunglasses", false, tab, false).SetParentRole(role).SetParent(GiveAddons);
-            SunglassesVisionmagnification = FloatOptionItem.Create(idStart++, "SunglassesVisionmagnification", new(1f, 100f, 1f), 75, tab, false).SetParent(GiveSunglasses).SetParentRole(role).SetValueFormat(OptionFormat.Percent)
+            SunglassesVisionmagnification = FloatOptionItem.Create(idStart++, "SunglassesVisionmagnification", new(1f, 100f, 1f), 75, tab, false)
+                .SetParent(GiveSunglasses).SetParentRole(role).SetValueFormat(OptionFormat.Percent)
                     .SetTooltip(() => string.Format(Translator.GetString("SunglassesVisionmagnification_Info"), Main.NormalOptions.CrewLightMod, Main.NormalOptions.CrewLightMod * SunglassesVisionmagnification.GetFloat() * 0.01f, Main.NormalOptions.ImpostorLightMod, Main.NormalOptions.ImpostorLightMod * SunglassesVisionmagnification.GetFloat() * 0.01f));
+            GiveTrapping = BooleanOptionItem.Create(idStart++, "GiveTrapping", false, TabGroup.Addons, false)
+                .SetParentRole(role)
+                .SetParent(GiveAddons);
+            BlockMoveTime = FloatOptionItem.Create(idStart++, "TrapperBlockMoveTime", new(0f, 180f, 0.5f), 10f, TabGroup.Addons, false)
+                .SetParent(GiveTrapping)
+                .SetValueFormat(OptionFormat.Seconds)
+                .SetParentRole(role)
+                .SetParent(GiveAddons);
 
             role = RoleName == CustomRoles.NotAssigned ? role : RoleName;
 

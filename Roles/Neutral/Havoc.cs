@@ -180,7 +180,7 @@ public sealed class Havoc : RoleBase, ILNKiller, ISchrodingerCatOwner, IUsePhant
                 if (pa == null || pb == null || !pa.IsAlive() || !pb.IsAlive()) continue;
                 var ida = pa.GetClientId();
                 if (ida == -1) continue;
-                // aのクライアントに「bはインポスター」と伝える
+
                 pb.RpcSetRoleDesync(RoleTypes.Impostor, ida);
             }
     }

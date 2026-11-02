@@ -221,6 +221,7 @@ namespace TownOfHost
                         if (data.GiveManagement.GetBool()) Subrole.Add(CustomRoles.Management);
                         if (data.GiveSeeing.GetBool()) Subrole.Add(CustomRoles.Seeing);
                         if (data.GiveOpener.GetBool()) Subrole.Add(CustomRoles.Opener);
+                        if (data.GiveTrapping.GetBool()) Subrole.Add(CustomRoles.Trapping);
                         //if (data.GiveAntiTeleporter.GetBool()) Subrole.Add(CustomRoles.AntiTeleporter);
                         if (!data.IsImpostor)
                         {
@@ -245,6 +246,7 @@ namespace TownOfHost
                         if (LastImpostor.GiveSeeing.GetBool()) Subrole.Add(CustomRoles.Seeing);
                         if (LastImpostor.GiveTiebreaker.GetBool()) Subrole.Add(CustomRoles.Tiebreaker);
                         if (LastImpostor.GiveWatching.GetBool()) Subrole.Add(CustomRoles.Watching);
+                        if (LastImpostor.GiveTrapping.GetBool()) Subrole.Add(CustomRoles.Trapping);
                     }
                     if (state.SubRoles.Any(x => x is CustomRoles.LastNeutral))
                     {
@@ -254,6 +256,7 @@ namespace TownOfHost
                         if (LastNeutral.GiveSeeing.GetBool()) Subrole.Add(CustomRoles.Seeing);
                         if (LastNeutral.GiveTiebreaker.GetBool()) Subrole.Add(CustomRoles.Tiebreaker);
                         if (LastNeutral.GiveWatching.GetBool()) Subrole.Add(CustomRoles.Watching);
+                        if (LastNeutral.GiveTrapping.GetBool()) Subrole.Add(CustomRoles.Trapping);
                     }
                 }
             var (color, text) = GetRoleNameData(state.MainRole, Subrole, state.GhostRole, showSubRoleMarks);
@@ -561,6 +564,7 @@ namespace TownOfHost
                             if (data.GiveManagement.GetBool()) Subrole.Add(CustomRoles.Management);
                             if (data.GiveSeeing.GetBool()) Subrole.Add(CustomRoles.Seeing);
                             if (data.GiveOpener.GetBool()) Subrole.Add(CustomRoles.Opener);
+                            if (data.GiveTrapping.GetBool()) Subrole.Add(CustomRoles.Trapping);
                             //if (data.GiveAntiTeleporter.GetBool()) Subrole.Add(CustomRoles.AntiTeleporter);
                             if (!data.IsImpostor)
                             {
@@ -585,6 +589,7 @@ namespace TownOfHost
                             if (LastImpostor.GiveSeeing.GetBool()) Subrole.Add(CustomRoles.Seeing);
                             if (LastImpostor.GiveTiebreaker.GetBool()) Subrole.Add(CustomRoles.Tiebreaker);
                             if (LastImpostor.GiveWatching.GetBool()) Subrole.Add(CustomRoles.Watching);
+                            if (LastImpostor.GiveTrapping.GetBool()) Subrole.Add(CustomRoles.Trapping);
                         }
                         if (state.SubRoles.Any(x => x is CustomRoles.LastNeutral))
                         {
@@ -594,6 +599,7 @@ namespace TownOfHost
                             if (LastNeutral.GiveSeeing.GetBool()) Subrole.Add(CustomRoles.Seeing);
                             if (LastNeutral.GiveTiebreaker.GetBool()) Subrole.Add(CustomRoles.Tiebreaker);
                             if (LastNeutral.GiveWatching.GetBool()) Subrole.Add(CustomRoles.Watching);
+                            if (LastNeutral.GiveTrapping.GetBool()) Subrole.Add(CustomRoles.Trapping);
                         }
                     }
                 var marks = GetSubRoleMarks(Subrole, PlayerState.GetByPlayerId(id).MainRole);

@@ -24,7 +24,7 @@ namespace TownOfHost
     {
         public static DirectoryInfo GetLogFolder(bool auto = false)
         {
-            var folder = Directory.CreateDirectory($"{Application.persistentDataPath}/TownOfHost_K/Logs");
+            var folder = Directory.CreateDirectory($"{Application.persistentDataPath}/TownOfHost_AK/Logs");
             if (auto)
             {
                 folder = Directory.CreateDirectory($"{folder.FullName}/AutoLogs");
@@ -65,7 +65,7 @@ namespace TownOfHost
             string t = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             string subver = CredentialsPatch.Subver.RemoveHtmlTags();
             if (subver != "") subver = $"({subver})";
-            string fileName = $"{path}/TownOfHost_K-v{Main.PluginVersion}{subver}-{t}.log";
+            string fileName = $"{path}/TownOfHost_AK-v{Main.PluginVersion}{subver}-{t}.log";
             FileInfo file = new(@$"{Environment.CurrentDirectory}/BepInEx/LogOutput.log");
             var logFile = file.CopyTo(fileName);
             return logFile.FullName;

@@ -96,6 +96,7 @@ class GhostRoleCore
         AntiTeleporter.SetupCustomOption();
         Lighting.SetupCustomOption();
         Moon.SetupCustomOption();
+        Trapping.SetupCustomOption();
         //デバフ達
         ObjectOptionitem.Create(1_000_117, "Debuff-Addon", true, null, TabGroup.Addons)
             .SetOptionName(() => "Debuff Add-on").SetColor(UtilsRoleText.GetRoleColor(CustomRoles.SlowStarter)).SetTag(CustomOptionTags.Role);

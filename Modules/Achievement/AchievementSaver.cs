@@ -5,13 +5,13 @@ namespace TownOfHost;
 
 public class AchievementSaver
 {
-    private static readonly string PATH = new($"{Application.persistentDataPath}/TownOfHost_K/Achievement.txt");
+    private static readonly string PATH = new($"{Application.persistentDataPath}/TownOfHost_AK/Achievement.txt");
     public static void SetLogFolder()
     {
         try
         {
-            if (!Directory.Exists($"{Application.persistentDataPath}/TownOfHost_K"))
-                Directory.CreateDirectory($"{Application.persistentDataPath}/TownOfHost_K");
+            if (!Directory.Exists($"{Application.persistentDataPath}/TownOfHost_AK"))
+                Directory.CreateDirectory($"{Application.persistentDataPath}/TownOfHost_AK");
         }
         catch { }
     }
@@ -21,9 +21,9 @@ public class AchievementSaver
         try
         {
             SetLogFolder();
-            if (File.Exists($"{Application.persistentDataPath}/TownOfHost_K/Achievement.txt"))
+            if (File.Exists($"{Application.persistentDataPath}/TownOfHost_AK/Achievement.txt"))
             {
-                File.Move($"{Application.persistentDataPath}/TownOfHost_K/Achievement.txt", PATH);
+                File.Move($"{Application.persistentDataPath}/TownOfHost_AK/Achievement.txt", PATH);
             }
             if (SaveStatistics.IsOldVersion || DebugModeManager.AmDebugger) return;
 
@@ -45,9 +45,9 @@ public class AchievementSaver
         try
         {
             SetLogFolder();
-            if (File.Exists($"{Application.persistentDataPath}/TownOfHost_K/Achievement.txt"))
+            if (File.Exists($"{Application.persistentDataPath}/TownOfHost_AK/Achievement.txt"))
             {
-                File.Move($"{Application.persistentDataPath}/TownOfHost_K/Achievement.txt", PATH);
+                File.Move($"{Application.persistentDataPath}/TownOfHost_AK/Achievement.txt", PATH);
             }
             else
             {

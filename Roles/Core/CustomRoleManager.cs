@@ -31,6 +31,10 @@ public static class CustomRoleManager
     public static void Do<T>(this List<T> list, Action<T> action) => list.ToArray().Do(action);
     public static Dictionary<int, CustomRoles> CustomRoleIds = new();
     public static List<CustomRoles> SortCustomRoles = new();
+    public static HashSet<CustomRoles> SealedRoles = new()
+    {
+    };
+
     // == CheckMurder関連処理 ==
     public static Dictionary<byte, MurderInfo> CheckMurderInfos = new();
 
@@ -337,6 +341,10 @@ public static class CustomRoleManager
 
         if (roleability is false)
         {
+            if (info.IsSuicide is false)
+            {
+                Trapper.BlockMove(attemptKiller, attemptTarget);
+            }
             if (Amnesia.CheckAbility(attemptKiller))
                 if (targetRole != null)
                     targetRole.OnMurderPlayerAsTarget(info);
@@ -862,8 +870,9 @@ public enum CustomRoles
     UnFortuner,
     Bloodlust,
     EvilButtoner,
-
     RocketLauncher,
+    Explosioner,
+    Florist,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,
@@ -1031,6 +1040,7 @@ public enum CustomRoles
     Guarding,
     MagicHand,
     Absorb,
+    Trapping,
     //デバフ
     Amnesia,
     Notvoter,

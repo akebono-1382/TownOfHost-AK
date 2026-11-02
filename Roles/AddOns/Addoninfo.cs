@@ -31,6 +31,7 @@ class AddondataInfo
                 CustomRoles.Lighting => "＊",
                 CustomRoles.Moon => "э",
                 CustomRoles.Absorb => "Г",
+                CustomRoles.Trapping => "Ｔr",
                 //デバフ
                 CustomRoles.SlowStarter => "Ｓs",
                 CustomRoles.Notvoter => "Ｖ",
@@ -74,7 +75,7 @@ class AddondataInfo
                     {CustomRoles.Twins, "#80cf48"},
                     {CustomRoles.OneWolf , "#ff1919"},
 
-                    { CustomRoles.Watching, "#800080"},
+                    {CustomRoles.Watching, "#800080"},
                     {CustomRoles.Speeding, "#33ccff"},
                     {CustomRoles.Moon,"#ffff33"},
                     {CustomRoles.Guesser,"#999900"},
@@ -94,6 +95,7 @@ class AddondataInfo
                     {CustomRoles.Stack , "#b55f47"},
                     {CustomRoles.Absorb,"#434981"},
                     {CustomRoles.AntiTeleporter,"#793838"},
+                    {CustomRoles.Trapping,"#5a8fd0"},
                     //デバフ
                     { CustomRoles.NonReport,"#006666"},
                     {CustomRoles.Notvoter,"#6c848d"},
