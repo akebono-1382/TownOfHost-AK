@@ -45,6 +45,7 @@ public sealed class MadJester : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
         SoloWinOption.Create(RoleInfo, 9);
         OptionCanVent = BooleanOptionItem.Create(RoleInfo, 10, GeneralOption.CanVent, false, false);
         OverrideTasksData.Create(RoleInfo, 11);
+        RoleAddAddons.Create(RoleInfo, 20, MadMate: true);
     }
 
     public override void OnExileWrapUp(NetworkedPlayerInfo exiled, ref bool DecidedWinner)

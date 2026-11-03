@@ -57,6 +57,7 @@ public sealed class MadBait : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
         OptionReportDelay = FloatOptionItem.Create(RoleInfo, 12, Option.BaitReportDelay, new(0f, 180f, 0.5f), 3f, false).SetValueFormat(OptionFormat.Seconds);
         OptionMaxReportDelay = FloatOptionItem.Create(RoleInfo, 13, Option.BaitMaxDelay, new(0f, 180f, 0.5f), 3f, false).SetValueFormat(OptionFormat.Seconds);
         OptionCanVent = BooleanOptionItem.Create(RoleInfo, 14, GeneralOption.CanVent, true, false);
+        RoleAddAddons.Create(RoleInfo, 20, MadMate: true);
 
     }
     public override void OnMurderPlayerAsTarget(MurderInfo info)

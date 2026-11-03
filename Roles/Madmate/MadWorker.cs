@@ -50,6 +50,7 @@ public sealed class MadWorker : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
         OptionVentCooldown = FloatOptionItem.Create(RoleInfo, 12, OptionName.VentCooldown, new(0f, 180f, 0.5f), 0f, false, OptionCanVent)
                 .SetValueFormat(OptionFormat.Seconds);
         OverrideTasksData.Create(RoleInfo, 20);
+        RoleAddAddons.Create(RoleInfo, 25, MadMate: true);
     }
     public override void ApplyGameOptions(IGameOptions opt)
     {

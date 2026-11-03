@@ -40,8 +40,6 @@ namespace TownOfHost
         public static readonly bool ShowDiscordButton = true;
         // Discordサーバーの招待リンク / Discord Server Invite URL (Default: https://discord.gg/W5ug6hXB9V)
         public static readonly string DiscordInviteUrl = "https://discord.gg/uMmFRpGHgt";
-        // ==========
-        public const string OriginalForkId = "OriginalTOH"; // Don't Change The Value. / この値を変更しないでください。
         // == 認証設定 / Authentication Config ==
         // デバッグキーの認証インスタンス
         public static HashAuth DebugKeyAuth { get; private set; }
@@ -65,7 +63,6 @@ namespace TownOfHost
         public const string PluginVersion = "3.3.0";
         public const string PluginShowVersion = "3.3.0";
         public const string ModVersion = ".0";//リリースver用バージョン変更
-
         /// 配布するデバッグ版なのであればtrue。リリース時にはfalseにすること。
         public static bool DebugVersion = false;
 

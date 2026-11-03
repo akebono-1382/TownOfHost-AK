@@ -86,6 +86,7 @@ public sealed class MadTeller : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
             .SetValueFormat(OptionFormat.Times).SetZeroNotation(OptionZeroNotation.Infinity);
         OptionTaskTrigger = IntegerOptionItem.Create(RoleInfo, 15, GeneralOption.TaskTrigger, new(0, 99, 1), 1, false).SetValueFormat(OptionFormat.Pieces);
         OverrideTasksData.Create(RoleInfo, 20);
+        RoleAddAddons.Create(RoleInfo, 25, MadMate: true);
     }
     private void SendRPC()
     {

@@ -1,7 +1,5 @@
-
 using System.Collections;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
-using Rewired.Utils;
 using TownOfHost.Templates;
 using UnityEngine;
 

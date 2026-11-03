@@ -54,6 +54,7 @@ public sealed class MadReduced : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
         OptionCanVent = BooleanOptionItem.Create(RoleInfo, 10, GeneralOption.CanVent, false, false);
         OptionVote = IntegerOptionItem.Create(RoleInfo, 11, OptionName.MadReduecdVote, new(1, 99, 1), 1, false)
             .SetValueFormat(OptionFormat.Votes);
+        RoleAddAddons.Create(RoleInfo, 20, MadMate: true);
     }
     public override (byte? votedForId, int? numVotes, bool doVote) ModifyVote(byte voterId, byte sourceVotedForId, bool isIntentional)
     {

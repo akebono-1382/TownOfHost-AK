@@ -61,9 +61,9 @@ public sealed class Explosioner : RoleBase, IImpostor, IUsePhantomButton
             .SetValueFormat(OptionFormat.Multiplier);
         OpKillCount = IntegerOptionItem.Create(RoleInfo, 6, Op.ExplosionerKillCount, new(1, 14, 1), 2, false);
         OpDead = BooleanOptionItem.Create(RoleInfo, 7, Op.ExplosionerDead, false, false);
-        KnowRole = BooleanOptionItem.Create(RoleInfo, 8, Op.ExPlosionerKnowRole, false, false);
+        /*KnowRole = BooleanOptionItem.Create(RoleInfo, 8, Op.ExPlosionerKnowRole, false, false);
         KnowTask = BooleanOptionItem.Create(RoleInfo, 9, Op.ExplosionerKnowTask, false, false, KnowRole)
-            .SetEnabled(() => KnowRole.GetBool() && !OpDead.GetBool());
+            .SetEnabled(() => KnowRole.GetBool() && !OpDead.GetBool());*/
     }
     public float CalculateKillCooldown() => KillCoolDown.GetFloat();
     bool IUsePhantomButton.IsPhantomRole => !a;
@@ -101,10 +101,10 @@ public sealed class Explosioner : RoleBase, IImpostor, IUsePhantomButton
             CustomRoleManager.OnCheckMurder(Player, Player, Player, Player, true, Killpower: 10, deathReason: CustomDeathReason.Bombed);
         }
 
-        Utils.AllPlayerKillFlash();
+        //Utils.AllPlayerKillFlash();
     }
 
-    public override void OverrideDisplayRoleNameAsSeen(PlayerControl seer, ref bool enabled, ref Color roleColor, ref string roleText, ref bool addon)
+    /*public override void OverrideDisplayRoleNameAsSeen(PlayerControl seer, ref bool enabled, ref Color roleColor, ref string roleText, ref bool addon)
     {
         if (!Explosioned || !KnowRole.GetBool()) return;
         if (!KnowTask.GetBool() && !GameStates.IsMeeting && !GameStates.CalledMeeting) return;
@@ -113,7 +113,7 @@ public sealed class Explosioner : RoleBase, IImpostor, IUsePhantomButton
         addon = false;
         roleText = UtilsRoleText.GetRoleName(CustomRoles.Explosioner);
         roleColor = UtilsRoleText.GetRoleColor(CustomRoles.Explosioner);
-    }
+    }*/
 
     public override void AfterMeetingTasks()
     {

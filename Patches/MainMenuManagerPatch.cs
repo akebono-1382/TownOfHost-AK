@@ -77,7 +77,7 @@ namespace TownOfHost
             }
 
             // TwitterXボタンを生成
-            if (SimpleButton.IsNullOrDestroyed(TwitterXButton))
+            /*if (SimpleButton.IsNullOrDestroyed(TwitterXButton))
             {
                 TwitterXButton = CreateButton(
                     "TwitterXButton",
@@ -86,9 +86,9 @@ namespace TownOfHost
                     new(60, 255, 255, byte.MaxValue),
                     () => Application.OpenURL("https://twitter.com/TOHAserver_k"),
                     "Twitter(X)");
-            }
+            }*/
             // TOHABOTボタンを生成
-            if (SimpleButton.IsNullOrDestroyed(TOHABOTButton))
+            /*if (SimpleButton.IsNullOrDestroyed(TOHABOTButton))
             {
                 TOHABOTButton = CreateButton(
                     "TOHABOTButton",
@@ -97,7 +97,7 @@ namespace TownOfHost
                     new(60, 201, 87, byte.MaxValue),
                     () => Application.OpenURL("https://discord.com/api/oauth2/authorize?client_id=1198276538563567716&permissions=8&scope=bot"),
                     "TOHABOT");
-            }
+            }*/
             if (SimpleButton.IsNullOrDestroyed(StatisticsButton))
             {
                 StatisticsButton = CreateButton(

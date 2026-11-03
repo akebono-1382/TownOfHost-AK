@@ -56,6 +56,7 @@ public sealed class MadHacker : RoleBase, IKiller, IKillFlashSeeable, IDeathReas
         OptionCanSeeDeathReason = BooleanOptionItem.Create(RoleInfo, 12, "MadmateCanSeeDeathReason", true, false);
         OptionCanSeeDeadBodyPosition = BooleanOptionItem.Create(RoleInfo, 13, OptionNames.MadHackerCanSeeDeadBodyPosition, true, false);
         OptionCheckImpostor = BooleanOptionItem.Create(RoleInfo, 14, OptionNames.MadHackerCheckImposotor, true, false);
+        RoleAddAddons.Create(RoleInfo, 20, MadMate: true);
     }
     public override void ApplyGameOptions(IGameOptions opt)
     {

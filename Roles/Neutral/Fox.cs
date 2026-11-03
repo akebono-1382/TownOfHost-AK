@@ -22,7 +22,7 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
             CustomRoleTypes.Neutral,
             15000,
             SetupOptionItem,
-            "Fox",
+            "Fx",
             "#d288ee",
             (6, 0),
             false,

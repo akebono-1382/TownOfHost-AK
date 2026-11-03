@@ -56,7 +56,7 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
 
     static OptionItem OptionCanCallMeetingKill; static bool cancallmeetingkill;
     static OptionItem OptionHasOtherRole;
-    static FilterOptionItem OptionHaveRole; static CustomRoles haverole;
+    public static FilterOptionItem OptionHaveRole; static CustomRoles haverole;
     public static OptionItem OptionAssassinMeetingTime;
 
     public static OptionItem OptionMerlinHasTask;

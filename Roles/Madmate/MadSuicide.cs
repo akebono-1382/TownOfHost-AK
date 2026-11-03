@@ -60,6 +60,7 @@ public sealed class MadSuicide : RoleBase, IKiller, IUsePhantomButton, IKillFlas
         OptionAbilityCoolDown = FloatOptionItem.Create(RoleInfo, 15, GeneralOption.Cooldown, OptionBaseCoolTime, 20f, false).SetValueFormat(OptionFormat.Seconds);
         OptionAbilityDeathreason = StringOptionItem.Create(RoleInfo, 16, OptionName.MadSuicideAbilityDeathreason, cRolesString, 0, false);
         OptionCanusevent = BooleanOptionItem.Create(RoleInfo, 20, GeneralOption.CanVent, true, false);
+        RoleAddAddons.Create(RoleInfo, 21, MadMate: true);
     }
     public bool? CheckKillFlash(MurderInfo info) => Options.MadmateCanSeeKillFlash.GetBool();
     public bool? CheckSeeDeathReason(PlayerControl seen) => Options.MadmateCanSeeDeathReason.GetBool();

@@ -52,7 +52,6 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
     static OptionItem OptionAfterMeetingRemoveCharge;//会議後どれだけ空気が抜けるか
     static OptionItem OptionSuicide;//爆破時、自殺するか
     static OptionItem OptionTargetImpostor;//爆破時、味方を巻き込むか
-
     float NowBoomDis;//現在の爆破範囲 0以下なら使用不可
     float NowWalkCount;//歩数計
     Vector2 OldPosition;//前チェックの位置

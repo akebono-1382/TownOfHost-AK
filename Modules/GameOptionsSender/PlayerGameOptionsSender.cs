@@ -319,7 +319,7 @@ namespace TownOfHost.Modules
                     opt.SetFloat(FloatOptionNames.ImpostorLightMod, opt.GetFloat(FloatOptionNames.ImpostorLightMod) * Sunglasses.SunglassesVisionmagnification.GetFloat() * 0.01f);
                     opt.SetFloat(FloatOptionNames.CrewLightMod, opt.GetFloat(FloatOptionNames.CrewLightMod) * Sunglasses.SunglassesVisionmagnification.GetFloat() * 0.01f);
                 }
-                AURoleOptions.EngineerCooldown = Mathf.Max(1.2f, AURoleOptions.EngineerCooldown);
+                AURoleOptions.EngineerCooldown = Mathf.Max(0.1f, AURoleOptions.EngineerCooldown);
                 opt.BlackOut(state.IsBlackOut);
             }
             else
@@ -388,8 +388,8 @@ namespace TownOfHost.Modules
 
             MeetingTimeManager.ApplyGameOptions(opt);
 
-            AURoleOptions.ShapeshifterCooldown = Mathf.Max(1f, AURoleOptions.ShapeshifterCooldown);
-            AURoleOptions.PhantomCooldown = Mathf.Max(1f, AURoleOptions.PhantomCooldown);
+            AURoleOptions.ShapeshifterCooldown = Mathf.Max(0.1f, AURoleOptions.ShapeshifterCooldown);
+            AURoleOptions.PhantomCooldown = Mathf.Max(0.1f, AURoleOptions.PhantomCooldown);
             AURoleOptions.ProtectionDurationSeconds = 0f;
             AURoleOptions.ImpostorsCanSeeProtect = false;
 

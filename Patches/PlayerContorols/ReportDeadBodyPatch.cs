@@ -363,9 +363,20 @@ namespace TownOfHost
 
             var meetingInfo = UtilsNotifyRoles.ExtendedMeetingText;
             Notice.OnReportDeadBody(reporter, target);
+            bool k = false;
             foreach (var pc in PlayerCatch.AllPlayerControls)
             {
                 var roleClass = pc.GetRoleClass();
+                bool isfl =
+                    roleClass is Florist ||
+                    (roleClass is Assassin && Assassin.OptionHaveRole.GetRole() is CustomRoles.Florist) ||
+                    (roleClass is JackalWolf && JackalWolf.OptionHaveRole.GetRole() is CustomRoles.Florist)
+                    ;
+                if (isfl && !k)
+                {
+                    k = true;
+                    Florist.Kougosei();
+                }
                 roleClass?.OnReportDeadBody(reporter, target);
             }
             if (meetingInfo != UtilsNotifyRoles.ExtendedMeetingText)

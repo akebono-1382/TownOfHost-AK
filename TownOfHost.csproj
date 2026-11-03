@@ -7,7 +7,7 @@
     <Authors>tukasa0001(EmptyBottle), integral0131</Authors>
     <langVersion>preview</langVersion>
     <AssemblyName>TownOfHost-AK</AssemblyName>
-    <NoWarn>MSB3246</NoWarn>
+    <NoWarn>CS0169, CS0414</NoWarn>
 	<AmongUs>C:\Program Files (x86)\Steam\steamapps\common\Among Us TOHP</AmongUs>
   </PropertyGroup>
 
@@ -30,6 +30,6 @@
   </ItemGroup>
 
   <Target Name="Copy" AfterTargets="Build" Condition="'$(AmongUs)' != ''">
-    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(AmongUs)/BepInEx/plugins/"/>
+    <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll" DestinationFolder="$(AmongUs)/BepInEx/plugins/" />
   </Target>
 </Project>

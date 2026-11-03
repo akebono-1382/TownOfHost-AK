@@ -50,6 +50,7 @@ public sealed class MadGuardian : RoleBase, IKillFlashSeeable, IDeathReasonSeeab
         OptionTaskTrigger = IntegerOptionItem.Create(RoleInfo, 12, GeneralOption.TaskTrigger, new(0, 99, 1), 1, false).SetValueFormat(OptionFormat.Pieces);
         //ID10120~10123を使用
         Tasks = OverrideTasksData.Create(RoleInfo, 20);
+        RoleAddAddons.Create(RoleInfo, 30, MadMate: true);
     }
     public override bool OnCheckMurderAsTarget(MurderInfo info)
     {
@@ -78,7 +79,7 @@ public sealed class MadGuardian : RoleBase, IKillFlashSeeable, IDeathReasonSeeab
                 Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[0]);
         }
 
-        return false;
+        return true;
     }
     public bool? CheckKillFlash(MurderInfo info) => MadmateCanSeeKillFlash.GetBool();
     public bool? CheckSeeDeathReason(PlayerControl seen) => MadmateCanSeeDeathReason.GetBool();

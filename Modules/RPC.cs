@@ -134,7 +134,7 @@ namespace TownOfHost
                     {
                         Version version = Version.Parse(reader.ReadString());
                         string tag = reader.ReadString();
-                        string forkId = 3 <= version.Major ? reader.ReadString() : Main.OriginalForkId;
+                        string forkId = reader.ReadString();
 
                         Main.playerVersion[__instance.PlayerId] = new PlayerVersion(version, tag, forkId);
                         //バージョンが一致した場合送信

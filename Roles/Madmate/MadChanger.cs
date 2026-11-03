@@ -50,6 +50,7 @@ public sealed class MadChanger : RoleBase, IKiller, IKillFlashSeeable, IDeathRea
         PlayAnimation = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.PlayShapeAnimate, true, false);
         KillCoolDown = FloatOptionItem.Create(RoleInfo, 12, OptionName.MadChangerKillTargetCooldown, new(0f, 180f, 0.5f), 10f, false).SetValueFormat(OptionFormat.Seconds);
         AbilityCoolDown = FloatOptionItem.Create(RoleInfo, 13, GeneralOption.Cooldown, new(0f, 180f, 0.5f), 15f, false).SetValueFormat(OptionFormat.Seconds);
+        RoleAddAddons.Create(RoleInfo, 20, MadMate: true);
     }
     public void OnCheckMurderAsKiller(MurderInfo info)
     {

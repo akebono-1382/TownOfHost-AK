@@ -65,6 +65,7 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
         OptionVent = BooleanOptionItem.Create(RoleInfo, 15, OptionName.MadAvengerReserveTimeCanVent, true, false);
         OptionCanseeimpostorCount = BooleanOptionItem.Create(RoleInfo, 16, OptionName.MadAvengerCanSeeImpCount, true, false);
         Tasks = OverrideTasksData.Create(RoleInfo, 20);
+        RoleAddAddons.Create(RoleInfo, 30, MadMate: true);
     }
     public override void ApplyGameOptions(IGameOptions opt)
     {
