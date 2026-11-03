@@ -129,7 +129,7 @@ HostModなので部屋主のみModを導入すれば、<br>
 [Town Of Host](https://github.com/tukasa0001/TownOfHost)<br>
 　Fork元の本家です。<br>TownOfHost様にある機能はTownOfHost-AKでも大体実装されています<br>
 
-[Town Of Host-AK](https://github.com/KYMario/TownOfHost-K)<br>
+[Town Of Host-K](https://github.com/KYMario/TownOfHost-K)<br>
 　Fork元です。<br>TownOfHost-K様にある機能はTownOfHost-AKでも大体実装されています<br>
 
 [Town Of Host_Y](https://github.com/Yumenopai/TownOfHost_Y)<br>
