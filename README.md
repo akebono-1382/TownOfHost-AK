@@ -127,10 +127,12 @@ HostModなので部屋主のみModを導入すれば、<br>
 ※本家TownOfHost様の開発者はここでは省略させていただきます
 #### クレジット
 [Town Of Host](https://github.com/tukasa0001/TownOfHost)<br>
-　Fork元の本家です。<br>TownOfHost様にある機能はTownOfHost-AKでも大体実装されています<br>
+　Fork元の本家です。<br>
+ TownOfHost様にある機能はTownOfHost-AKでも大体実装されています<br>
 
-[Town Of Host-AK](https://github.com/KYMario/TownOfHost-K)<br>
-　Fork元です。<br>TownOfHost-K様にある機能はTownOfHost-AKでも大体実装されています<br>
+[Town Of Host-K](https://github.com/KYMario/TownOfHost-K)<br>
+　Fork元です。<br>
+ TownOfHost-K様にある機能はTownOfHost-AKでも大体実装されています<br>
 
 [Town Of Host_Y](https://github.com/Yumenopai/TownOfHost_Y)<br>
 　会議時の役職表示、会議拡張、ワーカホリック,属性名、一部役職を参考/移植させて頂きました！<br>
