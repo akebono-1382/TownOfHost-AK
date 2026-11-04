@@ -81,6 +81,7 @@
 "RocketLauncher","Rocket Launcher","ロケットランチャー"
 "Explosioner","Explosioner","エクスプロージョナー"
 "Florist","Florist","フローリスト"
+"Cloner","Cloner","クローナー"
 "#ImpostorName"
 
 "# マッドメイト系役職"
@@ -384,7 +385,8 @@
 "EvilBlenderInfo","Chemistry solves everything","化学は裏切らない"
 "UnFortunerInfo","Happiness for Only Impostors","幸せになりたい..."
 "EvilButtonerInfo","Take that Megaphone","そのメガホンを手に取って"
-"FloristInfo","","クルーに花を植え付けよう"
+"FloristInfo","","花を植え付け、クルーを皆殺しにしよう"
+"ClonerInfo","","クルーに幻影を見せよう"
 "#ImpostorInfo"
 
 "# マッドメイト系役職"
@@ -650,6 +652,7 @@
 "UnFortunerInfoLong","An Impostor who can grant attributes.\nThe kill target at the moment the Phantom button is used will receive a random attribute at the start of the next meeting.\n\nIf 'Grant one attribute per use' is ON, or if no overwrite attributes are configured, one random attribute is applied.\nOtherwise, all configured attributes are applied.","属性を付与することのできるインポスター。\nファントムボタンを使用した時のキルターゲットに\n次会議開始時、ランダムで属性を付与する。\n\n'1回使用で属性を1つ渡す'がON、または上書きする付与属性が未設定の場合は、ランダムで1つ。\nそれ以外の場合は設定した属性が全て付与される。"
 "EvilButtonerInfoLong","","キルボタンを押すことでターゲットを指定することができる。\nターゲットを指定した後ファントムボタンを押すことで対象名義で緊急会議を招集することができる。\n死亡済、残り招集回数が0の場合は指定できない。\nまた、ノンレポートなどの理由で会議が招集できない場合は効果が発揮されない。"
 "FloristInfoLong","","キルボタンが光っている状態でワンクリックボタンを使用することで、1番近くにいるプレイヤー(インポスターを除く)に花を植え付けることができる。\n一番近いプレイヤーがすでに花を植え付けいるプレイヤーの場合、花に水をやることができる。水をやると花が一定回数成長し、成長回数が一定回数になるとその花が植え付けられていたプレイヤーは死亡する。\nフローリスト自身と仲間のインポスターは花を植えられたプレイヤーと成長回数が視認できる。"
+"ClonerInfoLong","","そのターンに一人以上死亡した状態でペットを使用すると、複製する対象を切り替えることができる。\nファントムボタンを押すと、現在の複製対象の死体が自身の位置に複製される。"
 "#ImpostorInfoLong"
 
 "# マッドメイト系役職"
@@ -1551,7 +1554,13 @@
 "MadChangerKillTargetCooldown","KillButton Cooldown","キル選択クールダウン"
 "MadSuicideKillDeathreason","Use Killbutton deathreason","キルボタン使用時の死因"
 "MadSuicideKillSuicidetargetkiller","Other seer killing target","他視点からはキルターゲットに殺される"
-"MadSuicideAbilityDeathreason","Use AbilityButton deathreason","ワンクリボタン使用時の死因"
+"MadSuicideAbilityDeathreason","Use AbilityButton deathreason","ワンクリ・ペットボタン使用時の死因"
+"MadSuicide.Mode.OcAKi","Phantom and Kill","ワンクリックボタン & キルボタン"
+"MadSuicide.Mode.OcAkiAP","Phantom and Kill and pet","ワンクリックボタン & キルボタン & ペット"
+"MadSuicide.Mode.OcAP","Phantom and pet","ワンクリックボタン & ペット"
+"MadSuicide.Mode.Oc","Phantom Button","ワンクリックボタン"
+"MadSuicide.Mode.Kill","Kill Button","キルボタン"
+"MadSuicide.Mode.Pet","Pet","ペット"
 "MadBetrayerImpostorRevealTaskcount","Impostor RevialTaskCount","インポスターが分かるタスク数"
 "MadHackerCanSeeDeadBodyPosition","CanSee DeadBody Positon","死体位置が見える"
 "MadHackerCheckImposotor","CheckImpsotorKill","インポスターのキルか確認できる"
@@ -2321,6 +2330,7 @@
 "EvilButtoner_LowerText","Target → {0}","ターゲット → {0}"
 "HavocLowerText","PhantomButton → Change Mode","ベント → モード切替"
 "HavocOtherLowerText","","\n!!ハボックが遠吠え中!!\nボタン・通報使用不可"
+"ClonerLower","Target → {0}","複製対象 → {0}"
 
 "## かくれんぼ設定"
 "HideAndSeekOptions","Hide and Seek Settings","かくれんぼの設定","躲猫猫设置","躲貓貓設定","Настройки Пряток","Configurações do Esconde-Esconde",""

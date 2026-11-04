@@ -372,6 +372,7 @@ namespace TownOfHost
                     (roleClass is Assassin && Assassin.OptionHaveRole.GetRole() is CustomRoles.Florist) ||
                     (roleClass is JackalWolf && JackalWolf.OptionHaveRole.GetRole() is CustomRoles.Florist)
                     ;
+
                 if (isfl && !k)
                 {
                     k = true;

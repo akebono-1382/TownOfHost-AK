@@ -550,18 +550,34 @@ namespace TownOfHost
         {
             killer.RpcMurderPlayer(target, true);
         }
-        public static void RpcMurderPlayerV2(this PlayerControl killer, PlayerControl target)
+        public static void RpcMurderPlayerV2(this PlayerControl killer, PlayerControl target, int clientid = -1)
         {
             if (target == null) target = killer;
             if (AmongUsClient.Instance.AmClient)
             {
                 killer.MurderPlayer(target, SuccessFlags);
             }
-            MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, -1);
+            MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, clientid);
             messageWriter.WriteNetObject(target);
             messageWriter.Write((int)SuccessFlags);
             AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
             UtilsNotifyRoles.NotifyRoles();
+        }
+
+        public static void RpcMurderPlayerDesync(this PlayerControl killer, PlayerControl target, PlayerControl seer)
+        {
+            if (target == null) target = killer;
+            if (seer.GetClientId() == -1) return;
+
+            if (seer == PlayerControl.LocalPlayer)
+            {
+                killer.MurderPlayer(target, SuccessFlags);
+                return;
+            }
+            MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, seer.GetClientId());
+            messageWriter.WriteNetObject(target);
+            messageWriter.Write((int)SuccessFlags);
+            AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
         }
         public static void RpcProtectedMurderPlayer(this PlayerControl killer, PlayerControl target = null)
         {

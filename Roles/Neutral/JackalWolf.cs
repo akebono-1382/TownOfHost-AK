@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace TownOfHost.Roles.Neutral;
 
-public sealed class JackalWolf : RoleBase, ILNKiller, IUsePhantomButton, IDoubleTrigger, IKillFlashSeeable, ISidekickable, ISchrodingerCatOwner
+public sealed class JackalWolf : RoleBase, ILNKiller, IUsePhantomButton, IDoubleTrigger, IKillFlashSeeable, ISidekickable, ISchrodingerCatOwner, IPetTrigger
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
@@ -121,6 +121,7 @@ public sealed class JackalWolf : RoleBase, ILNKiller, IUsePhantomButton, IDouble
         roleText += $"<size=50%>{GetString($"{haverole}")}</size>";
     }
     public override CustomRoles HaveAddRole() => haverole;
+    public bool OnPetUsed() => AddRole is IPetTrigger p ? p.OnPetUsed() : false;
     public override bool OnEnterVent(PlayerPhysics physics, int ventId) => AddRole?.OnEnterVent(physics, ventId) ?? true;
     public override bool CanVentMoving(PlayerPhysics physics, int ventId) => AddRole?.CanVentMoving(physics, ventId) ?? true;
     public override bool CanUseAbilityButton() => AddRole?.CanUseAbilityButton() ?? false;

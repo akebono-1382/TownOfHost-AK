@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace TownOfHost.Roles.Impostor;
 
-public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrigger, IKillFlashSeeable
+public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrigger, IKillFlashSeeable, IPetTrigger
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
@@ -425,7 +425,7 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
 
         roleText += GetString($"{haverole}");
     }
-
+    public bool OnPetUsed() => AddRole is IPetTrigger p ? p.OnPetUsed() : false;
     public override bool OnEnterVent(PlayerPhysics physics, int ventId) => AddRole?.OnEnterVent(physics, ventId) ?? true;
     public override bool CanVentMoving(PlayerPhysics physics, int ventId) => AddRole?.CanVentMoving(physics, ventId) ?? true;
     public override bool CanUseAbilityButton() => AddRole?.CanUseAbilityButton() ?? false;

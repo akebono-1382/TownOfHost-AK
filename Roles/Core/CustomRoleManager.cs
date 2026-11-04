@@ -873,6 +873,7 @@ public enum CustomRoles
     RocketLauncher,
     Explosioner,
     Florist,
+    Cloner,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,

@@ -648,16 +648,8 @@ namespace TownOfHost
                 return false;
             }
 
-            if (__instance.GetCustomRole() is CustomRoles.Sheriff or CustomRoles.WolfBoy or CustomRoles.SwitchSheriff)
-            {
-                if (__instance.Data.IsDead)
-                {
-                    Logger.Info("守護をブロックしました。", "CheckProtect");
-                    return false;
-                }
-            }
             //全部falseしてもいい気はする
-            return true;
+            return false;
         }
     }
     #endregion
