@@ -113,7 +113,7 @@ namespace TownOfHost
         public CustomRoles Role { get; private set; }
         public int IdStart { get; private set; }
         public OptionItem OptionWin;
-        public SoloWinOption(int idStart, TabGroup tab, CustomRoles role, CustomRoles RoleName = CustomRoles.NotAssigned, Func<bool> show = null, int defo = 0)
+        public SoloWinOption(int idStart, TabGroup tab, CustomRoles role, CustomRoles RoleName = CustomRoles.NotAssigned, Func<bool> show = null, int defo = 1)
         {
             if (show == null)
             {

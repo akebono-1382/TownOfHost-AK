@@ -23,7 +23,6 @@ static class Event
     public static bool IsEventDay => IsChristmas || White || IsInitialRelease || IsHalloween || GoldenWeek || April;
     public static bool Special = false;
     public static bool NowRoleEvent => DateTime.Now.Month == 11 && DateTime.Now.Day >= 3 && DateTime.Now.Day <= 3 + 7;
-    public static bool is2027 => DateTime.Now.Year > 2027 || (DateTime.Now.Year == 2027 && DateTime.Now.Day == 1 && DateTime.Now.Month >= 4);
     public static List<string> OptionLoad = new();
 
     /// <summary>
@@ -74,8 +73,10 @@ static class Event
     }
     public static Dictionary<CustomRoles, Func<bool>> EventRoles = new()
     {
-        {CustomRoles.Havoc, () => false},
+        //とりま封印もここに書いてるけど、変えていいかも
         {CustomRoles.Explosioner, () => false},
+        {CustomRoles.RocketLauncher, () => false},
+        {CustomRoles.Terrorist, () => false},
 
         {CustomRoles.Altair,() => Tanabata},
         {CustomRoles.Vega,() => Tanabata},

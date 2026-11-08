@@ -101,6 +101,7 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
             {
                 continue;
             }
+            if (catType is ISchrodingerCatOwner.TeamType.MilkyWay && !Event.CheckRole(CustomRoles.Vega)) continue;
             SetUpSchrodingerCatKillTargetOption(catType, idOffset, true, CanKillNeutrals);
             idOffset++;
         }

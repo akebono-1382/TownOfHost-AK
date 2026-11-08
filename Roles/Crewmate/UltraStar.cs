@@ -71,7 +71,8 @@ public sealed class UltraStar : RoleBase, IKiller, ISchrodingerCatOwner
     {
         //ホストじゃない or タスクターンじゃない or 生存していない ならブロック
         if (!AmongUsClient.Instance.AmHost || GameStates.Intro || !GameStates.IsInTask || !player.IsAlive() || GameStates.CalledMeeting || GameStates.ExiledAnimate || !MyState.HasSpawned) return;
-        {//参考→https://github.com/Yumenopai/TownOfHost_Y/releases/tag/v514.20.3
+        {
+            //参考→https://github.com/Yumenopai/TownOfHost_Y/releases/tag/v514.20.3
             colorchange %= 18;
             if (colorchange is >= 0 and < 1) player.RpcSetColor(8);
             else if (colorchange is >= 1 and < 2) player.RpcSetColor(1);

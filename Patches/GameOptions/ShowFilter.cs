@@ -149,6 +149,7 @@ class ShowFilter
                         {
                             if ((customrole is CustomRoles.Merlin && CustomRoles.Assassin.IsEnable()) ||
                                 (customrole is CustomRoles.Braid && CustomRoles.Driver.IsEnable()) ||
+                                (customrole is CustomRoles.Janitor && CustomRoles.Godfather.IsEnable()) ||
                                 (customrole is CustomRoles.Fool && CustomRoles.Nue.IsEnable())
                                 )
                             { }

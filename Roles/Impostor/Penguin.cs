@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace TownOfHost.Roles.Impostor;
 
-class Penguin : RoleBase, IImpostor
+public sealed class Penguin : RoleBase, IImpostor
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
@@ -36,10 +36,10 @@ class Penguin : RoleBase, IImpostor
         Penguins = new();
         AbductVictim = null;
     }
-
+    static OptionItem KillCooldown;
     static OptionItem OptionAbductTimerLimit;
     static OptionItem OptionMeetingKill;
-
+    //static OptionItem CanNormalKill;
     enum OptionName
     {
         PenguinAbductTimerLimit,
@@ -57,10 +57,14 @@ class Penguin : RoleBase, IImpostor
     public bool IsKiller => AbductVictim == null;
     public static void SetupOptionItem()
     {
+        KillCooldown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, OptionBaseCoolTime, 30f, false)
+            .SetValueFormat(OptionFormat.Seconds);
+        //CanNormalKill = BooleanOptionItem.Create(RoleInfo, 13, GeneralOption.CanNormalKill, false, false);
         OptionAbductTimerLimit = FloatOptionItem.Create(RoleInfo, 11, OptionName.PenguinAbductTimerLimit, new(5f, 100f, 1f), 10f, false)
             .SetValueFormat(OptionFormat.Seconds);
         OptionMeetingKill = BooleanOptionItem.Create(RoleInfo, 12, OptionName.PenguinMeetingKill, false, false);
     }
+    public float CalculateKillCooldown() => KillCooldown.GetFloat();
     public override void Add()
     {
         AbductTimer = 255f;

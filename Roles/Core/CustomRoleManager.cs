@@ -16,6 +16,7 @@ using TownOfHost.Modules;
 using TownOfHost.Roles.Vanilla;
 using TownOfHost.Roles.AddOns.Neutral;
 using TownOfHost.Roles.AddOns.Impostor;
+using TownOfHost.Roles.Neutral;
 
 namespace TownOfHost.Roles.Core;
 
@@ -159,6 +160,15 @@ public static class CustomRoleManager
             if (!DoubleTrigger.OnCheckMurderAsKiller(info) && force is false)//特殊強制キルの場合は処理しない
             {
                 killer.OnCheckMurderAsKiller(info);
+            }
+            if (attemptTarget.GetRoleClass() is Alice al)
+            {
+                if (!al.OnCheckMurderAsTarget(info))
+                {
+                    killer.OnCheckMurderDontKill(info);
+                    CheckMurderPatch.TimeSinceLastKill[attemptKiller.PlayerId] = 0f;//タゲ側でガードされるときってキルガードだけのはずだから。
+                    return false;
+                }
             }
 
             /* キル可能かのチェック */
@@ -816,6 +826,8 @@ public enum CustomRoles
     BountyHunter,
     FireWorks,
     Mafia,
+    Janitor,
+    Godfather,
     SerialKiller,
     ShapeMaster,
     Sniper,
@@ -956,6 +968,7 @@ public enum CustomRoles
     Observer,
     Satellite,
     Merlin,
+    DebateMaster,
     //DEBUG only Crewmate
     Analyzer,
     //Neutral
@@ -997,6 +1010,8 @@ public enum CustomRoles
     JackalWolf,
     TaskPlayerB,
     Havoc,
+    Usurper,
+    Alice,
     //DEBUG only Neutral.
     //HideAndSeek
     HASFox,

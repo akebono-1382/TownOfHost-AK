@@ -87,6 +87,7 @@ namespace TownOfHost.Roles.Impostor
             if (!player.IsAlive()) return;
             if (!LimitTimer) return;
             if (AddOns.Common.Amnesia.CheckAbilityreturn(player)) return;
+            if (OptionLimitTimer.GetFloat() == 0f) return;
 
             Timer += Time.fixedDeltaTime;
 
@@ -105,7 +106,7 @@ namespace TownOfHost.Roles.Impostor
         }
         public void OnCheckMurderAsKiller(MurderInfo info)
         {
-            var Targets = new List<PlayerControl>(PlayerCatch.AllAlivePlayerControls);//.Where(pc => !Player)
+            var Targets = new List<PlayerControl>(PlayerCatch.AllAlivePlayerControls);//.Where(pc => !Player);
             if (Limit)
             {
                 info.DoKill = false;

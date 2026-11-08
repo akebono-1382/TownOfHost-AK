@@ -154,10 +154,12 @@ namespace TownOfHost
                 ;
         }
         public static bool IsCombinationRole(this CustomRoles role) => role is
-        CustomRoles.Assassin or CustomRoles.Merlin or
-        CustomRoles.Driver or CustomRoles.Braid or
-        CustomRoles.Vega or CustomRoles.Altair or
-        CustomRoles.Fool or CustomRoles.Nue;
+            CustomRoles.Assassin or CustomRoles.Merlin or
+            CustomRoles.Driver or CustomRoles.Braid or
+            CustomRoles.Vega or CustomRoles.Altair or
+            CustomRoles.Fool or CustomRoles.Nue or
+            CustomRoles.Godfather or CustomRoles.Janitor
+        ;
         public static CustomRoles GetCombination(this CustomRoles role)
         {
             if (role.IsCombinationRole() is false) return CustomRoles.NotAssigned;
@@ -172,6 +174,8 @@ namespace TownOfHost
                 case CustomRoles.Altair: return CustomRoles.Vega;
                 case CustomRoles.Fool: return CustomRoles.Nue;
                 case CustomRoles.Nue: return CustomRoles.Fool;
+                case CustomRoles.Godfather: return CustomRoles.Janitor;
+                case CustomRoles.Janitor: return CustomRoles.Godfather;
             }
             return CustomRoles.NotAssigned;
         }

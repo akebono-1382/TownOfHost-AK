@@ -596,7 +596,8 @@ public abstract class RoleBase : IDisposable
         OptionCount,
         EngineerInVentCooldown,
         TaskTrigger,
-        CanUseActiveComms
+        CanUseActiveComms,
+        CanNormalKill
     }
     public enum DontReportreson
     {

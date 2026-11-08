@@ -489,14 +489,29 @@ namespace TownOfHost
             messageWriter.Write(msgWriter, false);
             AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
         }
-        public static void RpcExileV2(this PlayerControl player)
+        public static void RpcExileV2(this PlayerControl player, PlayerControl seer = null)
         {
             if (player == null) return;
-            player.Exiled();
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Exiled, SendOption.None, -1);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+
+            //いまのところ議論マスターにしかつかってないから
+            if (seer != null && (seer == PlayerControl.LocalPlayer || seer.IsModClient()))
+            {
+                //player.Exiled();
+                return;
+            }
+            if (seer == null)
+            {
+                player.Exiled();
+                MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Exiled, SendOption.None, -1);
+                AmongUsClient.Instance.FinishRpcImmediately(writer);
+                return;
+            }
+            if (seer.GetClientId() == -1) return;
+
+            MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Exiled, SendOption.None, seer.GetClientId());
+            AmongUsClient.Instance.FinishRpcImmediately(w);
         }
-        public static void RpcExileV3(this PlayerControl player)
+        public static void RpcExileV3(this PlayerControl player, bool force = false)
         {
             //自視点以外当たり判定が変わらないから霊界だと挙動不審になる。
             if (player == null) return;
@@ -504,11 +519,14 @@ namespace TownOfHost
             if (!Utils.IsRestriction())
             {
                 player.RpcExileV2();
+                if (force) return;
                 CustomRoleManager.AllActiveRoles.Do(role => role.Value.OnDead(player));
                 return;
             }
             if (AntiBlackout.IsSet)
             {
+                if (force) return;
+
                 Logger.Warn("Antiblack set Cancel..", "RpcExileV3");
                 if (player.IsAlive())
                 {
@@ -519,18 +537,22 @@ namespace TownOfHost
             }
             if (player.IsAlive() || !(player.Data.Role.Role is RoleTypes.CrewmateGhost or RoleTypes.ImpostorGhost or RoleTypes.GuardianAngel or RoleTypes.SpiritGuide))
             {//道連れ、マジシャン等で死んでいないのにIsDeadを変更する場合はモーションを入れる。
-                if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId)
+                if (!force)
                 {
-                    if (GameStates.IsMeeting is false)
-                        DestroyableSingleton<HudManager>.Instance.KillOverlay.ShowKillAnimation(player.Data, player.Data);
-                }
-                else
-                {
-                    player.RpcMeetingKill(SendtoClient: true);
+                    if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId)
+                    {
+                        if (GameStates.IsMeeting is false)
+                            DestroyableSingleton<HudManager>.Instance.KillOverlay.ShowKillAnimation(player.Data, player.Data);
+                    }
+                    else
+                    {
+                        player.RpcMeetingKill(SendtoClient: true);
+                    }
                 }
             }
             player.Exiled();
             player.Data.IsDead = true;
+            if (force) return;
             if (player.IsAlive())
             {
                 player.GetPlayerState().SetDead();

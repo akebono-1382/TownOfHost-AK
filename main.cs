@@ -406,6 +406,8 @@ namespace TownOfHost
         Strawdoll = CustomRoles.Strawdoll,
         Missioneer = CustomRoles.Missioneer,
         Havoc = CustomRoles.Havoc,
+        Usurper = CustomRoles.Usurper,
+        Alice = CustomRoles.Alice,
 
         HASTroll = CustomRoles.HASTroll,
         TaskPlayerB = CustomRoles.TaskPlayerB,
@@ -448,6 +450,7 @@ namespace TownOfHost
         AssassinandMerlin,
         DriverandBraid,
         FoolandNue,
-        VegaandAltair
+        VegaandAltair,
+        GodfatherandJanitor,
     }
 }

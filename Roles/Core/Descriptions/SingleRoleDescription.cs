@@ -21,14 +21,14 @@ public class SingleRoleDescription : RoleDescription
         get
         {
             var desc = Translator.GetString(DescriptionKey);
-            if (RoleInfo.RoleName is CustomRoles.Monochromer)
+            /*if (RoleInfo.RoleName is CustomRoles.Monochromer or CustomRoles.Penguin or CustomRoles.Magician)
             {
                 desc = "\n" + Translator.GetString("SkinWarning") + "\n" + desc;
             }
             else if (RoleInfo.RoleName is CustomRoles.Camouflager)
             {
                 desc = "\n" + Translator.GetString("SkinWarning") + "\n" + Translator.GetString("CamoWarn") + "\n" + desc;
-            }
+            }*/
 
             if (RoleInfo.Desc == null) return desc;
             var CustomDescription = RoleInfo.Desc();

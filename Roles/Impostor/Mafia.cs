@@ -43,15 +43,64 @@ public sealed class Mafia : RoleBase, IImpostor, IUsePhantomButton
     }
     public static void SetupCustomOption()
     {
-        CanKillImpostorCount = IntegerOptionItem.Create(RoleInfo, 9, Option.MafiaCanKillImpostorCount, new(1, 3, 1), 2, false).SetValueFormat(OptionFormat.Players);
-        CanKillDay = IntegerOptionItem.Create(RoleInfo, 12, Option.MafiaCanKillDay, new(0, 30, 1), 0, false).SetZeroNotation(OptionZeroNotation.Off).SetValueFormat(OptionFormat.day);
-        OptionKillCoolDown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, new(0f, 180f, 0.5f), 30f, false).SetValueFormat(OptionFormat.Seconds);
+        CanKillImpostorCount = IntegerOptionItem.Create(RoleInfo, 9, Option.MafiaCanKillImpostorCount, new(1, 3, 1), 2, false)
+            .SetValueFormat(OptionFormat.Players);
+        CanKillDay = IntegerOptionItem.Create(RoleInfo, 12, Option.MafiaCanKillDay, new(0, 30, 1), 0, false)
+            .SetZeroNotation(OptionZeroNotation.Off).SetValueFormat(OptionFormat.day);
+        OptionKillCoolDown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, new(0f, 180f, 0.5f), 30f, false)
+            .SetValueFormat(OptionFormat.Seconds);
         CanmakeSidekickMadMate = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.CanCreateSideKick, false, false);
     }
-    public float CalculateKillCooldown() => OptionKillCoolDown.GetFloat();
+    public bool CanUseSabotageButton()
+    {
+        //ゴッドファーザーがいるならゴッドファーザーが生きてるかで判定
+        bool HasGodfather = false;
+        foreach (var pc in PlayerCatch.AllPlayerControls)
+        {
+            if (pc.Is(CustomRoles.Godfather))
+            {
+                HasGodfather = true;
+            }
+        }
+        if (HasGodfather)
+        {
+            bool Alive = false;
+            foreach (var pc in PlayerCatch.AllAlivePlayerControls)
+            {
+                if (pc.Is(CustomRoles.Godfather))
+                {
+                    Alive = true;
+                }
+            }
+            return !Alive;
+        }
+        return true;
+    }
     public override void ApplyGameOptions(IGameOptions opt) => AURoleOptions.PhantomCooldown = Options.CanMakeMadmateCount.GetInt() <= PlayerCatch.SKMadmateNowCount ? 200f : 1f;
     public bool CanUseKillButton()
     {
+        //ゴッドファーザーがいるならゴッドファーザーが生きてるかで判定
+        bool HasGodfather = false;
+        foreach (var pc in PlayerCatch.AllPlayerControls)
+        {
+            if (pc.Is(CustomRoles.Godfather))
+            {
+                HasGodfather = true;
+            }
+        }
+        if (HasGodfather)
+        {
+            bool Alive = false;
+            foreach (var pc in PlayerCatch.AllAlivePlayerControls)
+            {
+                if (pc.Is(CustomRoles.Godfather))
+                {
+                    Alive = true;
+                }
+            }
+            return !Alive;
+        }
+
         if (PlayerState.AllPlayerStates == null) return false;
         int livingImpostorsNum = 0;
         foreach (var pc in PlayerCatch.AllAlivePlayerControls)
@@ -69,7 +118,24 @@ public sealed class Mafia : RoleBase, IImpostor, IUsePhantomButton
 
         if (CanKillDay.GetInt() <= UtilsGameLog.day) canusekill = true;
     }
-    bool IUsePhantomButton.IsPhantomRole => SKMad && Options.CanMakeMadmateCount.GetInt() > PlayerCatch.SKMadmateNowCount;
+    //ゴッドファーザーが配役されてたら作らせない。
+    bool IUsePhantomButton.IsPhantomRole => SKMad && Options.CanMakeMadmateCount.GetInt() > PlayerCatch.SKMadmateNowCount && !HasGodFather();
+    bool HasGodFather()
+    {
+        foreach (var pc in PlayerCatch.AllPlayerControls)
+        {
+            if (pc.Is(CustomRoles.Godfather)) return true;
+        }
+        return false;
+    }
+    bool GodfatherAlive()
+    {
+        foreach (var pc in PlayerCatch.AllAlivePlayerControls)
+        {
+            if (pc.Is(CustomRoles.Godfather)) return true;
+        }
+        return false;
+    }
     public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
         AdjustKillCooldown = true;

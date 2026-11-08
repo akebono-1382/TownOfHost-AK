@@ -37,6 +37,7 @@ public sealed class MadGuardian : RoleBase, IKillFlashSeeable, IDeathReasonSeeab
     private static OptionItem OptionCanSeeWhoTriedToKill;
     private static OptionItem OptionCanUseVent;
     public static OverrideTasksData Tasks;
+    public bool CanGuard() => MyTaskState.HasCompletedEnoughCountOfTasks(OptionTaskTrigger.GetInt());
     enum OptionName
     {
         MadGuardianCanSeeWhoTriedToKill

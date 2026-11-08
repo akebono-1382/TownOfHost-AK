@@ -332,6 +332,8 @@ namespace TownOfHost
                 "ヴァルチャー" or "バルチャー" => GetString("Vulture"),
 
                 "ドライバーとブレイド" => GetString("Driver"),
+                "ゴッドファーザーとジャニター" or "ゴッド" or "ゴドファ" => GetString("Godfather"),
+                "清掃員" or "ジャニ" or "清掃" or "クリーナー" or "掃除" or "掃除員" => GetString("Janitor"),
 
                 "織姫と彦星" => GetString("Vega"),
                 _ => text,

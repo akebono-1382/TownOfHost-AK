@@ -1,14 +1,14 @@
-using System.Linq;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using UnityEngine;
-
+using Hazel;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
-using Hazel;
 using TownOfHost.Roles.Vanilla;
-using System;
+using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TownOfHost.Roles.Neutral;
 
@@ -233,7 +233,15 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
     }
     public override void OnFixedUpdate(PlayerControl player)
     {
-        if (AmongUsClient.Instance.AmHost is false || Viperkilledplayers.Count is 0) return;
+        if (AmongUsClient.Instance.AmHost is false) return;
+        foreach (var pc in PlayerCatch.AllPlayerControls.Where(p => !p.IsAlive() && DiePlayerPos.ContainsKey(p.PlayerId)))
+        {
+            if (staticEatedPlayers.Contains(pc.PlayerId))
+            {
+                DiePlayerPos.Where(poss => poss.Key == pc.PlayerId).Do(poss => GetArrow.Remove(Player.PlayerId, poss.Value));
+            }
+        }
+        if (Viperkilledplayers.Count is 0) return;
 
         for (byte i = 0; i < Viperkilledplayers.Count; i++)
         {
@@ -276,7 +284,6 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
         using var sender = CreateSender();
         sender.Writer.WritePacked((int)RPC_Types.ClearDiePlayerPos);
     }
-
     public override void ReceiveRPC(MessageReader reader)
     {
         switch ((RPC_Types)reader.ReadPackedInt32())
@@ -303,7 +310,8 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
     {
         EatPlayer,
         AddDiePlayerPos,
-        ClearDiePlayerPos
+        ClearDiePlayerPos,
+        JanitorClean,
     }
     public static Dictionary<int, Achievement> achievements = new();
     [Attributes.PluginModuleInitializer]

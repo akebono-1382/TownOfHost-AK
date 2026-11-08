@@ -118,6 +118,7 @@ public static class PetSettings
     public static void GameInit()
     {
         petNotSetPlayerIds.Clear();
+        SetPetRoleInPet();
     }
 
 

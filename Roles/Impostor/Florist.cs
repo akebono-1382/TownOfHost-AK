@@ -324,7 +324,7 @@ namespace TownOfHost.Roles.Impostor
         {
             using var sender = CreateSender();
             sender.Writer.Write((byte)NowText);
-            sender.Writer.Write(InstanceFlower.Count);
+            sender.Writer.WritePacked(InstanceFlower.Count);
             var count = InstanceFlower.Count;
             var list = InstanceFlower.ToArray();
             for (int i = 0; i < count; i++)

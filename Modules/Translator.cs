@@ -117,12 +117,13 @@ namespace TownOfHost
         {
             var res = $"<INVALID:{str}>";
             var ch = res;
-            if ((Event.OptionLoad.Contains(str) || str is "CakeshopInfoLong" or "CakeshopInfo" or "Cakeshop") && !Event.Special && !Event.CheckRole(CustomRoles.Cakeshop)) return res;
+            //InfoLong無効化で説明見れなくなるのは...
+            if ((Event.OptionLoad.Contains(str) || str is "CakeshopInfo" or "Cakeshop") && !Event.Special && !Event.CheckRole(CustomRoles.Cakeshop)) return res;
             if (str is "VegaInfo" or "Vega" && !Event.CheckRole(CustomRoles.Vega)) return res;
             if (str is "AltairInfo" or "Altair" && !Event.CheckRole(CustomRoles.Altair)) return res;
             if (translateMaps.TryGetValue(str, out var dic) && (!dic.TryGetValue((int)langId, out res) || res == "")) //strに該当する&無効なlangIdかresが空
             {
-                res = $"*{dic[0]}";
+                res = dic.TryGetValue(0, out var en) ? $"*{en}" : $"<INVALID:{str}>";
             }
             if (langId == SupportedLangs.Japanese && Main.CustomName.Value)
             {
@@ -324,7 +325,15 @@ namespace TownOfHost
             foreach (var title in translateMaps) sb.Append($"{title.Key}:\n");
             File.WriteAllText(@$"./{LANGUAGE_FOLDER_NAME}/template.dat", sb.ToString());
             sb.Clear();
-            foreach (var title in translateMaps) sb.Append($"{title.Key}:{title.Value[0].Replace("\n", "\\n").Replace("\r", "\\r")}\n");
+            foreach (var title in translateMaps)
+            {
+                if (!title.Value.TryGetValue(0, out var en))
+                {
+                    Logger.Warn($"英語(0)がありません: \"{title.Key}\" (登録言語: {string.Join(",", title.Value.Keys)})", "Translator");
+                    en = "";
+                }
+                sb.Append($"{title.Key}:{en.Replace("\n", "\\n").Replace("\r", "\\r")}\n");
+            }
             File.WriteAllText(@$"./{LANGUAGE_FOLDER_NAME}/template_English.dat", sb.ToString());
         }
         public static void ExportCustomTranslation()

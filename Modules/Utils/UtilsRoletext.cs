@@ -402,11 +402,24 @@ namespace TownOfHost
             var isalive = pc.IsAlive();
             if (state == null) return "";
 
-            //隠すなら??表示
-            if (hide) return $"<#5c5c5c>(??/??)</color>";
+            //隠すなら?表示
+            if (hide) return $"<#5c5c5c>(?/{state.taskState.CompletedTasksCount})</color>";
             Color TextColor = Color.yellow;
             var TaskCompleteColor = HasTasks(info) ? Color.green : GetRoleColor(state.MainRole).ShadeColor(0.5f); //タスク完了後の色
             var NonCompleteColor = HasTasks(info) ? Color.yellow : Color.white; //カウントされない人外は白色
+            if (pc.GetRoleClass() is Alice al)
+            {
+                if (al.Comp())
+                {
+                    TaskCompleteColor = Color.green;
+                    NonCompleteColor = Color.green;
+                }
+                else
+                {
+                    TaskCompleteColor = Color.green;
+                    NonCompleteColor = Color.gray;
+                }
+            }
 
             if (pc.Is(CustomRoles.Amnesia))
             {
@@ -445,35 +458,40 @@ namespace TownOfHost
 
             TextColor = comms ? Color.gray : NormalColor;
             string Completed = comms ? "?" : $"{state.taskState.CompletedTasksCount}";
+            string Max = $"{state.taskState.GetNeedCountOrAll()}";
+            if (pc.Is(CustomRoles.Alice) && Alice.NeedTask.GetInt() > 0 && state.taskState.CompletedTasksCount < Alice.NeedTask.GetInt())
+            {
+                Max = $"{Alice.NeedTask.GetInt()}/{state.taskState.GetNeedCountOrAll()}";
+            }
             var isHasntTask = state == null || state.taskState == null || !state.taskState.hasTasks;
             if (ShowManegementText && !pc.Is(CustomRoles.Amnesia) && missrole is CustomRoles.NotAssigned)
             {
                 if (!isalive && Options.GhostCanSeeAllTasks.GetBool() && !pc.Is(CustomRoles.AsistingAngel) && (!pc.IsGhostRole() || Options.GhostRoleCanSeeAllTasks.GetBool()))//死んでて霊界がタスク進捗を見れるがON
                 {
                     if (isHasntTask) return AllTaskstext(false, false, false, comms, true);
-                    else return ColorString(TextColor, $"({Completed}/{state.taskState.GetNeedCountOrAll()})") + AllTaskstext(false, false, false, comms, true);
+                    else return ColorString(TextColor, $"({Completed}/{Max})") + AllTaskstext(false, false, false, comms, true);
                 }
                 //ラスポスの処理
                 if (pc.Is(CustomRoles.LastImpostor) && LastImpostor.GiveManagement.GetBool()) return AllTaskstext(LastImpostor.PercentGage.GetBool(), LastImpostor.RoughPercentage.GetBool(), LastImpostor.ManagementCanSeeMeeting.GetBool(), comms, LastImpostor.ManagementCanSeeComms.GetBool());
                 //ラスニュの処理
                 else if (pc.Is(CustomRoles.LastNeutral) && LastNeutral.GiveManagement.GetBool()) return AllTaskstext(LastNeutral.PercentGage.GetBool(), LastNeutral.RoughPercentage.GetBool(), LastNeutral.ManagementCanSeeMeeting.GetBool(), comms, LastNeutral.ManagementCanSeeComms.GetBool());
-                else//書く役職の処理
+                else//各役職の処理
                     if (RoleAddAddons.GetRoleAddon(cr, out var data, pc, subrole: CustomRoles.Management) && data.GiveManagement.GetBool())
                     {
                         if (isHasntTask) return AllTaskstext(data.PercentGage.GetBool(), data.RoughPercentage.GetBool(), data.ManagementCanSeeMeeting.GetBool(), comms, data.ManagementCanSeeComms.GetBool());
-                        else return ColorString(TextColor, $"({Completed}/{state.taskState.GetNeedCountOrAll()})") + AllTaskstext(data.PercentGage.GetBool(), data.RoughPercentage.GetBool(), data.ManagementCanSeeMeeting.GetBool(), comms, data.ManagementCanSeeComms.GetBool());
+                        else return ColorString(TextColor, $"({Completed}/{Max})") + AllTaskstext(data.PercentGage.GetBool(), data.RoughPercentage.GetBool(), data.ManagementCanSeeMeeting.GetBool(), comms, data.ManagementCanSeeComms.GetBool());
                     }
                     //マネジメントの処理
                     else if (pc.Is(CustomRoles.Management))
                     {
                         if (isHasntTask) return AllTaskstext(Management.PercentGage, Management.OptionRoughPercentage.GetBool(), Management.Meeting.GetBool(), comms, Management.CanSeeActiveComms);
-                        else return ColorString(TextColor, $"({Completed}/{state.taskState.GetNeedCountOrAll()})") + AllTaskstext(Management.PercentGage, Management.OptionRoughPercentage.GetBool(), Management.Meeting.GetBool(), comms, Management.CanSeeActiveComms);
+                        else return ColorString(TextColor, $"({Completed}/{Max})") + AllTaskstext(Management.PercentGage, Management.OptionRoughPercentage.GetBool(), Management.Meeting.GetBool(), comms, Management.CanSeeActiveComms);
                     }
                 if (isHasntTask) return "";
-                else return ColorString(TextColor, $"({Completed}/{state.taskState.GetNeedCountOrAll()})");
+                else return ColorString(TextColor, $"({Completed}/{Max})");
             }
             if (isHasntTask) return "";
-            else return ColorString(TextColor, $"({Completed}/{state.taskState.GetNeedCountOrAll()})");
+            else return ColorString(TextColor, $"({Completed}/{Max})");
         }
         public static (string, Color) GetRoleTextHideAndSeek(RoleTypes oRole, CustomRoles hRole)
         {

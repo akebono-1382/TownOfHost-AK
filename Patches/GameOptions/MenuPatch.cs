@@ -863,6 +863,9 @@ namespace TownOfHost
                                                 case CustomRoles.Altair: if (Nowinfo is CustomRoles.Vega) Nowinfo = CustomRoles.Vega; break;
                                                 case CustomRoles.Fool: if (Nowinfo is CustomRoles.Nue) Nowinfo = CustomRoles.Nue; break;
                                                 case CustomRoles.Nue: if (Nowinfo is CustomRoles.Nue) Nowinfo = CustomRoles.Fool; break;
+                                                case CustomRoles.Godfather: if (Nowinfo is CustomRoles.Godfather) Nowinfo = CustomRoles.Janitor; break;
+                                                case CustomRoles.Janitor: if (Nowinfo is CustomRoles.Janitor) Nowinfo = CustomRoles.Godfather; break;
+
                                             }
                                             return;
                                         }

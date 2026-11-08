@@ -449,7 +449,8 @@ namespace TownOfHost
                 }
             }
         }
-        public static void SendMessage()
+        public static void
+            SendMessage()
         {
             if (PlayerCatch.AnyModClient() is false || !AmongUsClient.Instance.AmHost) return;
             if (optTimeLimitDevices is false && optTurnTimeLimitDevice is false) return;

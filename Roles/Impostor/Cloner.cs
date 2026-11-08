@@ -97,6 +97,7 @@ namespace TownOfHost.Roles.Impostor
             {
                 now = 0;
             }
+            UtilsNotifyRoles.NotifyRoles(OnlyMeName: true, SpecifySeer: Player);
             return true;
         }
 
@@ -116,7 +117,7 @@ namespace TownOfHost.Roles.Impostor
         void SendRPC()
         {
             using var sender = CreateSender();
-            sender.Writer.Write(use);
+            sender.Writer.WritePacked(use);
         }
 
         public override void ReceiveRPC(MessageReader reader)
