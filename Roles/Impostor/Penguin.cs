@@ -28,6 +28,7 @@ public sealed class Penguin : RoleBase, IImpostor
     {
         AbductTimerLimit = OptionAbductTimerLimit.GetFloat();
         MeetingKill = OptionMeetingKill.GetBool();
+        waitcount = 0;
 
         CustomRoleManager.OnEnterVentOthers.Add(OnEnterVentOthers);
     }
@@ -55,6 +56,7 @@ public sealed class Penguin : RoleBase, IImpostor
 
     //拉致中にキルしそうになった相手の能力を使わせないための処置
     public bool IsKiller => AbductVictim == null;
+    int waitcount;
     public static void SetupOptionItem()
     {
         KillCooldown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, OptionBaseCoolTime, 30f, false)
@@ -97,6 +99,10 @@ public sealed class Penguin : RoleBase, IImpostor
     }
     void AddVictim(PlayerControl target)
     {
+        //var position = Player.transform.position;
+        //waitcount = 0;
+        //AbductVictim.RpcSnapToForced(position, SendOption.None);
+
         PlayerState.GetByPlayerId(target.PlayerId).CanUseMovingPlatform = MyState.CanUseMovingPlatform = false;
         CheckMurderPatch.TimeSinceLastKill[Player.PlayerId] = 0f;
         AbductVictim = target;
@@ -268,7 +274,16 @@ public sealed class Penguin : RoleBase, IImpostor
                     oldpos = position;
                     if (Player.PlayerId != 0)
                     {
-                        AbductVictim.RpcSnapToForced(position, SendOption.None);
+                        waitcount++;
+                        var dis = Vector2.Distance(Player.GetTruePosition(), AbductVictim.GetTruePosition());
+                        if (dis > 1f)
+                        {
+                            if (waitcount >= 2)
+                            {
+                                waitcount = 0;
+                                AbductVictim.RpcSnapToForced(position, SendOption.None);
+                            }
+                        }
                     }
                     else
                     {
@@ -276,10 +291,18 @@ public sealed class Penguin : RoleBase, IImpostor
                         {
                             if (AbductVictim != null)
                             {
-                                AbductVictim.RpcSnapToForced(position, SendOption.None);
+                                var dis = Vector2.Distance(Player.GetTruePosition(), AbductVictim.GetTruePosition());
+                                if (dis > 1f)
+                                {
+                                    if (waitcount >= 2)
+                                    {
+                                        waitcount = 0;
+                                        AbductVictim.RpcSnapToForced(position, SendOption.None);
+                                    }
+                                }
                             }
                         }
-                        , 0.25f, "", true);
+                        , Main.LagTime, "", true);
                     }
                 }
             }
