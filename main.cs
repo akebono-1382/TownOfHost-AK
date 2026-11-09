@@ -57,9 +57,9 @@ namespace TownOfHost
         // ==========
         //Sorry for many Japanese comments.
         public const string PluginGuid = "com.akebono.TownOfHost-AK";
-        public const string PluginVersion = "3.11.0.8";
-        public const string PluginShowVersion = "3.11.0.8";
-        public const string ModVersion = ".0.8";//リリースver用バージョン変更
+        public const string PluginVersion = "3.11.09";
+        public const string PluginShowVersion = "3.11.09";
+        public const string ModVersion = ".09";//リリースver用バージョン変更
         /// 配布するデバッグ版なのであればtrue。リリース時にはfalseにすること。
         public static bool DebugVersion = true;
 

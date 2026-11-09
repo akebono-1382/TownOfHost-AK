@@ -216,9 +216,10 @@ namespace TownOfHost
 #endif
             if (FindAGameManager._instance)
             {
-                credentials.transform.position = new Vector3(2.5f, -2.858f, 5f);
 #if DEBUG
                 credentials.transform.position += new Vector3(0, 0.185f);
+#else
+                credentials.transform.position = new Vector3(2.5f, -2.858f, 5f);
 #endif
             }
             return credentials;

@@ -914,8 +914,8 @@ namespace TownOfHost
                 case From.None: Fromtext = ""; break;
                 case From.AmongUs: Fromtext += "<#ff1919>Among Us</color>"; break;
                 case From.TheOtherRoles: Fromtext += $"<#ff0000>TheOtherRoles</color>"; break;
-                case From.TOR_GM_Edition: Fromtext += $"<#ff0000>TOR GM Edition</color>"; break;
-                case From.TOR_GM_Haoming_Edition: Fromtext += $"<#ff0000>TOR GM Haoming</color>"; break;
+                case From.TOR_GM_Edition: Fromtext += $"<#ff0000>TheOtherRoles GM</color>"; break;
+                case From.TOR_GM_Haoming_Edition: Fromtext += $"<#ff0000>TheOtherRoles GM Haoming</color>"; break;
                 case From.SuperNewRoles: Fromtext += "<#ffa500>Super</color><#ff0000>New</color><#00ff00>Roles</color>"; break;
                 case From.ExtremeRoles: Fromtext += $"<#d3d3d3>{from}</color>"; break;
                 case From.NebulaontheShip: Fromtext += $"<#191970>{from}</color>"; break;
@@ -926,11 +926,11 @@ namespace TownOfHost
                 case From.TownOfUs: Fromtext += $"<#daa520>{from}</color>"; break;
                 case From.TownOfHost: Fromtext += $"<#00bfff>{from}</color>"; break;
                 case From.TownOfHost_Y: Fromtext += $"<#dddd00>TownOfHost_Y</color>"; break;
-                case From.TownOfHost_for_E: Fromtext += $"<#18e744>TownOfHost for E</color>"; break;
+                case From.TownOfHost_for_E: Fromtext += $"<#18e744>TownOfHost For E</color>"; break;
                 case From.TownOfHost_E: Fromtext += $"<#ffc0cb>TownOfHost E</color>"; break;
                 case From.RevolutionaryHostRoles: Fromtext += $"<#3cb371>RevolutionaryHostRoles</color>"; break;
                 case From.Love_Couple_Mod: Fromtext += "<#ff6be4>Love Couple Mod</color>"; break;
-                case From.TownOfHost_K: Fromtext += $"<#00bfff>TownOfHost_K</color>"; break;
+                case From.TownOfHost_K: Fromtext += $"<#00bfff>TownOfHost-K</color>"; break;
             }
             if (role is CustomRoles.MadSuicide) Fromtext += "  <#000000>(<#ff1919>崇拝者</color>)</color>";
             return Fromtext;

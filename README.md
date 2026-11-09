@@ -153,10 +153,10 @@ HostModなので部屋主のみModを導入すれば、<br>
 [TheOtherRoles](https://github.com/TheOtherRolesAU/TheOtherRoles)<br>
 　カモフラージャー、ゲッサー等を参考/移植させていただきました<br>
 
-[TheOtherRole GM](https://github.com/yukinogatari/TheOtherRoles-GM)<br>
+[TheOtherRoles GM](https://github.com/yukinogatari/TheOtherRoles-GM)<br>
 　一部役職を参考/移植させていただきました<br>
 
-TOR_GM_Haoming_Edition<br>
+[TheOtherRoles GM Haoming](https://github.com/shu-TownofHost/TheOtherRoles-GM-Haoming)<br>
 　イビルトラッカー、シュレディンガーの猫等を参考/移植させていただきました<br>
 
 [Nebula On The Ship](https://github.com/Dolly1016/Nebula/)<br>
@@ -166,4 +166,4 @@ TOR_GM_Haoming_Edition<br>
 　マッドジェスターを参考/移植させていただきました<br>
 
 [ExtremeRoles](https://github.com/yukieiji/ExtremeRoles)<br>
-　アサシンとマーリン、マジシャンを参考/移植をさせていただきました。<br>
+　アサシンとマーリン、マジシャン、アリス、ジェスターの暴発を参考/移植させていただきました。<br>
