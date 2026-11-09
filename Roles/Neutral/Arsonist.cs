@@ -6,6 +6,7 @@ using AmongUs.GameOptions;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 using TownOfHost.Modules;
+using System.Linq;
 
 namespace TownOfHost.Roles.Neutral;
 
@@ -104,6 +105,7 @@ public sealed class Arsonist : RoleBase, IKiller, IUsePhantomButton
     public bool CanUseImpostorVentButton() => IsDouseDone(Player) || OptionCanUseVent.GetBool();
     public float CalculateKillCooldown() => DouseCooldown;
     public bool CanUseSabotageButton() => false;
+    bool IUsePhantomButton.IsPhantomRole => IsDouseDone(Player);
     public override string GetProgressText(bool comms = false, bool gamelog = false)
     {
         var doused = GetDousedPlayerCount();
@@ -148,7 +150,7 @@ public sealed class Arsonist : RoleBase, IKiller, IUsePhantomButton
     {
         var (killer, target) = info.AttemptTuple;
 
-        Logger.Info("Arsonist start douse", "OnCheckMurderAsKiller");
+        Logger.Info("Arsonist start douse", "Arsonist_OnCheckMurderAsKiller");
         killer.SetKillCooldown(DouseTime);
         if (!IsDoused[target.PlayerId] && TargetInfo == null)
         {
@@ -219,23 +221,16 @@ public sealed class Arsonist : RoleBase, IKiller, IUsePhantomButton
     {
         if (GameStates.IsInGame && IsDouseDone(Player) && !Optionfire.GetBool())
         {
-            foreach (var pc in PlayerCatch.AllAlivePlayerControls)
-            {
-                if (pc.PlayerId != Player.PlayerId)
-                {
-                    //生存者は焼殺
-                    pc.SetRealKiller(Player);
-                    pc.RpcMurderPlayer(pc);
-                    var state = PlayerState.GetByPlayerId(pc.PlayerId);
-                    state.DeathReason = CustomDeathReason.Torched;
-                    state.SetDead();
-                }
-                else
-                    RPC.PlaySoundRPC(pc.PlayerId, Sounds.KillSound);
-            }
             if (CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Arsonist, Player.PlayerId))
             {
                 CustomWinnerHolder.NeutralWinnerIds.Add(Player.PlayerId);
+                var i = 0;
+                foreach (var pc in PlayerCatch.AllAlivePlayerControls.Where(p => p.PlayerId != Player.PlayerId))
+                {
+                    i++;
+                }
+                Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[0]);
+                if (10 <= i) Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[1]);
             }
 
             return false;
@@ -299,34 +294,39 @@ public sealed class Arsonist : RoleBase, IKiller, IUsePhantomButton
     }
     void IUsePhantomButton.OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
+        ResetCooldown = false;
+        AdjustKillCooldown = true;
+
         if (GameStates.IsInGame && IsDouseDone(Player) && Optionfire.GetBool())
         {
-            var i = 0;
-            foreach (var pc in PlayerCatch.AllAlivePlayerControls)
-            {
-                if (pc.PlayerId != Player.PlayerId)
-                {
-                    i++;
-                    //生存者は焼殺
-                    pc.SetRealKiller(Player);
-                    pc.RpcMurderPlayer(pc);
-                    var state = PlayerState.GetByPlayerId(pc.PlayerId);
-                    state.DeathReason = CustomDeathReason.Torched;
-                    state.SetDead();
-                }
-                else
-                    RPC.PlaySoundRPC(pc.PlayerId, Sounds.KillSound);
-            }
             if (CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Arsonist, Player.PlayerId))
             {
                 CustomWinnerHolder.NeutralWinnerIds.Add(Player.PlayerId);
+                var i = 0;
+                foreach (var pc in PlayerCatch.AllAlivePlayerControls.Where(p => !p.Is(CustomRoles.Arsonist)))
+                {
+                    if (pc.PlayerId != Player.PlayerId)
+                    {
+                        i++;
+                    }
+                }
+                Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[0]);
+                if (10 <= i) Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[1]);
             }
-            Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[0]);
-            if (10 <= i) Achievements.RpcCompleteAchievement(Player.PlayerId, 0, achievements[1]);
-            return;
         }
-        ResetCooldown = true;
-        AdjustKillCooldown = true;
+    }
+    public override void CheckWinner(GameOverReason reason)
+    {
+        if (CustomWinnerHolder.WinnerTeam is not CustomWinner.Arsonist) return;
+        //テロ勝ち防止
+        foreach (var pc in PlayerCatch.AllAlivePlayerControls.Where(p => !p.Is(CustomRoles.Arsonist) && !p.Is(CustomRoles.Terrorist)))
+        {
+            pc.SetRealKiller(Player);
+            pc.RpcMurderPlayer(pc);
+            var state = PlayerState.GetByPlayerId(pc.PlayerId);
+            state.DeathReason = CustomDeathReason.Torched;
+            state.SetDead();
+        }
     }
     public static Dictionary<int, Achievement> achievements = new();
     [Attributes.PluginModuleInitializer]

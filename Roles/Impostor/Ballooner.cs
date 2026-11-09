@@ -1,4 +1,3 @@
-
 using AmongUs.GameOptions;
 using Hazel;
 using TownOfHost.Roles.Core;

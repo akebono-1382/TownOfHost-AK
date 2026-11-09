@@ -58,7 +58,7 @@ public sealed class Nue : RoleBase, ISelfVoter, IKiller
     static OptionItem OptionSuicidetime;
     float suicidetime;
     bool IsSeeImpostor;
-    bool GuessedFool; bool Guessed; byte FoolId; bool IsKilled;
+    public bool GuessedFool; public bool Guessed; public byte FoolId; public bool IsKilled;
     enum OptionName
     {
         MadBetrayerImpostorRevealTaskcount,

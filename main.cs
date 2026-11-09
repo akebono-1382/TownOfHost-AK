@@ -57,14 +57,11 @@ namespace TownOfHost
         // ==========
         //Sorry for many Japanese comments.
         public const string PluginGuid = "com.akebono.TownOfHost-AK";
-
-        //バージョン名→
-        //Kの最新上一桁.K最新上一桁.メイン.サブ(ベータ版の場合β)
-        public const string PluginVersion = "3.3.0";
-        public const string PluginShowVersion = "3.3.0";
-        public const string ModVersion = ".0";//リリースver用バージョン変更
+        public const string PluginVersion = "3.11.0.8";
+        public const string PluginShowVersion = "3.11.0.8";
+        public const string ModVersion = ".0.8";//リリースver用バージョン変更
         /// 配布するデバッグ版なのであればtrue。リリース時にはfalseにすること。
-        public static bool DebugVersion = false;
+        public static bool DebugVersion = true;
 
         // サポートされている最低のAmongUsバージョン(Readmeも変える)
         public static readonly string LowestSupportedVersion = "2026.9.29";
@@ -408,6 +405,7 @@ namespace TownOfHost
         Havoc = CustomRoles.Havoc,
         Usurper = CustomRoles.Usurper,
         Alice = CustomRoles.Alice,
+        Koala = CustomRoles.Koala,
 
         HASTroll = CustomRoles.HASTroll,
         TaskPlayerB = CustomRoles.TaskPlayerB,

@@ -156,11 +156,12 @@ public static class CustomRoleManager
             }
 
             // キラーのキルチェック処理実行
-            //ダブルトリガー無効なら通常処理
+            // ダブルトリガー無効なら通常処理
             if (!DoubleTrigger.OnCheckMurderAsKiller(info) && force is false)//特殊強制キルの場合は処理しない
             {
                 killer.OnCheckMurderAsKiller(info);
             }
+            //アリスはKP見ないといけない。
             if (attemptTarget.GetRoleClass() is Alice al)
             {
                 if (!al.OnCheckMurderAsTarget(info))
@@ -1012,6 +1013,7 @@ public enum CustomRoles
     Havoc,
     Usurper,
     Alice,
+    Koala,
     //DEBUG only Neutral.
     //HideAndSeek
     HASFox,

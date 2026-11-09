@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using TownOfHost.Roles.Core;
+using TownOfHost.Roles.Neutral;
 using static TownOfHost.Options;
 
 namespace TownOfHost
@@ -24,9 +25,18 @@ namespace TownOfHost
             this.IdStart = idStart;
             this.Role = role;
             var rolename = RoleName == CustomRoles.NotAssigned ? role : RoleName;
+
             Dictionary<string, string> replacementDic = new() { { "%role%", Utils.ColorString(UtilsRoleText.GetRoleColor(rolename), UtilsRoleText.GetRoleName(rolename)) } };
-            Killdistance = StringOptionItem.Create(IdStart, "Killdistance", EnumHelper.GetAllNames<KillDistance>(), 0, tab, false)
-            .SetParent(CustomRoleSpawnChances[role]).SetParentRole(role);
+            if (role is CustomRoles.Jester)
+            {
+                Killdistance = StringOptionItem.Create(IdStart, "Killdistance", EnumHelper.GetAllNames<KillDistance>(), 0, tab, false)
+                    .SetParent(Jester.CanOutburst).SetParentRole(role).SetEnabled(() => Jester.CanOutburst.GetBool() && CustomRoleSpawnChances[role].GetInt() > 0);
+            }
+            else
+            {
+                Killdistance = StringOptionItem.Create(IdStart, "Killdistance", EnumHelper.GetAllNames<KillDistance>(), 0, tab, false)
+                    .SetParent(CustomRoleSpawnChances[role]).SetParentRole(role);
+            }
             Killdistance.ReplacementDictionary = replacementDic;
 
             role = RoleName == CustomRoles.NotAssigned ? role : RoleName;
@@ -148,13 +158,6 @@ namespace TownOfHost
         {
             return new SoloWinOption(idStart, tab, role, show: show, defo: defo);
         }
-        /// <summary>
-        /// キルディスタンスの上書き設定。
-        /// </summary>
-        /// <param name="idStart">ID</param>
-        /// <param name="tab">タブ</param>
-        /// <param name="role">設定に出すロール</param>
-        /// <param name="RoleName">設定名(ユニット用)</param>
         public static SoloWinOption Create(SimpleRoleInfo roleInfo, int idOffset, CustomRoles rolename = CustomRoles.NotAssigned, Func<bool> show = null, int defo = 0)
         {
             return new SoloWinOption(roleInfo.ConfigId + idOffset, roleInfo.Tab, roleInfo.RoleName, rolename, show, defo: defo);

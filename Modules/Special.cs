@@ -76,7 +76,6 @@ static class Event
         //とりま封印もここに書いてるけど、変えていいかも
         {CustomRoles.Explosioner, () => false},
         {CustomRoles.RocketLauncher, () => false},
-        {CustomRoles.Terrorist, () => false},
 
         {CustomRoles.Altair,() => Tanabata},
         {CustomRoles.Vega,() => Tanabata},

@@ -321,7 +321,7 @@ namespace TownOfHost
             if (clientId == -1)
             {
                 Logger.Error($"clientIdが-1!", "RpcSetRoleDesync");
-                return;
+                //return;
             }
             //player: ロールの変更対象
 

@@ -12,7 +12,7 @@ public sealed class Terrorist : RoleBase
             typeof(Terrorist),
             player => new Terrorist(player),
             CustomRoles.Terrorist,
-            () => RoleTypes.Engineer,
+            () => CanVent.GetBool() ? RoleTypes.Engineer : RoleTypes.Crewmate,
             CustomRoleTypes.Neutral,
             15400,
             SetupOptionItem,
@@ -39,6 +39,9 @@ public sealed class Terrorist : RoleBase
     }
     private static OptionItem OptionCanSuicideWin;
     private static OverrideTasksData Tasks;
+    static OptionItem CanVent;
+    static OptionItem OptionVentCooldown;
+    static OptionItem OptionVentIntime;
     private enum OptionName
     {
         CanTerroristSuicideWin
@@ -49,14 +52,18 @@ public sealed class Terrorist : RoleBase
     {
         SoloWinOption.Create(RoleInfo, 9, defo: 1);
         OptionCanSuicideWin = BooleanOptionItem.Create(RoleInfo, 10, OptionName.CanTerroristSuicideWin, false, false);
-        // 20-23を使用
+        CanVent = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.CanVent, false, false);
+        OptionVentCooldown = FloatOptionItem.Create(RoleInfo, 12, StringNames.EngineerCooldown, OptionBaseCoolTime, 15f, false, CanVent)
+            .SetValueFormat(OptionFormat.Seconds);
+        OptionVentIntime = FloatOptionItem.Create(RoleInfo, 13, StringNames.EngineerInVentCooldown, OptionBaseCoolTime, 5f, false, CanVent)
+            .SetZeroNotation(OptionZeroNotation.Infinity).SetValueFormat(OptionFormat.Seconds);
         Tasks = OverrideTasksData.Create(RoleInfo, 20);
     }
 
     public override void ApplyGameOptions(IGameOptions opt)
     {
-        AURoleOptions.EngineerCooldown = 0;
-        AURoleOptions.EngineerInVentMaxTime = 0;
+        AURoleOptions.EngineerCooldown = OptionVentCooldown.GetFloat();
+        AURoleOptions.EngineerInVentMaxTime = OptionVentIntime.GetInt();
     }
     public override void OnMurderPlayerAsTarget(MurderInfo info)
     {
@@ -90,6 +97,14 @@ public sealed class Terrorist : RoleBase
     }
     public void Win()
     {
+        if (CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Terrorist, Player.PlayerId, true))
+        {
+            CustomWinnerHolder.NeutralWinnerIds.Add(Player.PlayerId);
+        }
+    }
+    public override void CheckWinner(GameOverReason reason)
+    {
+        if (CustomWinnerHolder.WinnerTeam is not CustomWinner.Terrorist) return;
         foreach (var otherPlayer in PlayerCatch.AllAlivePlayerControls)
         {
             if (otherPlayer.Is(CustomRoles.Terrorist))
@@ -101,10 +116,6 @@ public sealed class Terrorist : RoleBase
             var playerState = PlayerState.GetByPlayerId(otherPlayer.PlayerId);
             playerState.DeathReason = CustomDeathReason.Bombed;
             playerState.SetDead();
-        }
-        if (CustomWinnerHolder.ResetAndSetAndChWinner(CustomWinner.Terrorist, Player.PlayerId, true))
-        {
-            CustomWinnerHolder.NeutralWinnerIds.Add(Player.PlayerId);
         }
     }
     public static System.Collections.Generic.Dictionary<int, Achievement> achievements = new();

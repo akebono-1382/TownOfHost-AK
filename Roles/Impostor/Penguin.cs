@@ -274,10 +274,11 @@ public sealed class Penguin : RoleBase, IImpostor
                     oldpos = position;
                     if (Player.PlayerId != 0)
                     {
-                        waitcount++;
                         var dis = Vector2.Distance(Player.GetTruePosition(), AbductVictim.GetTruePosition());
                         if (dis > 1f)
                         {
+                            waitcount++;
+
                             if (waitcount >= 2)
                             {
                                 waitcount = 0;
@@ -294,6 +295,8 @@ public sealed class Penguin : RoleBase, IImpostor
                                 var dis = Vector2.Distance(Player.GetTruePosition(), AbductVictim.GetTruePosition());
                                 if (dis > 1f)
                                 {
+                                    waitcount++;
+
                                     if (waitcount >= 2)
                                     {
                                         waitcount = 0;

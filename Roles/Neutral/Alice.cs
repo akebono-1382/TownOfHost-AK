@@ -8,7 +8,7 @@ using UnityEngine;
 namespace TownOfHost.Roles.Neutral;
 
 //Memo
-//予感実装する場合ベント/ファントムで切り替える
+//予感実装する場合C：ベント/I：ペットで切り替える
 
 //キル > 0 タスク > 0の時　ペット切り替え
 //キル > 0 タスク = 0の時　インポ固定
@@ -71,7 +71,7 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
     bool TaskMode;
     bool NeedKill() => NeedKills.GetInt() > 0;
     bool NeedTasks() => NeedTask.GetInt() > 0;
-    public bool Comp() => MyTaskState.HasCompletedEnoughCountOfTasks(NeedTask.GetInt()) || IsTaskFinished || NeedTask.GetInt() == 0;
+    public bool Comp() => MyTaskState.HasCompletedEnoughCountOfTasks(NeedTask.GetInt()) || NeedTask.GetInt() == 0;
     public bool CanKill => NeedKills.GetInt() > 0 && !TaskMode;
     public float CalculateKillCooldown() => KillCool.GetFloat();
     public bool CanUseImpostorVentButton() => false;
@@ -104,12 +104,10 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
     {
         opt.SetVision(Impvis.GetBool());
     }
-    /// <summary>
-    /// アリスだけ先判定じゃダメなので個別
-    /// </summary>
+    // アリスだけ先判定じゃダメなので個別
     public new bool OnCheckMurderAsTarget(MurderInfo info)
     {
-        if (info.KillPower > 9 || !Comp() || MyState.GetKillCount(false) < NeedKills.GetInt()) return true;
+        if (info.KillPower > 9 || !Comp() || (MyState.GetKillCount(false) < NeedKills.GetInt() && NeedKills.GetInt() != 0)) return true;
 
         if (TaskMode)
         {
@@ -121,7 +119,6 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
             Player.SetKillCooldown(cool);
         }
 
-        //強制的にfalseでブロックしてるけど、一応
         info.GuardPower = 9;
         GuardCount++;
         if (GuardCount >= NeedGuard.GetInt())
@@ -136,7 +133,11 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
     }
     public override void OnFixedUpdate(PlayerControl player)
     {
-        if (NowKillCool <= 0f) return;
+        if (NowKillCool <= 0f)
+        {
+            if (NowKillCool == 0f) return;
+            NowKillCool = 0f;
+        }
         var old = NowKillCool;
         NowKillCool -= Time.fixedDeltaTime;
         if (Math.Ceiling(old) - Math.Ceiling(NowKillCool) >= 1)
@@ -163,6 +164,7 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
         if (target == PlayerControl.LocalPlayer && Is(PlayerControl.LocalPlayer))
         {
             RoleManager.Instance.SetRole(target, role);
+            return;
         }
         target.RpcSetRoleDesync(role, target.GetClientId());
     }
@@ -183,10 +185,8 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
             _ = new LateTask(() =>
             {
                 if (Player == null || !Player.IsAlive() || TaskMode) return;
-                var cool = Math.Max(NowKillCool, 0.1f);
-                Logger.Info($"Alice restore killcool: {cool}", "Alice");
-                Player.SetKillCooldown(cool);
-            }, Main.LagTime + 0.2f, "Alice SetKillCooldown", true);
+                Player.SetKillCooldown(Math.Max(NowKillCool, 0f));
+            }, Main.LagTime + 0.1f, "Alice SetKillCooldown", true);
         }
 
         return false;

@@ -128,6 +128,6 @@ namespace TownOfHost
             else if (!percentage) return $"<#cee4ae>[{t2}/{t1}]</color>";
             else if (RoughPercentage) return $"<#cee4ae>[{ret3}%]</color>";
             else return $"<#cee4ae>[{ret1}%]</color>";
-        }
+        } 
     }
 }

@@ -597,7 +597,9 @@ public abstract class RoleBase : IDisposable
         EngineerInVentCooldown,
         TaskTrigger,
         CanUseActiveComms,
-        CanNormalKill
+        CanNormalKill,
+        NeedTaskWin,
+        TaskWin,
     }
     public enum DontReportreson
     {
