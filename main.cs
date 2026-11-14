@@ -60,6 +60,7 @@ namespace TownOfHost
         public const string PluginVersion = "3.11.09";
         public const string PluginShowVersion = "3.11.09";
         public const string ModVersion = ".09";//リリースver用バージョン変更
+
         /// 配布するデバッグ版なのであればtrue。リリース時にはfalseにすること。
         public static bool DebugVersion = true;
 
