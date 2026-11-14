@@ -407,6 +407,7 @@ namespace TownOfHost
         Usurper = CustomRoles.Usurper,
         Alice = CustomRoles.Alice,
         Koala = CustomRoles.Koala,
+        Raccoon = CustomRoles.Raccoon,
 
         HASTroll = CustomRoles.HASTroll,
         TaskPlayerB = CustomRoles.TaskPlayerB,

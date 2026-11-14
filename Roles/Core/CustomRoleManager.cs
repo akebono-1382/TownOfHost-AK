@@ -852,6 +852,7 @@ public enum CustomRoles
     Evilgambler,
     Notifier,
     Magician,
+    EvilMagic,
     Decrescendo,
     Curser,
     Alien,
@@ -887,6 +888,8 @@ public enum CustomRoles
     Explosioner,
     Florist,
     Cloner,
+    EvilChainer,
+    Poisoner,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,
@@ -1014,6 +1017,8 @@ public enum CustomRoles
     Usurper,
     Alice,
     Koala,
+    Raccoon,
+    RaccoonChild,
     //DEBUG only Neutral.
     //HideAndSeek
     HASFox,

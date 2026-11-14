@@ -563,6 +563,23 @@ public class MeetingVoteManager
                 if (pc.GetRoleClass()?.VotingResults(ref Exiled, ref IsTie, votedCounts, mostVotedPlayers, ClearAndExile) ?? false)
                     SkipVoteMode = true; //どれかがtrueを返すと以下の特殊モードが実行されなくなる
             }
+            //E方式にしてみた
+            //従来の奴も一旦残しておく。
+            if (Options.ShowVoteResult.GetBool() && Exiled != null)
+            {
+                //ホスト用にSetName
+                var Exiledpc = PlayerCatch.GetPlayerById(Exiled.PlayerId);
+
+                if (Exiledpc != null)
+                {
+                    byte id = Exiled.PlayerId;
+                    var name = Camouflage.PlayerSkins.TryGetValue(Exiled.PlayerId, out var cos) ? cos.PlayerName : "^a^";
+                    Voteresult = UtilsRoleText.GetExpelledText(Exiled.PlayerId, false, false);
+                    
+                    _ = new LateTask(() => Exiledpc.RpcSetName(UtilsRoleText.GetExpelledText(id, false, false) + "<size=0>"), 0.2f, "AssassinSetName", true);
+                    _ = new LateTask(() => Exiledpc.SetName(name), 6f, "AssassinSetName", true);
+                }
+            }
 
             // 同数投票時の特殊モード
             if (IsTie && Options.VoteMode.GetBool() && !SkipVoteMode)
@@ -600,6 +617,7 @@ public class MeetingVoteManager
                         break;
                 }
             }
+
         }
         /// <summary>
         /// Rpc受け取った側用のVoteResult。

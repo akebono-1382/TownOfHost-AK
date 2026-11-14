@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Hazel;
 
 using TownOfHost.Modules;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Impostor;
+using TownOfHost.Roles.Neutral;
+using UnityEngine;
 
 namespace TownOfHost
 {
@@ -21,7 +24,16 @@ namespace TownOfHost
             if (!TryGetData(seer, target, out var colorCode))
             {
                 if (KnowTargetRoleColor(seer, target, isMeeting))
-                    colorCode = target.GetRoleColorCode();
+                {
+                    if (seer.Is(CountTypes.Raccoon))
+                    {
+                        colorCode = UtilsRoleText.GetRoleColorCode(CustomRoles.RaccoonChild);
+                    }
+                    else
+                    {
+                        colorCode = target.GetRoleColorCode();
+                    }
+                }                  
             }
             // 会議中はブラッドラストの赤を隠す（インポとバレるのを防ぐ）
             if (isMeeting && target.Is(CustomRoles.Bloodlust) && target.GetRoleClass() is Bloodlust blMeeting && blMeeting.IsNameExposed
@@ -29,7 +41,16 @@ namespace TownOfHost
             {
                 colorCode = "";
                 if (KnowTargetRoleColor(seer, target, isMeeting))
-                    colorCode = target.GetRoleColorCode();
+                {
+                    if (seer.Is(CountTypes.Raccoon))
+                    {
+                        colorCode = UtilsRoleText.GetRoleColorCode(CustomRoles.RaccoonChild);
+                    }
+                    else
+                    {
+                        colorCode = target.GetRoleColorCode();
+                    }
+                }
             }
             string openTag = "", closeTag = "";
             if (!SuddenDeathMode.NowSuddenDeathMode)
@@ -72,6 +93,14 @@ namespace TownOfHost
         }
         public static bool KnowTargetRoleColor(PlayerControl seer, PlayerControl target, bool isMeeting)
         {
+            HashSet<byte> Racpending = new();
+            foreach (var pc in PlayerCatch.AllPlayerControls)
+            {
+                if (pc.GetRoleClass() is Raccoon rac && rac.PendingChildTargetId is not byte.MaxValue)
+                {
+                    Racpending.Add(rac.PendingChildTargetId);
+                }
+            }
             return seer == target
                 || target.Is(CustomRoles.GM)
                 || (seer.Is(CustomRoleTypes.Impostor) && target.Is(CustomRoleTypes.Impostor)
@@ -80,7 +109,11 @@ namespace TownOfHost
                 || ((seer.Is(CountTypes.Jackal) || seer.Is(CustomRoles.Jackaldoll)) && (target.Is(CountTypes.Jackal) || target.Is(CustomRoles.Jackaldoll)))
                 || (seer.Is(CountTypes.MilkyWay) && target.Is(CountTypes.MilkyWay))
                 || (Options.ImpostorCanSeeSKMadmate.GetBool() && seer.GetCustomRole().IsImpostor() && target.Is(CustomRoles.SKMadmate))
-                || (seer.GetCountTypes() is CountTypes.Havoc && target.GetCountTypes() is CountTypes.Havoc)
+                || (seer.Is(CountTypes.Havoc) && target.Is(CountTypes.Havoc))
+                || (seer.Is(CountTypes.Raccoon) && target.Is(CountTypes.Raccoon))
+                || (seer.Is(CountTypes.Remotekiller) && target.Is(CountTypes.Remotekiller))
+                || (seer.Is(CountTypes.GrimReaper) && target.Is(CountTypes.GrimReaper))
+                || (seer.Is(CountTypes.Raccoon) && Racpending.Contains(target.PlayerId))
                 ;
         }
         public static bool TryGetData(PlayerControl seer, PlayerControl target, out string colorCode)

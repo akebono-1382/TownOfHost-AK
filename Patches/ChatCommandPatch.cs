@@ -1,3 +1,9 @@
+#region haishi
+// 廃止した理由って、今までのでいいし...
+// 公式が出てもそっちのが不便よ。
+// 特に死亡で不具合ないし。
+#endregion
+// == 以下/cmd使用 ==
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,6 +62,10 @@ namespace TownOfHost
             var text = __instance.freeChatField.textArea.text;
             if (ChatHistory.Count == 0 || ChatHistory[^1] != text) ChatHistory.Add(text);
             ChatControllerUpdatePatch.CurrentHistorySelection = ChatHistory.Count;
+                        if (text.StartsWith("/") && !text.Contains("cmd"))
+            {
+                text = "/cmd " + text;
+            }
             string[] args = text/*.ToLower()*/.Split(' ');
             string subArgs = "";
             var canceled = false;
@@ -63,15 +73,6 @@ namespace TownOfHost
             Logger.Info(text, "SendChat");
             ChatManager.SendMessage(PlayerControl.LocalPlayer, text);
 
-            if (text.StartsWith("/") && !text.Contains("cmd"))
-            {
-                SendMessage(GetString("Error.CommandFailed"), PlayerControl.LocalPlayer.PlayerId);
-                if (DebugModeManager.AmDebugger && GameStates.IsLocalGame)
-                {
-                    canceled = true;
-                    cancelVal = "/cmd " + text;
-                }
-            }
             if (text.StartsWith("/cmd")) canceled = true;
 
             if (args[0] != "/cmd" || args.Length <= 1)
@@ -1286,7 +1287,7 @@ namespace TownOfHost
                 var tag = !player.Data.IsDead ? "SendChatAlive" : "SendChatDead";
             }
 
-            canceled = false;
+            /*canceled = false;
             if (!AmongUsClient.Instance.AmHost)
             {
                 if (text.StartsWith("/cmd"))
@@ -1315,8 +1316,48 @@ namespace TownOfHost
 
             canceled = true;
 
-            if (args[0] != "/cmd" || args.Length <= 1) return;
+            if (args[0] != "/cmd" || args.Length <= 1) return;*/
             /*args = text.ToLower().Split(' ');*/
+            //args = args.Skip(1).ToArray();
+            //if (args[0].StartsWith("/") is false) args[0] = $"/{args[0]}";
+            canceled = false;
+            if (!AmongUsClient.Instance.AmHost)
+            {
+                // MODクライアントは「/」始まりのチャットを表示しない
+                if (text.StartsWith("/")) canceled = true;
+                return;
+            }
+            if ((Isclient && !player.IsModClient()) || (!Isclient && player.IsModClient()))
+            {
+                // MODクライアントの通常チャットも、バニラ側からは死亡扱いで見えないので中継する
+                if (!Isclient && !text.StartsWith("/")) MeetingChatHider.RelayChat(player, text);
+                return;
+            }
+            if (text.IsSystemMessage() || player.Data.PlayerName.IsSystemMessage()) return;
+
+            // 「/h」でも「/cmd /h」でも同じ扱いにする
+            if (text.StartsWith("/") && text != "/cmd" && !text.StartsWith("/cmd "))
+            {
+                /*if (IsRestriction())
+                {   // 制限サーバーでは隠す手段が公式の/cmdしかないので従来どおり
+                    SendMessage(GetString("Error.CommandFailed"), player.PlayerId);
+                    return;
+                }*/
+                text = "/cmd " + text; // 内部処理用に揃えるだけ
+            }
+
+            string[] args = text.Split(' ');
+            string subArgs = "";
+            if (player.PlayerId != 0) ChatManager.SendMessage(player, text);
+
+            if (args[0] != "/cmd")
+            {   // コマンド以外 → 生き返らせてチャットを送る
+                MeetingChatHider.RelayChat(player, text);
+                return;
+            }
+            if (GuessManager.GuesserMsg(player, text)) { canceled = true; return; }
+            canceled = true;
+            if (args.Length <= 1) return;
             args = args.Skip(1).ToArray();
             if (args[0].StartsWith("/") is false) args[0] = $"/{args[0]}";
 
@@ -1687,7 +1728,7 @@ namespace TownOfHost
                     .SendMessage();
                     break;
                 default:
-                    if (IsRestriction() is false)
+                    /*if (IsRestriction() is false)
                     {//バニラ鯖以外のチャット秘匿の処理
                         if (!Options.ExHideChatCommand.GetBool()) break;
                         if (player.IsModClient()) return;
@@ -1747,7 +1788,7 @@ namespace TownOfHost
                                 player.Data.IsDead = false;
                             }
                         }
-                    }
+                    }*/
                     break;
             }
             if (IsRestriction() is false)

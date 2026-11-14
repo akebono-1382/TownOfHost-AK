@@ -64,10 +64,7 @@ public sealed class NekoKabocha : RoleBase, IImpostor, INekomata
     public override void OnMurderPlayerAsTarget(MurderInfo info)
     {
         // 普通のキルじゃない．もしくはキルを行わない時はreturn
-        if (GameStates.IsMeeting || info.IsAccident || info.IsSuicide || !info.CanKill || !info.DoKill || IsDead)
-        {
-            return;
-        }
+        if (GameStates.IsMeeting || info.IsAccident || info.IsSuicide || !info.CanKill || !info.DoKill || IsDead) return;
         // 殺してきた人を殺し返す
         logger.Info("ネコカボチャの仕返し");
         var killer = info.AttemptKiller;

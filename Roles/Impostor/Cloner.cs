@@ -5,6 +5,9 @@ using Hazel;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 
+//メモ
+//タゲ視点のTPをDesyncにしたい
+
 namespace TownOfHost.Roles.Impostor
 {
     public sealed class Cloner : RoleBase, IImpostor, IUsePhantomButton, IPetTrigger
@@ -39,7 +42,6 @@ namespace TownOfHost.Roles.Impostor
             PlayerCatch.AllPlayerControls.ToArray().Where(p => p != null && !p.IsAlive() &&
             (PlayerCatch.OldAlivePlayerControles.Contains(p) ||
             UtilsGameLog.day <= 1));
-
         int now;
         private static void SetupOptionItem()
         {
@@ -84,6 +86,11 @@ namespace TownOfHost.Roles.Impostor
             foreach (var seer in PlayerCatch.AllPlayerControls.Where(p => p.PlayerId != pc.PlayerId))
             {
                 pc.RpcMurderPlayerDesync(pc, seer);
+            }
+            var fake = PlayerCatch.AllPlayerControls.Where(p => !p.IsAlive() && p != pc).FirstOrDefault();
+            if (fake != null)
+            {
+                fake.RpcMurderPlayerDesync(fake, pc);
             }
             pc.RpcSnapToForced(original);
         }

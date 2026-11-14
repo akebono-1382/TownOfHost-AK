@@ -536,7 +536,7 @@ namespace TownOfHost
                 return;
             }
             if (player.IsAlive() || !(player.Data.Role.Role is RoleTypes.CrewmateGhost or RoleTypes.ImpostorGhost or RoleTypes.GuardianAngel or RoleTypes.SpiritGuide))
-            {//道連れ、マジシャン等で死んでいないのにIsDeadを変更する場合はモーションを入れる。
+            {//道連れ、イビルマジック等で死んでいないのにIsDeadを変更する場合はモーションを入れる。
                 if (!force)
                 {
                     if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId)
@@ -715,13 +715,15 @@ namespace TownOfHost
         }
         public static void OnlySeeMyPet(this PlayerControl pc, string petid = null)
         {
-            return;
-            /*
+            //一旦解禁
+            //return;
+            
             petid ??= Camouflage.PlayerSkins.TryGetValue(pc.PlayerId, out var outfit) ? outfit.PetId : "";
+            if (petid is "pet_EmptyPet" or "") return;
             if (CustomWinnerHolder.WinnerTeam is not CustomWinner.Default) return;
-            //pc.RpcSetPet("");
+            pc.RpcSetPet("");
 
-            foreach (var ap in PlayerCatch.AllPlayerControls)
+            /*foreach (var ap in PlayerCatch.AllPlayerControls)
             {
                 var petId = "";
                 if (ap.GetClient() == null) continue;
@@ -731,17 +733,17 @@ namespace TownOfHost
                 writer.Write(petId);
                 writer.Write(pc.GetNextRpcSequenceId(RpcCalls.SetPetStr));
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
-            }
-            /*
+            }*/
+            
             if (pc.IsAlive() && pc.GetClient() != null)
             {
                 MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(pc.NetId, (byte)RpcCalls.SetPetStr, SendOption.None, pc.GetClientId());
                 writer.Write(petid);
                 writer.Write(pc.GetNextRpcSequenceId(RpcCalls.SetPetStr));
                 AmongUsClient.Instance.FinishRpcImmediately(writer);
-            }*/
+            }
 
-            //pc.RawSetPet(pc.PlayerId == PlayerControl.LocalPlayer.PlayerId ? petid : "pet_EmptyPet", pc.Data.DefaultOutfit.ColorId);
+            pc.RawSetPet(pc.PlayerId == PlayerControl.LocalPlayer.PlayerId ? petid : "pet_EmptyPet", pc.Data.DefaultOutfit.ColorId);
         }
         public static void AllPlayerOnlySeeMePet() => PlayerCatch.AllPlayerControls.Do(pc => pc.OnlySeeMyPet(Camouflage.PlayerSkins.TryGetValue(pc.PlayerId, out var outfit) ? outfit.PetId : ""));
     }

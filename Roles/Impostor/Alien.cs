@@ -18,7 +18,7 @@ namespace TownOfHost.Roles.Impostor;
 //
 // メモ
 // 追加したいなぁって思ってるの
-// マジシャン(キルボタンぜんぶ吹っ飛ばす...流石に強い気がする)
+// イビルマジック(キルボタンぜんぶ吹っ飛ばす...流石に強い気がする)
 // ウィッチ(キルで呪い付与...弱いかなぁ...)
 
 public sealed class Alien : RoleBase, IMeetingTimeAlterable, IImpostor, INekomata, ISelfVoter

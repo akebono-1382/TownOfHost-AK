@@ -133,10 +133,12 @@ public sealed class Alice : RoleBase, IKiller, IPetTrigger
     }
     public override void OnFixedUpdate(PlayerControl player)
     {
+        if (NowKillCool == 0f) return;
+
         if (NowKillCool <= 0f)
         {
-            if (NowKillCool == 0f) return;
             NowKillCool = 0f;
+            return;
         }
         var old = NowKillCool;
         NowKillCool -= Time.fixedDeltaTime;

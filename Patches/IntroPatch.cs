@@ -561,13 +561,16 @@ namespace TownOfHost
                         }
                         // インポスター置き換えはid0(タスクリストの一番上)のみ届かない。
                         // タスクを持たないケースでのみ試してみる。
-                        if (UtilsTask.HasTasks(pl.Data, false) is false && pl.GetCustomRole().GetRoleInfo()?.BaseRoleType?.Invoke().IsCrewmate() is true)
+
+                        // 位置見えなくなるのがなあ...って感じなので
+                        // 良い代替法見つかるまで封印。
+                        /*if (UtilsTask.HasTasks(pl.Data, false) is false && pl.GetCustomRole().GetRoleInfo()?.BaseRoleType?.Invoke().IsCrewmate() is true)
                         {
                             foreach (var task in pl.myTasks)
                             {
                                 pl.RpcCompleteTask(task.Id);
                             }
-                        }
+                        }*/
                     }
                     if (Options.firstturnmeeting is false)
                         ExtendedRpc.RpcResetAbilityCooldownAllPlayer();

@@ -8,7 +8,6 @@ using UnityEngine;
 
 namespace TownOfHost.Roles.Impostor;
 
-//どうしてもいれたかったの！
 public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
 {
     public static readonly SimpleRoleInfo RoleInfo =

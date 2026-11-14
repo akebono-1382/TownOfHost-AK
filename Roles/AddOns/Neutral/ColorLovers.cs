@@ -204,7 +204,7 @@ class ColorLovers
 
                     //残った恋人を全て殺す(2人以上可)
                     //生きていて死ぬ予定もない場合は心中
-                    if (partnerPlayer.PlayerId != deathId && !partnerPlayer.Data.IsDead)
+                    if (partnerPlayer.PlayerId != deathId && partnerPlayer.IsAlive())
                     {
                         PlayerState.GetByPlayerId(partnerPlayer.PlayerId).DeathReason = CustomDeathReason.FollowingSuicide;
                         if (isExiled)

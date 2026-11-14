@@ -370,6 +370,7 @@ namespace TownOfHost
         GrimReaper,
         Fox,
         MilkyWay,
-        Havoc
+        Havoc,
+        Raccoon,
     }
 }

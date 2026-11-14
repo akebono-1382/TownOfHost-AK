@@ -47,7 +47,7 @@ public sealed class Stolener : RoleBase
         OptionCanUseaddonOnfinish = BooleanOptionItem.Create(RoleInfo, 11, OptionName.StolenerCanUseaddonOnfinish, true, false, OptionCanUseaddon);
         RoleAddAddons.Create(RoleInfo, 20, DefaaultOn: true);
     }
-    ///マジシャンとかのキルでも受け渡したい
+    ///イビルマジックとかのキルでも受け渡したい
     public override void OnFixedUpdate(PlayerControl player)
     {
         if (!AmongUsClient.Instance.AmHost || player.IsAlive() || Killer != byte.MaxValue) return;

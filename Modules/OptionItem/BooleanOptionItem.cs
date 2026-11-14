@@ -30,7 +30,7 @@ namespace TownOfHost
             );
         }
         public static BooleanOptionItem Create(
-            SimpleRoleInfo roleInfo, int idOffset, Enum name, bool defaultValue, bool isSingleValue, OptionItem parent = null
+            SimpleRoleInfo roleInfo, int idOffset, Enum name, bool defaultValue, bool isSingleValue = false, OptionItem parent = null
         )
         {
             var opt = new BooleanOptionItem(

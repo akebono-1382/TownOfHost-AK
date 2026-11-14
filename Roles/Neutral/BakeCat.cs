@@ -264,6 +264,7 @@ namespace TownOfHost.Roles.Neutral
                 TeamType.MilkyWay => CustomWinnerHolder.winners.Contains(CustomWinner.MilkyWay),
                 TeamType.Betrayer => CustomWinnerHolder.winners.Contains(CustomWinner.MadBetrayer),
                 TeamType.Havoc => CustomWinnerHolder.winners.Contains(CustomWinner.Havoc),
+                TeamType.Raccoon => CustomWinnerHolder.winners.Contains(CustomWinner.Raccoon),
                 _ => null,
             };
             if (!won.HasValue)
@@ -310,6 +311,7 @@ namespace TownOfHost.Roles.Neutral
                 TeamType.MilkyWay => StringHelper.CodeColor(Vega.TeamColor),
                 TeamType.Betrayer => UtilsRoleText.GetRoleColor(CustomRoles.MadBetrayer),
                 TeamType.Havoc => UtilsRoleText.GetRoleColor(CustomRoles.Havoc),
+                TeamType.Raccoon => UtilsRoleText.GetRoleColor(CustomRoles.Raccoon),
                 _ => null,
             };
             if (!color.HasValue)

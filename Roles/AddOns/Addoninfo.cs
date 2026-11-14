@@ -112,7 +112,7 @@ class AddondataInfo
                     {CustomRoles.Sunglasses , "#2e103d"},
 
                     //第三属性
-                    { CustomRoles.Amanojaku,"#005243"},
+                    {CustomRoles.Amanojaku,"#005243"},
                     {CustomRoles.Faction,"#c6a768"},
                     {CustomRoles.Lovers, "#ff6be4"},
                     {CustomRoles.RedLovers, "#d70035"},

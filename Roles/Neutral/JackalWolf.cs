@@ -9,7 +9,10 @@ using UnityEngine;
 
 namespace TownOfHost.Roles.Neutral;
 
-public sealed class JackalWolf : RoleBase, ILNKiller, IUsePhantomButton, IDoubleTrigger, IKillFlashSeeable, ISidekickable, ISchrodingerCatOwner, IPetTrigger
+public sealed class JackalWolf : RoleBase,
+    ILNKiller, IUsePhantomButton, IDoubleTrigger,
+    IKillFlashSeeable, ISidekickable, ISchrodingerCatOwner,
+    IPetTrigger
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(

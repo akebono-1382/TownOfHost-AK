@@ -26,8 +26,7 @@ public sealed class Koala : RoleBase, IUsePhantomButton, IKiller
             "kla",
             "#00FEFC",
             (5, 8),
-            Desc: () =>
-                string.Format(GetString("KoalaDesc"), OptWinTime.GetFloat())
+            Desc: () => string.Format(GetString("KoalaDesc"), OptWinTime.GetFloat())
         );
     public Koala(PlayerControl player)
     : base(
@@ -35,6 +34,7 @@ public sealed class Koala : RoleBase, IUsePhantomButton, IKiller
         player
     )
     {
+        NowSleepTime = 999f;
         Cooldown = OptCooldown.GetFloat();
         WinTime = OptWinTime.GetInt();
         CanReport = OptCanReport.GetBool();
@@ -78,7 +78,7 @@ public sealed class Koala : RoleBase, IUsePhantomButton, IKiller
             RoleManager.Instance.SetRole(target, role);
             return;
         }
-        target.RpcSetRoleDesync(role, target.GetClientId());
+        target.RpcSetRoleDesync(role, Player.GetClientId());
     }
     void IUsePhantomButton.OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {

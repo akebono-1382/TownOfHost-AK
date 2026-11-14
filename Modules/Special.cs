@@ -22,7 +22,7 @@ static class Event
     public static bool Tanabata = DateTime.Now.Month == 7 && DateTime.Now.Day is > 6 and < 15;
     public static bool IsEventDay => IsChristmas || White || IsInitialRelease || IsHalloween || GoldenWeek || April;
     public static bool Special = false;
-    public static bool NowRoleEvent => DateTime.Now.Month == 11 && DateTime.Now.Day >= 3 && DateTime.Now.Day <= 3 + 7;
+    public static bool NowRoleEvent => false ;
     public static List<string> OptionLoad = new();
 
     /// <summary>
@@ -34,7 +34,8 @@ static class Event
     {
         //イベント役職以外はtrueを返す!!
         if (!EventRoles.TryGetValue(role, out var check)) return true;
-
+        return false;
+#pragma warning disable CS0162
         //キャッシュ済みならそっちを使う
         if (cachedEventFlags.TryGetValue((role, useApiData), out bool cachedData))
             return cachedData;
@@ -70,16 +71,17 @@ static class Event
         }
         cachedEventFlags[(role, true)] = result;
         return result;
+#pragma warning restore CS0162
     }
     public static Dictionary<CustomRoles, Func<bool>> EventRoles = new()
     {
         //とりま封印もここに書いてるけど、変えていいかも
         {CustomRoles.Explosioner, () => false},
         {CustomRoles.RocketLauncher, () => false},
-
-        {CustomRoles.Altair,() => Tanabata},
-        {CustomRoles.Vega,() => Tanabata},
-        {CustomRoles.Cakeshop, () => NowRoleEvent},
+        {CustomRoles.Altair,() => false},
+        {CustomRoles.Vega,() => false},
+        {CustomRoles.Cakeshop, () => false},
+        {CustomRoles.Poisoner, () => false},
     };
 
     public static Dictionary<(CustomRoles role, bool isApiData), bool> cachedEventFlags = new(EventRoles.Count);

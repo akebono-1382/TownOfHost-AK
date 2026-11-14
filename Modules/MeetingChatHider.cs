@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using HarmonyLib;
 using Hazel;
 
 using TownOfHost.Modules;
 using TownOfHost.Patches;
 using static TownOfHost.Utils;
 using static TownOfHost.PlayerCatch;
-
+// くろーどありがとう
 namespace TownOfHost
 {
     /// <summary>
@@ -26,13 +27,18 @@ namespace TownOfHost
         private const float ApplyDelay = 0.2f;
         /// <summary>1パケットに詰めるPlayerInfoの数 (大きすぎるとパケットが膨らむため分割)</summary>
         private const int ChunkSize = 5;
+        private static float lastStartTime = -10f;
 
-        private static bool CanUse =>
-            AmongUsClient.Instance.AmHost
-            && Options.ExHideChatCommand.GetBool()
-            && !IsRestriction()
-            && GameStates.CalledMeeting && GameStates.IsMeeting
-            && !AntiBlackout.IsSet && !AntiBlackout.IsCached;
+        /// <summary>使えない場合はその理由を返す (公式サーバーかどうかは見ない)</summary>
+        private static bool CanUse(out string reason)
+        {
+            reason = "";
+            if (!AmongUsClient.Instance.AmHost) reason = "ホストではない";
+            else if (!Options.ExHideChatCommand.GetBool()) reason = "ExHideChatCommandがOFF";
+            else if (!(GameStates.CalledMeeting && GameStates.IsMeeting)) reason = "会議中ではない";
+            else if (AntiBlackout.IsSet || AntiBlackout.IsCached) reason = "AntiBlackout処理中";
+            return reason == "";
+        }
 
         /// <summary>死亡扱いを見せる相手 (生存中・バニラクライアント・ホスト以外)</summary>
         private static bool IsViewer(PlayerControl pc) =>
@@ -44,15 +50,27 @@ namespace TownOfHost
         /// <summary>会議開始時に呼ぶ (MeetingHudPatch.StartPatch の Postfix など)</summary>
         public static void OnMeetingStart()
         {
+            // StartPatch側からも呼ばれた場合の二重実行を防ぐ
+            float now = UnityEngine.Time.realtimeSinceStartup;
+            if (now - lastStartTime < 1f) return;
+            lastStartTime = now;
+
             Applied = false;
+            Logger.Info("会議開始を検知", "MeetingChatHider");
             if (!AmongUsClient.Instance.AmHost) return;
 
             _ = new LateTask(() =>
             {
-                if (!CanUse) return;
+                if (!CanUse(out var reason))
+                {
+                    Logger.Info($"適用しない: {reason}", "MeetingChatHider");
+                    return;
+                }
                 Applied = true;
 
-                foreach (var viewer in AllAlivePlayerControls.Where(IsViewer).ToArray())
+                var viewers = AllAlivePlayerControls.Where(IsViewer).ToArray();
+                Logger.Info($"死亡扱いを送信: 対象クライアント {viewers.Length}人", "MeetingChatHider");
+                foreach (var viewer in viewers)
                 {
                     // viewer から見て「自分以外」(ホストは除く) を死亡扱いにする
                     var targets = AllAlivePlayerControls
@@ -78,7 +96,7 @@ namespace TownOfHost
         /// </summary>
         public static void RelayChat(PlayerControl sender, string text)
         {
-            if (!Applied || !CanUse) return;
+            if (!Applied || !CanUse(out _)) return;
             // ホストは死亡扱いにしていない / 死亡者のチャットは元々死亡者にしか見えない
             if (sender == null || sender.PlayerId == PlayerControl.LocalPlayer.PlayerId || !sender.IsAlive()) return;
 
@@ -152,5 +170,24 @@ namespace TownOfHost
                 data.IsDead = original;
             }
         }
+    }
+
+    // StartPatch / 終了処理に手を入れなくても動くよう、ここで直接フックする
+    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Start))]
+    class MeetingChatHiderStartPatch
+    {
+        // PatchAll時に呼ばれる。新しいDLLが読み込まれているかの確認用
+        public static bool Prepare()
+        {
+            try { Logger.Info("パッチを登録", "MeetingChatHider"); } catch { }
+            return true;
+        }
+        public static void Postfix() => MeetingChatHider.OnMeetingStart();
+    }
+
+    [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.OnDestroy))]
+    class MeetingChatHiderEndPatch
+    {
+        public static void Postfix() => MeetingChatHider.OnMeetingEnd();
     }
 }

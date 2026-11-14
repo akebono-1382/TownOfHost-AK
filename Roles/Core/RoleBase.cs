@@ -462,7 +462,8 @@ public abstract class RoleBase : IDisposable
             RoleTypes.ImpostorGhost or RoleTypes.CrewmateGhost => StringNames.HauntAbilityName,
             _ => null//アプデ対応用
         };
-        return str.HasValue ? Translator.GetString(str.Value) : "Invalid";
+        //InvalIdはちょっと...
+        return str.HasValue ? Translator.GetString(str.Value) : Translator.GetString("KillButtonText");
     }
     /// <summary>
     /// アビリティボタンの画像を変更します。

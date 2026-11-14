@@ -115,6 +115,7 @@ namespace TownOfHost
         public static List<string> NotString = new();
         public static string GetString(string str, SupportedLangs langId)
         {
+            //var res = str;
             var res = $"<INVALID:{str}>";
             var ch = res;
             //InfoLong無効化で説明見れなくなるのは...

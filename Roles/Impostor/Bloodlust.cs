@@ -8,14 +8,14 @@ using System.Collections.Generic;
 
 namespace TownOfHost.Roles.Impostor;
 
-public sealed class Bloodlust : RoleBase, IImpostor
+public sealed class Bloodlust : RoleBase, IImpostor, IUsePhantomButton
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
             typeof(Bloodlust),
             player => new Bloodlust(player),
             CustomRoles.Bloodlust,
-            () => RoleTypes.Shapeshifter,
+            () => RoleTypes.Phantom,
             CustomRoleTypes.Impostor,
             25300,
             SetupOptionItem,
@@ -29,6 +29,11 @@ public sealed class Bloodlust : RoleBase, IImpostor
         : base(RoleInfo, player)
     {
         Bloodlusts = new();
+    }
+    public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
+    {
+        AdjustKillCooldown = true;
+        ResetCooldown = false;
     }
     static HashSet<Bloodlust> Bloodlusts;
     static OptionItem OptionKillCooldown;
@@ -52,31 +57,28 @@ public sealed class Bloodlust : RoleBase, IImpostor
     }
 
     public float CalculateKillCooldown() => OptionKillCooldown.GetFloat();
-
+    bool IUsePhantomButton.IsPhantomRole => IsNameExposed is false;
+    bool IUsePhantomButton.IsresetAfterKill => false;
+    bool IUsePhantomButton.UseOneclickButton => true;
     public override void ApplyGameOptions(IGameOptions opt)
     {
         if (IsNameExposed || !Player.IsAlive())
         {
-            AURoleOptions.ShapeshifterCooldown = 255f;
+            AURoleOptions.PhantomCooldown = 0f;
         }
         else
         {
-            AURoleOptions.ShapeshifterCooldown = OptionTimeUntilRed.GetFloat() + Main.LagTime;
+            AURoleOptions.PhantomCooldown = OptionTimeUntilRed.GetFloat() + Main.LagTime;
         }
-        AURoleOptions.ShapeshifterDuration = 1f;
     }
-
-    public override bool CheckShapeshift(PlayerControl target, ref bool shouldAnimate)
-    {
-        shouldAnimate = false;
-        return false;
-    }
-
     public override bool CanUseAbilityButton() => Player.IsAlive();
-
+    public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
+    {
+        if (!IsNameExposed || !Player.IsAlive()) return "";
+        return GetString("BloodlustAbilityExposed");
+    }
     public override string GetAbilityButtonText()
     {
-        if (IsNameExposed) return GetString("BloodlustAbilityExposed");
         return GetString("BloodlustAbilityTimer");
     }
 
@@ -87,7 +89,7 @@ public sealed class Bloodlust : RoleBase, IImpostor
             ResetTimerAndExposeState(sendRpc: true);
         Bloodlusts.Add(this);
     }
-
+    public override void OnDestroy() => Bloodlusts.Remove(this);
     public override void StartGameTasks()
     {
         if (!AmongUsClient.Instance.AmHost) return;

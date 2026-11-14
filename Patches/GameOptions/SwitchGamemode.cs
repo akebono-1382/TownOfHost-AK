@@ -3,6 +3,7 @@ using HarmonyLib;
 
 namespace TownOfHost
 {
+    //さすがに無効化はいらん。
     [HarmonyPatch(typeof(GameOptionsManager), nameof(GameOptionsManager.SwitchGameMode))]
     class SwitchGameModePatch
     {
@@ -11,14 +12,14 @@ namespace TownOfHost
             Main.HnSFlag = false;
             if (gameMode == GameModes.HideNSeek)
             {
-                Main.HnSFlag = true;
+                /*Main.HnSFlag = true;
                 if (!DebugModeManager.AmDebugger)
                 {
                     ErrorText.Instance.HnSFlag = true;
                     ErrorText.Instance.AddError(ErrorCode.HnsUnload);
                     Harmony.UnpatchAll();
                     Main.Instance.Unload();
-                }
+                }*/
             }
         }
     }

@@ -74,6 +74,13 @@ public interface ISchrodingerCatOwner
         /// ベトレイヤーに所属する状態
         /// </summary>
         Betrayer,
+        /// <summary>
+        /// ハボックに所属する状態
+        /// </summary>
         Havoc,
+        /// <summary>
+        /// アライグマに所属する状態
+        /// </summary>
+        Raccoon,
     }
 }

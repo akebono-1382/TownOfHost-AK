@@ -22,11 +22,11 @@ namespace TownOfHost.Roles.Neutral
                 true,
                 introSound: () => GetIntroSound(RoleTypes.Impostor),
                 countType: CountTypes.Remotekiller,
-                from: From.TownOfHost_K,
-                assignInfo: new RoleAssignInfo(CustomRoles.Remotekiller, CustomRoleTypes.Neutral)
+                from: From.TownOfHost_K//,
+                /*assignInfo: new RoleAssignInfo(CustomRoles.Remotekiller, CustomRoleTypes.Neutral)
                 {
                     AssignCountRule = new(1, 1, 1)
-                }
+                }*/
             );
         public Remotekiller(PlayerControl player)
         : base(
@@ -75,6 +75,7 @@ namespace TownOfHost.Roles.Neutral
             //登録
             killer.SetKillCooldown(KillCooldown, target: target);
             ReamoteTargetId = target.PlayerId;
+            CustomButtonHud.BottonHud();
             info.DoKill = false;
         }
         public override void OnReportDeadBody(PlayerControl _, NetworkedPlayerInfo __)

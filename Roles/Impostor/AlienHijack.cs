@@ -29,6 +29,10 @@ public sealed class AlienHijack : RoleBase, IMeetingTimeAlterable, IImpostor, IN
                 "HAl",
                 OptionSort: (1, 1),
                 from: From.TownOfHost_K,
+                assignInfo: new(CustomRoles.AlienHijack, CustomRoleTypes.Impostor)
+                {
+                    IsInitiallyAssignableCallBack = () => false
+                },
                 introSound: () => GetIntroSound(RoleTypes.Shapeshifter)
             );
     public AlienHijack(PlayerControl player)

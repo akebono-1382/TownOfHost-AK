@@ -57,7 +57,6 @@ public sealed class MassMedia : RoleBase, IKiller, IKillFlashSeeable
     bool GuessMode;
     bool Win;
     Vector3 TargetPosition;
-    public static HashSet<MassMedia> MassMedias = new();
     enum Option
     {
         MassMediaShikai,
@@ -79,10 +78,7 @@ public sealed class MassMedia : RoleBase, IKiller, IKillFlashSeeable
         Guees = byte.MaxValue;
         Suspects = new();
         SuspectsSearch = false;
-
-        MassMedias.Add(this);
     }
-    public override void OnDestroy() => MassMedias.Clear();
     private static void SetupOptionItem()
     {
         SoloWinOption.Create(RoleInfo, 9, defo: 1);

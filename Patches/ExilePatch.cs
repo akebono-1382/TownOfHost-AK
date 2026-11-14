@@ -330,7 +330,10 @@ namespace TownOfHost
                 }
                 else if (result.Value.OverrideExiled == byte.MaxValue)
                 {
-                    __instance.completeString = string.Format(Translator.GetString(StringNames.ExileTextNonConfirm), result.Value.Exiled.GetLogPlayerName());
+                    __instance.completeString =
+                        Options.ShowVoteResult.GetBool() && !string.IsNullOrEmpty(MeetingVoteManager.Voteresult)
+                            ? MeetingVoteManager.Voteresult/* + "<size=0>"*/
+                            : string.Format(Translator.GetString(StringNames.ExileTextNonConfirm), result.Value.Exiled.GetLogPlayerName());
                 }
             }
             SecondBegin = false;

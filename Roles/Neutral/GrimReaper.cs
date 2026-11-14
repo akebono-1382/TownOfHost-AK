@@ -23,11 +23,11 @@ namespace TownOfHost.Roles.Neutral
                 "#4b0082",
                 (2, 2),
                 true,
-                countType: CountTypes.GrimReaper,//こいつ生存カウント分ける。(生存カウント入れないため)
-                assignInfo: new RoleAssignInfo(CustomRoles.GrimReaper, CustomRoleTypes.Neutral)
+                countType: CountTypes.GrimReaper/*,*///こいつ生存カウント分ける。(生存カウント入れないため)
+                /*assignInfo: new RoleAssignInfo(CustomRoles.GrimReaper, CustomRoleTypes.Neutral)
                 {
                     AssignCountRule = new(1, 1, 1)
-                }
+                }*/
             );
         public GrimReaper(PlayerControl player)
         : base(
@@ -75,7 +75,7 @@ namespace TownOfHost.Roles.Neutral
         }
         public override void ApplyGameOptions(IGameOptions opt)
         {
-            opt.SetVision(OptImpVision?.GetBool() ?? true);
+            opt.SetVision(OptImpVision.GetBool());
         }
         public float CalculateKillCooldown() => KillCooldown;
         public bool CanUseSabotageButton() => CanUseSabotage;

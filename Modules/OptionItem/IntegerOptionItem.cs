@@ -15,7 +15,7 @@ namespace TownOfHost
             Rule = rule;
         }
         public static IntegerOptionItem Create(
-            int id, string name, IntegerValueRule rule, int defaultValue, TabGroup tab, bool isSingleValue, bool HideValue = false
+            int id, string name, IntegerValueRule rule, int defaultValue, TabGroup tab, bool isSingleValue = false, bool HideValue = false
         )
         {
             return new IntegerOptionItem(
@@ -31,7 +31,7 @@ namespace TownOfHost
             );
         }
         public static IntegerOptionItem Create(
-            int id, Enum name, IntegerValueRule rule, int defaultValue, TabGroup tab, bool isSingleValue
+            int id, Enum name, IntegerValueRule rule, int defaultValue, TabGroup tab, bool isSingleValue = false
         )
         {
             return new IntegerOptionItem(
@@ -39,11 +39,23 @@ namespace TownOfHost
             );
         }
         public static IntegerOptionItem Create(
-            SimpleRoleInfo roleInfo, int idOffset, Enum name, IntegerValueRule rule, int defaultValue, bool isSingleValue, OptionItem parent = null
+            SimpleRoleInfo roleInfo, int idOffset, Enum name, IntegerValueRule rule, int defaultValue, bool isSingleValue = false, OptionItem parent = null
         )
         {
             var opt = new IntegerOptionItem(
                 roleInfo.ConfigId + idOffset, name.ToString(), defaultValue, roleInfo.Tab, isSingleValue, rule
+            );
+            opt.SetParent(parent ?? roleInfo.RoleOption);
+            opt.SetParentRole(roleInfo.RoleName);
+            return opt;
+        }
+        //enum必須なのはなあ...
+        public static IntegerOptionItem Create(
+            SimpleRoleInfo roleInfo, int idOffset, string name, IntegerValueRule rule, int defaultValue, bool isSingleValue = false, OptionItem parent = null
+        )
+        {
+            var opt = new IntegerOptionItem(
+                roleInfo.ConfigId + idOffset, name, defaultValue, roleInfo.Tab, isSingleValue, rule
             );
             opt.SetParent(parent ?? roleInfo.RoleOption);
             opt.SetParentRole(roleInfo.RoleName);

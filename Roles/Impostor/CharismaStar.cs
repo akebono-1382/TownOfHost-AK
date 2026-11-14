@@ -61,8 +61,6 @@ public sealed class CharismaStar : RoleBase, IImpostor, IUsePhantomButton, IDoub
     private HashSet<byte> gatherChoosePlayers;
     private int gatherLimitCount;
 
-    private static Vector2 LIFT_POSITION = new(7.76f, 8.56f); //昇降機の座標
-
     private static void SetUpOptionItem()
     {
         optionKillCooldown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, new(2.5f, 180f, 0.5f), 30f, false)
@@ -153,12 +151,11 @@ public sealed class CharismaStar : RoleBase, IImpostor, IUsePhantomButton, IDoub
             if (!target.IsAlive()) continue;
 
             // ターゲットが梯子またはヌーンを使っている
-            if ((target.MyPhysics.Animations.IsPlayingAnyLadderAnimation()
-                || ((MapNames)Main.NormalOptions.MapId == MapNames.Airship && Vector2.Distance(target.GetTruePosition(), LIFT_POSITION) <= 1.9f))
-                && !target.IsTeammate(Player))
+            if (target.MyPhysics.Animations.IsPlayingAnyLadderAnimation()
+                || target.inMovingPlat)
             {
                 // 集まらないプレイヤーをキルするがONの時
-                if (notGatherPlayerKill)
+                if (notGatherPlayerKill && !target.IsTeammate(Player))
                 {
                     target.SetRealKiller(Player);
                     target.RpcMurderPlayer(target);

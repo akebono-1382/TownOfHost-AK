@@ -30,6 +30,7 @@ public enum From
     RevolutionaryHostRoles,
     Love_Couple_Mod,
     TownOfHost_K,
+    TownOfHost_hamo,
 }
 public class SimpleRoleInfo
 {

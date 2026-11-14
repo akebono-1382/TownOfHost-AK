@@ -149,8 +149,8 @@ public sealed class Vega : RoleBase, IKiller, IAdditionalWinner
         if (Event.CheckRole(CustomRoles.Vega) is false)
         {
             Logger.Info($"お星様へと帰ったとさ。", "Vega");
-            Player.RpcSetCustomRole(CustomRoles.Emptiness);
-            Altair.RpcSetCustomRole(CustomRoles.Emptiness);
+            //Player.RpcSetCustomRole(CustomRoles.Emptiness);
+            //Altair.RpcSetCustomRole(CustomRoles.Emptiness);
             Options.CustomRoleSpawnChances[CustomRoles.Vega].SetValue(0, true, false);
             return;
         }

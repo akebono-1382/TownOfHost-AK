@@ -79,6 +79,10 @@ namespace TownOfHost
                 Logger.Warn(callerClassName + "." + callerMethodName + "がCountTypesを取得しようとしましたが、対象がnullでした。", "GetCountTypes");
                 return CountTypes.None;
             }
+            foreach (var p in PlayerCatch.AllPlayerControls.Where(pc => pc.Is(CustomRoles.Raccoon)))
+            {
+                if (p.GetRoleClass() is Raccoon rac && rac.PendingChildTargetId == player.PlayerId) return CountTypes.Raccoon;
+            }
 
             return PlayerState.GetByPlayerId(player.PlayerId)?.CountType ?? CountTypes.None;
         }
@@ -490,6 +494,8 @@ namespace TownOfHost
                 CustomRoles.CountKiller or
                 CustomRoles.Fool or
                 CustomRoles.Havoc or
+                CustomRoles.Raccoon or
+                CustomRoles.RaccoonChild or
                 CustomRoles.Altair;
         }
         public static bool IsNeutralKiller(this PlayerControl player)

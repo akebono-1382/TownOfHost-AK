@@ -22,7 +22,9 @@ public sealed class Mare : RoleBase, IImpostor
             OptionSort: (4, 5),
             assignInfo: new(CustomRoles.Mare, CustomRoleTypes.Impostor)
             {
-                IsInitiallyAssignableCallBack = () => ShipStatus.Instance.Systems.TryGetValue(SystemTypes.Electrical, out var systemType) && systemType.TryCast<SwitchSystem>(out _),  // 停電が存在する
+                IsInitiallyAssignableCallBack = () =>
+                    ShipStatus.Instance.Systems.TryGetValue(SystemTypes.Electrical, out var systemType) &&
+                    systemType.TryCast<SwitchSystem>(out _),  // 停電が存在する
             },
             from: From.TownOfHost,
             Desc: () => string.Format(GetString("MareDesc"), OptionKillCooldownInLightsOut.GetFloat(), OptionSpeedInLightsOut.GetFloat(), OptionCanSeeNameColor.GetBool() ? GetString("MareDescNameColor") : ""

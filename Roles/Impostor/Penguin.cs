@@ -32,9 +32,10 @@ public sealed class Penguin : RoleBase, IImpostor
 
         CustomRoleManager.OnEnterVentOthers.Add(OnEnterVentOthers);
     }
+
     public override void OnDestroy()
     {
-        Penguins = new();
+        Penguins.Remove(this);
         AbductVictim = null;
     }
     static OptionItem KillCooldown;

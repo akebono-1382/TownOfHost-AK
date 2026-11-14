@@ -118,7 +118,7 @@ public sealed class Mafia : RoleBase, IImpostor, IUsePhantomButton
 
         if (CanKillDay.GetInt() <= UtilsGameLog.day) canusekill = true;
     }
-    //ゴッドファーザーが配役されてたら作らせない。
+    //ゴッドファーザーが配役されてたら作らせない。 
     bool IUsePhantomButton.IsPhantomRole => SKMad && Options.CanMakeMadmateCount.GetInt() > PlayerCatch.SKMadmateNowCount && !HasGodFather();
     bool HasGodFather()
     {
@@ -160,7 +160,7 @@ public sealed class Mafia : RoleBase, IImpostor, IUsePhantomButton
             UtilsOption.MarkEveryoneDirtySettings();
             return;
         }
-        UtilsGameLog.AddGameLog($"SideKick", string.Format(GetString("log.Sidekick"), UtilsName.GetPlayerColor(target, true) + $"({UtilsRoleText.GetTrueRoleName(target.PlayerId)})", UtilsName.GetPlayerColor(Player, true)));
+        UtilsGameLog.AddGameLog($"SideKick", string.Format(GetString("log Sidekick"), UtilsName.GetPlayerColor(target, true) + $"({UtilsRoleText.GetTrueRoleName(target.PlayerId)})", UtilsName.GetPlayerColor(Player, true)));
         target.RpcSetCustomRole(CustomRoles.SKMadmate);
         target.RpcSetRole(Options.SkMadCanUseVent.GetBool() ? RoleTypes.Engineer : RoleTypes.Crewmate, true);
         if (!Utils.RoleSendList.Contains(target.PlayerId)) Utils.RoleSendList.Add(target.PlayerId);

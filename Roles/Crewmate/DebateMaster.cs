@@ -84,6 +84,7 @@ public sealed class DebateMaster : RoleBase, IKiller, ISchrodingerCatOwner
         => Player.IsAlive()
         && (CanKillAllAlive.GetBool() || GameStates.AlreadyDied)
         && ShotLimit > 0;
+
     public bool CanUseImpostorVentButton() => true;
     public bool CanUseSabotageButton() => false;
     public override void ApplyGameOptions(IGameOptions opt)
@@ -97,7 +98,6 @@ public sealed class DebateMaster : RoleBase, IKiller, ISchrodingerCatOwner
         if (!Player.IsAlive()) return;
         _ = new LateTask(() =>
         {
-            //割れて投票もできなくなる上に幽霊チャットに入れるからから自分以外
             foreach (var seer in PlayerCatch.AllAlivePlayerControls.Where(p => p.PlayerId != Player.PlayerId))
             {
                 Player.RpcExileV2(seer);

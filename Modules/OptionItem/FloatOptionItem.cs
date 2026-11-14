@@ -15,7 +15,7 @@ namespace TownOfHost
             Rule = rule;
         }
         public static FloatOptionItem Create(
-            int id, string name, FloatValueRule rule, float defaultValue, TabGroup tab, bool isSingleValue
+            int id, string name, FloatValueRule rule, float defaultValue, TabGroup tab, bool isSingleValue = false
         )
         {
             return new FloatOptionItem(
@@ -23,7 +23,7 @@ namespace TownOfHost
             );
         }
         public static FloatOptionItem Create(
-            int id, Enum name, FloatValueRule rule, float defaultValue, TabGroup tab, bool isSingleValue
+            int id, Enum name, FloatValueRule rule, float defaultValue, TabGroup tab, bool isSingleValue = false
         )
         {
             return new FloatOptionItem(
@@ -31,7 +31,7 @@ namespace TownOfHost
             );
         }
         public static FloatOptionItem Create(
-            SimpleRoleInfo roleInfo, int idOffset, Enum name, FloatValueRule rule, float defaultValue, bool isSingleValue, OptionItem parent = null
+            SimpleRoleInfo roleInfo, int idOffset, Enum name, FloatValueRule rule, float defaultValue, bool isSingleValue = false, OptionItem parent = null
         )
         {
             var opt = new FloatOptionItem(
@@ -42,7 +42,7 @@ namespace TownOfHost
             return opt;
         }
         public static FloatOptionItem Create(
-            SimpleRoleInfo roleInfo, int idOffset, string name, FloatValueRule rule, float defaultValue, bool isSingleValue, OptionItem parent = null
+            SimpleRoleInfo roleInfo, int idOffset, string name, FloatValueRule rule, float defaultValue, bool isSingleValue = false, OptionItem parent = null
         )
         {
             var opt = new FloatOptionItem(

@@ -154,7 +154,7 @@ namespace TownOfHost
         //    3: ユーザー側では対処不能 (消さない)
         // ==========
         // 001 Main
-        Main_DictionaryError = 0010003, // 001-000-3 Main Dictionary Error
+        Main_DictionaryError = 001_000_3, // 001-000-3 Main Dictionary Error
         OptionIDDuplicate = 001_010_3, // 001-010-3 オプションIDが重複している(DEBUGビルド時のみ)
         OptionError = 001_020_1, // 001-020-1 オプションの読み込みに失敗した
         // 002 サポート関連

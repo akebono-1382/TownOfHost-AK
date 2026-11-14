@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace TownOfHost.Roles.Neutral ;
 
-public sealed class Raccoon : RoleBase, IKiller, IUsePhantomButton, IRoomTasker
+public sealed class Raccoon : RoleBase, IKiller, IUsePhantomButton, IRoomTasker, ISchrodingerCatOwner
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
@@ -41,6 +41,7 @@ public sealed class Raccoon : RoleBase, IKiller, IUsePhantomButton, IRoomTasker
         Raccoons = new();
         GrabPlayer = null;
     }
+    ISchrodingerCatOwner.TeamType ISchrodingerCatOwner.SchrodingerCatChangeTo => ISchrodingerCatOwner.TeamType.Raccoon;
     static OptionItem KillCooldown;
     static OptionItem SidekickCooldown;
     static OptionItem OptionCanVent;
@@ -69,7 +70,7 @@ public sealed class Raccoon : RoleBase, IKiller, IUsePhantomButton, IRoomTasker
         OptionCanVent = BooleanOptionItem.Create(RoleInfo, 16, GeneralOption.CanVent, true, false)
             .SetInfo(UtilsRoleText.GetRoleColorAndtext(CustomRoles.Raccoon))
             ;
-        OptImpVision = BooleanOptionItem.Create(RoleInfo, 15, GeneralOption.ImpostorVision, true, false);
+        OptImpVision = BooleanOptionItem.Create(RoleInfo, 22, GeneralOption.ImpostorVision, true, false);
 
         SidekickCooldown = FloatOptionItem.Create(RoleInfo, 11, OptionName.RaccoonSidekickCooldown, OptionBaseCoolTime, 30f, false)
             .SetValueFormat(OptionFormat.Seconds)

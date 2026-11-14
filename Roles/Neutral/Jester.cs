@@ -16,7 +16,8 @@ public sealed class Jester : RoleBase, IKiller
             player => new Jester(player),
             CustomRoles.Jester,
             () => CanUseShape.GetBool() ? RoleTypes.Shapeshifter :
-                  CanUseVent.GetBool() || CanOutburst.GetBool() || CanSabotage.GetBool() ? RoleTypes.Impostor : RoleTypes.Crewmate,
+                  CanUseVent.GetBool() || CanOutburst.GetBool() || CanSabotage.GetBool() ? RoleTypes.Impostor
+                  : RoleTypes.Crewmate,
             CustomRoleTypes.Neutral,
             14200,
             SetupOptionItem,

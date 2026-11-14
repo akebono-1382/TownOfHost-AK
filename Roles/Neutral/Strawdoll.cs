@@ -267,7 +267,7 @@ public sealed class Strawdoll : RoleBase, IKiller, IUsePhantomButton
             {
                 Player.MyPhysics.RpcEnterVent(Ventid);
             }
-            Player.SetKillCooldown(1);
+            Player.SetKillCooldown(0.1f);
         }
     }
     public override string GetAbilityButtonText() => GetString(StringNames.ShapeshiftAbility);
