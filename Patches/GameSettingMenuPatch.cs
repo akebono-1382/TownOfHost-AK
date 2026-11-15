@@ -536,6 +536,8 @@ public class GameSettingMenuPatch
     [HarmonyPatch(nameof(GameSettingMenu.OnEnable)), HarmonyPrefix]
     private static bool OnEnablePrefix(GameSettingMenu __instance)
     {
+        // 本編の画面の後ろの星空の幕 (Background) は消し、板の周りからロビーが見えるようにする
+        __instance.transform.Find("Background")?.gameObject.SetActive(false);
         if (templateGameOptionsMenu == null)
         {
             templateGameOptionsMenu = Object.Instantiate(__instance.GameSettingsTab, __instance.GameSettingsTab.transform.parent);
