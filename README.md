@@ -171,7 +171,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
   - プレイヤー情報 (NetworkedPlayerInfo) の同期
   - YouTube ライブのコメントの読み取り (配信のチャット欄のページから鍵と続きの値を取る方法・End K not 経由で参照)
 - [UchuAddon](https://github.com/TeamUchuaddon/UchuAddon) (TeamUchuAddon 制作)
-  - オボルスの役職と、ノヴァの役職の案 (UchuAddon では SuperNewRoles の波動砲が元)。どちらも TownOfHost-hamo 経由。UchuAddon の絵や音は使っていない
+  - オボルスの役職と、ノヴァの役職の案 (UchuAddon では SuperNewRoles の波動砲が元)。どちらも TownOfHost-hamo 経由
 - [Town Of Host For E](https://github.com/AsumuAkaguma/TownOfHost_ForE)
   - YouTube ライブのコメントの読み取り (TownOfHost-K が参考にした元)
 - [Unity Doorstop (Pietrodjaowjao 版)](https://github.com/Pietrodjaowjao/UnityDoorstop) (LGPL-2.1・元は [NeighTools/UnityDoorstop](https://github.com/NeighTools/UnityDoorstop))
