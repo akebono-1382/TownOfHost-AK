@@ -55,7 +55,7 @@ Thank you for finding and using TOH_L!<br>
 TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwiki.jp/tohy_amongus/)をご覧ください。<br>
 
 ## TOH_L外部サイト
-[WIKIWIKI]()・[Discord](https://discord.gg/Bv8XRBvCXW)・[X/Twitter]()
+[WIKIWIKI](https://wikiwiki.jp/amonguas/TOH-L)・[Discord](https://discord.gg/Bv8XRBvCXW)・[X/Twitter]()
 
 ## 開発者
 - 
