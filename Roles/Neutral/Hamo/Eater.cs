@@ -160,7 +160,6 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
         pendingSwallow = null;
         var send = string.Format(GetString("EaterMInfo"), eatOrSwallowCount);
         Utils.SendMessage(send, Player.PlayerId);
-        eatOrSwallowCount++;
         deadBodyPositions.Do(oniku => GetArrow.Remove(Player.PlayerId, oniku.Value));
         deadBodyPositions.Clear();
 

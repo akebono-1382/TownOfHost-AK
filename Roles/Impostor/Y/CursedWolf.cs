@@ -94,6 +94,9 @@ public sealed class CursedWolf : RoleBase, IImpostor
                 break;
         }
         PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Spell;
+        // 呪殺した後のキルクールは通常の半分
+        target.ResetKillCooldown();
+        target.SetKillCooldown(Main.AllPlayerKillCooldown[target.PlayerId] / 2f);
         // 自身は斬られない
         info.CanKill = false;
         return true;

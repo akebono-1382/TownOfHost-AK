@@ -177,6 +177,8 @@ public sealed class Samurai : RoleBase, IImpostor, IUsePhantomButton
         seen ??= seer;
         if (isForMeeting) return "";
         if (seer.PlayerId != Player.PlayerId || seen.PlayerId != Player.PlayerId || !Player.IsAlive()) return "";
+        // 必殺技は 1 試合に 1 回。使った後は案内を出さない
+        if (!CanUse) return "";
 
         if (isForHud) return GetString("SamuraiLowerText");
         return $"<size=50%>{GetString("SamuraiLowerText")}</size>";
