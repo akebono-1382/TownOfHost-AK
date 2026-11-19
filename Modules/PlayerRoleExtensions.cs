@@ -247,7 +247,7 @@ public static class PlayerRoleExtensions
         if (target == null) target = killer;
         // ホスト自身の画面は送らずに済む。TOHL を入れた客も客の間は本編のまま動くので、本編の客と同じく送る
         if (target.AmOwner) return;
-        var messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, target.GetClientId());
+        var messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.Reliable, target.GetClientId());
         messageWriter.WriteNetObject(target);
         messageWriter.Write((int)MurderResultFlags.Succeeded);
         AmongUsClient.Instance.FinishRpcImmediately(messageWriter);

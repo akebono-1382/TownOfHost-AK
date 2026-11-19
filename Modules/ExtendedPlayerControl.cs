@@ -292,7 +292,7 @@ static partial class ExtendedPlayerControl
         else
         {
             //targetがホスト以外だった場合
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(target.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.None, target.GetClientId());
+            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(target.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.Reliable, target.GetClientId());
             writer.WriteNetObject(target);
             writer.Write(0);
             AmongUsClient.Instance.FinishRpcImmediately(writer);
@@ -522,7 +522,7 @@ static partial class ExtendedPlayerControl
     public static void RpcExileV2(this PlayerControl player)
     {
         player.Exiled();
-        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Exiled, SendOption.None, -1);
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Exiled, SendOption.Reliable, -1);
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
 
@@ -542,7 +542,7 @@ static partial class ExtendedPlayerControl
         {
             killer.MurderPlayer(target);
         }
-        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, -1);
+        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.Reliable, -1);
         messageWriter.WriteNetObject(target);
         messageWriter.Write((int)SucceededFlags);
         AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
@@ -792,7 +792,7 @@ static partial class ExtendedPlayerControl
         }
     }
     // 参考元: SuperNewRoles / TOH-K
-    public static void RpcSyncAllNetworkedPlayer(int targetClientId = -1, SendOption sendOption = SendOption.None)
+    public static void RpcSyncAllNetworkedPlayer(int targetClientId = -1, SendOption sendOption = SendOption.Reliable)
     {
         if (AntiBlackout.IsCached) return;
 
