@@ -21,6 +21,8 @@ namespace TownOfHostL
         }
     }
 
+    // 入力欄の操作は手元だけなので、TOHL 入りの客でも当てる
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(ChatController), nameof(ChatController.Update))]
     class ChatControllerUpdatePatch
     {

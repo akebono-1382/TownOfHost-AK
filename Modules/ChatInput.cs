@@ -190,6 +190,8 @@ public static class ChatInput
 }
 
 [HarmonyPatch]
+// 自分の入力欄だけを触り電文は送らないので、TOHL 入りの客でもホストでも、どのモードでも当てる
+[TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
 internal static class ChatInputPatches
 {
     [HarmonyPatch(typeof(FreeChatInputField), nameof(FreeChatInputField.Awake)), HarmonyPostfix]
