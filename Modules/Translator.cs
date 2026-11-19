@@ -77,8 +77,10 @@ namespace TownOfHostL
 
         public static string GetString(string str, SupportedLangs langId)
         {
-            var res = $"<INVALID:{str}>";
-            if (translateMaps.TryGetValue(str, out var dic) && (!dic.TryGetValue((int)langId, out res) || res == "")) //strに該当する&無効なlangIdかresが空
+            // 名前の組み立てなどで頻繁に呼ばれる。見つかった時は文字列を余計に作らない
+            string res = null;
+            bool found = translateMaps.TryGetValue(str, out var dic);
+            if (found && (!dic.TryGetValue((int)langId, out res) || res == "")) //strに該当する&無効なlangIdかresが空
             {
                 res = $"*{dic[0]}";
             }
@@ -174,13 +176,20 @@ namespace TownOfHostL
                     };
                 }
             }
-            if (!translateMaps.ContainsKey(str)) //translateMapsにない場合、StringNamesにあれば取得する
+            if (!found) //translateMapsにない場合、StringNamesにあれば取得する
             {
-                var stringNames = EnumHelper.GetAllValues<StringNames>().Where(x => x.ToString() == str);
-                if (stringNames != null && stringNames.Any())
-                    res = GetString(stringNames.FirstOrDefault());
+                vanillaNames ??= BuildVanillaNames();
+                if (vanillaNames.TryGetValue(str, out var stringName)) res = GetString(stringName);
             }
-            return res;
+            return res ?? $"<INVALID:{str}>";
+        }
+        // 本編の StringNames を名前から引く表。列挙の全要素を名前にするのは重いので、初めて要る時に 1 回だけ作る
+        static System.Collections.Generic.Dictionary<string, StringNames> vanillaNames;
+        static System.Collections.Generic.Dictionary<string, StringNames> BuildVanillaNames()
+        {
+            var map = new System.Collections.Generic.Dictionary<string, StringNames>();
+            foreach (var v in EnumHelper.GetAllValues<StringNames>()) map.TryAdd(v.ToString(), v);
+            return map;
         }
         public static string GetString(StringNames stringName)
             => DestroyableSingleton<TranslationController>.Instance.GetString(stringName, new Il2CppReferenceArray<Il2CppSystem.Object>(0));

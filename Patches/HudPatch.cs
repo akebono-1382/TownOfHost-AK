@@ -70,6 +70,7 @@ class HudManagerPatch
             parent: __instance.transform);
         lastOptionText = null;
     }
+    static float nextAliveCountAt;
     [HarmonyPatch(nameof(HudManager.Update)), HarmonyPostfix]
     public static void UpdatePostfix(HudManager __instance)
     {
@@ -127,7 +128,12 @@ class HudManagerPatch
         //ゲーム中でなければ以下は実行されない
         if (!AmongUsClient.Instance.IsGameStarted) return;
 
-        Utils.CountAlivePlayers();
+        // 死亡・追放・開始の時は呼ぶ側が数え直すので、ここは取りこぼし (役職の入れ替わりなど) を拾うだけ。毎フレームは要らない
+        if (Time.time >= nextAliveCountAt)
+        {
+            nextAliveCountAt = Time.time + 0.25f;
+            Utils.CountAlivePlayers();
+        }
 
         if (SetHudActivePatch.IsActive)
         {

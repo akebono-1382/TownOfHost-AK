@@ -29,6 +29,8 @@ namespace TownOfHostL
             static StringBuilder sb = new();
             /// <summary>ロビーの警告を宣言した役職。役職の登録は起動時に揃うので、最初に使う時に 1 回だけ組む</summary>
             static SimpleRoleInfo[] rolesWithLobbyWarning;
+            static PingTracker aspectOwner;
+            static AspectPosition aspect;
             static void Postfix(PingTracker __instance)
             {
                 __instance.text.alignment = TextAlignmentOptions.TopRight;
@@ -47,7 +49,9 @@ namespace TownOfHostL
                 if (DebugModeManager.IsDebugMode) sb.Append("\r\n").Append(Utils.ColorString(Color.green, "デバッグモード"));
 
                 // 位置調整
-                __instance.GetComponent<AspectPosition>().DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
+                // 毎フレーム通るので、部品は PingTracker が替わった時だけ引き直す
+                if (aspectOwner != __instance) { aspectOwner = __instance; aspect = __instance.GetComponent<AspectPosition>(); }
+                if (aspect) aspect.DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
 
                 if (GameStates.IsLobby && !asClient)
                 {
