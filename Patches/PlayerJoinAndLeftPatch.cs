@@ -37,6 +37,7 @@ namespace TownOfHostL
                 ChatUpdatePatch.DoBlockChat = false;
                 GameStates.InGame = false;
                 Modules.ChatGuard.Reset();
+                Modules.ChatMute.Reset();
                 Modules.ChatPushOut.Reset();
                 try { ErrorText.Instance.Clear(); } catch { }
                 if (AmongUsClient.Instance.AmHost) //以下、ホストのみ実行

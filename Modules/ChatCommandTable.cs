@@ -143,6 +143,8 @@ public static class ChatCommandTable
         new("/end", "/abort") { ForModerator = true, Host = _ => EndAsDraw() },
         new("/mt", "/endmeeting") { ForModerator = true, Host = _ => { if (GameStates.IsMeeting) MeetingHud.Instance.RpcClose(); } },
         new("/kick") { Usage = "CommandUsage.Kick", ForModerator = true, Host = c => ChatCommands.KickCommand(c.Args, ban: false, c.Player) },
+        new("/mute") { Usage = "CommandUsage.Mute", ForModerator = true, Host = Modules.ChatMute.MuteCommand },
+        new("/unmute") { Usage = "CommandUsage.Kick", ForModerator = true, Host = Modules.ChatMute.UnmuteCommand },
         new("/ban") { Usage = "CommandUsage.Ban", ForModerator = true, Host = c => ChatCommands.KickCommand(c.Args, ban: true, c.Player) },
         // 前の試合に居た人の再入室: 見つけた人を一括キック / このロビーだけ許す
         new("/kp", "/kickprevious") { ForModerator = true, Host = _ => Modules.JoinGuard.KickDetected() },

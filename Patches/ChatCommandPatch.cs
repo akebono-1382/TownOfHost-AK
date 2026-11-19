@@ -504,6 +504,7 @@ namespace TownOfHostL
 
             if (!AmongUsClient.Instance.AmHost) return;
             ChatPushOut.NoteChat(player);
+            if (ChatMute.OnChat(player)) return;
             var guard = ChatGuard.OnChat(player, text);
             if (guard == ChatGuard.Result.Kicked) return;
 
