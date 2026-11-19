@@ -27,9 +27,14 @@ using InnerNet;
             public abstract IGameOptions BasedGameOptions { get; }
             public abstract bool IsDirty { get; protected set; }
 
-            public virtual void SendGameOptions()
+            public virtual void SendGameOptions() => SendBuiltOptions(BuildGameOptions());
+
+            /// <summary>送る直前のバイト列を見て、送るかどうかを決める (同じ物を送り直さないなど)。</summary>
+            protected virtual bool ShouldSend(Il2CppStructArray<byte> optionArray) => true;
+
+            /// <summary>組み立て済みの設定を書き出して送る。</summary>
+            protected void SendBuiltOptions(IGameOptions opt)
             {
-                var opt = BuildGameOptions();
                 if (opt == null)
                 {
                     Logger.Error("BuildGameOptions returned null", nameof(GameOptionsSender));
@@ -68,7 +73,7 @@ using InnerNet;
                     }
                     var byteArray = new Il2CppStructArray<byte>(writer.Length - 1);
                     Buffer.BlockCopy(writer.Buffer.Cast<Array>(), 1, byteArray.Cast<Array>(), 0, writer.Length - 1);
-                    SendOptionsArray(byteArray);
+                    if (ShouldSend(byteArray)) SendOptionsArray(byteArray);
                 }
                 catch (System.Exception ex)
                 {

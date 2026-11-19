@@ -33,7 +33,8 @@ namespace TownOfHostL.Modules
         public override bool IsDirty { get; protected set; }
 
         public PlayerControl player;
-        public string OldOptionstext = "";
+        // 最後に送った設定のバイト列。同じなら送らない。会議中に送った物は覚えない (会議の後に必ず送り直す)
+        byte[] lastSent;
 
         public PlayerGameOptionsSender(PlayerControl player)
         {
@@ -44,6 +45,7 @@ namespace TownOfHostL.Modules
         public override void SendGameOptions()
         {
             var opt = BuildGameOptions();
+            if (opt == null) return;
             if (player.AmOwner)
             {
                 foreach (var com in GameManager.Instance.LogicComponents)
@@ -58,25 +60,27 @@ namespace TownOfHostL.Modules
             }
             else
             {
-                var isAlive = player.IsAlive();
-                var crewLight = isAlive ? opt.GetFloat(FloatOptionNames.CrewLightMod) : 0f;
-                var impLight = isAlive ? opt.GetFloat(FloatOptionNames.ImpostorLightMod) : 0f;
-                var killCool = isAlive ? opt.GetFloat(FloatOptionNames.KillCooldown) : 0f;
-                var speed = opt.GetFloat(FloatOptionNames.PlayerSpeedMod);
-                var shapeCool = isAlive ? opt.GetFloat(FloatOptionNames.ShapeshifterCooldown) : 0f;
-                var engCool = isAlive ? opt.GetFloat(FloatOptionNames.EngineerCooldown) : 0f;
-                var phantom = isAlive ? opt.GetFloat(FloatOptionNames.PhantomCooldown) : 0f;
-                var anonVotes = opt.GetBool(BoolOptionNames.AnonymousVotes);
-                var emerCool = isAlive ? opt.GetInt(Int32OptionNames.EmergencyCooldown) : 0;
-                var noiseAlert = opt.GetBool(BoolOptionNames.NoisemakerImpostorAlert);
-                var noiseAlertDur = opt.GetFloat(FloatOptionNames.NoisemakerAlertDuration);
-                var viperDissolve = opt.GetFloat(FloatOptionNames.ViperDissolveTime);
-                var judgeTaskReq = opt.GetFloat(FloatOptionNames.JudgeTaskRequirementPercentage);
-                string nowOpts = $"{crewLight},{impLight},{killCool},{speed},{shapeCool},{engCool},{phantom},{anonVotes},{emerCool},{noiseAlert},{noiseAlertDur},{viperDissolve},{judgeTaskReq}";
-                if (OldOptionstext == nowOpts) return;
-                OldOptionstext = GameStates.IsMeeting ? "" : nowOpts;
-                base.SendGameOptions();
+                SendBuiltOptions(opt);
             }
+        }
+
+        protected override bool ShouldSend(Il2CppStructArray<byte> optionArray)
+        {
+            int n = optionArray.Length;
+            bool same = lastSent != null && lastSent.Length == n;
+            if (same)
+            {
+                for (int i = 0; i < n; i++)
+                    if (lastSent[i] != optionArray[i]) { same = false; break; }
+            }
+            if (same) return false;
+            if (GameStates.IsMeeting) lastSent = null;
+            else
+            {
+                if (lastSent == null || lastSent.Length != n) lastSent = new byte[n];
+                for (int i = 0; i < n; i++) lastSent[i] = optionArray[i];
+            }
+            return true;
         }
 
         public override void SendOptionsArray(Il2CppStructArray<byte> optionArray)
