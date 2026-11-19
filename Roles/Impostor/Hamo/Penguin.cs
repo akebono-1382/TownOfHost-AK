@@ -186,6 +186,14 @@ class Penguin : RoleBase, IImpostor
             RemoveVictim();
         }
     }
+    // 連れ去っている途中に自分か相手が抜けると、OnFixedUpdate の見張りが止まり相手の足止めが残る。抜けた時に放す
+    public override void OnPlayerLeft(byte playerId)
+    {
+        if (!AmongUsClient.Instance.AmHost || AbductVictim == null) return;
+        if (playerId != Player.PlayerId && playerId != AbductVictim.PlayerId) return;
+        try { RemoveVictim(); }
+        catch (System.Exception ex) { Logger.Warn($"抜けた人の連れ去りを解けませんでした: {ex.Message}", "Penguin"); }
+    }
     public override void OnSpawn(bool initialState)
     {
         RestartAbduct();

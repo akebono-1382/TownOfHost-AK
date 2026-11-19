@@ -50,6 +50,8 @@ public sealed class Destroyer : RoleBase, IImpostor
     static float crushTime;
 
     PlayerControl victim;
+    // 抜けて PlayerControl が消えた後も足止めを外せるよう、番号を別に持つ
+    byte victimId = byte.MaxValue;
     float crushUntil;
     bool slowed;
     int lastShownSec = -1;
@@ -80,6 +82,7 @@ public sealed class Destroyer : RoleBase, IImpostor
     void Grab(PlayerControl target)
     {
         victim = target;
+        victimId = target.PlayerId;
         crushUntil = Time.time + crushTime;
         lastShownSec = -1;
         CheckMurderPatch.TimeSinceLastKill[Player.PlayerId] = 0f;
@@ -99,6 +102,7 @@ public sealed class Destroyer : RoleBase, IImpostor
     {
         var v = victim;
         victim = null;
+        victimId = byte.MaxValue;
         StopPet();
         if (v != null)
         {
@@ -166,6 +170,28 @@ public sealed class Destroyer : RoleBase, IImpostor
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
         if (victim != null) Release();
+    }
+
+    // つぶしている途中に自分か相手が抜けると、OnFixedUpdate の見張りが止まり足止めが残る。抜けた時に外す
+    public override void OnPlayerLeft(byte playerId)
+    {
+        if (!AmongUsClient.Instance.AmHost || victimId == byte.MaxValue) return;
+        if (playerId == Player.PlayerId)
+        {
+            var v = victim;
+            TownOfHostL.Modules.PlayerSpeed.Remove(victimId, "DestroyerVictim");
+            TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(Destroyer));
+            victim = null;
+            victimId = byte.MaxValue;
+            slowed = false;
+            if (v != null) v.MarkDirtySettings();
+            return;
+        }
+        if (playerId == victimId)
+        {
+            TownOfHostL.Modules.PlayerSpeed.Remove(playerId, "DestroyerVictim");
+            Release();
+        }
     }
 
     // 会議が終わるたびに 1 ターン減らし、0 になった痕跡を消す(会議中に消すと暗転の原因になるので、会議の後に消す)
