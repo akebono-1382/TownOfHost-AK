@@ -295,8 +295,9 @@ public static class VanillaHideAndSeek
         Resume();
     }
 
-    // 客として部屋に入ったら Standard を外し、部屋を出た時か、ロビーでホストを引き継いだ時に戻す。
-    // 試合の途中でホストを引き継いでも TOHL の試合の状態が無いので、ロビーに戻るまで客のままにする。
+    // 客として部屋に入ったら Standard を外し、部屋を出た時に戻す。
+    // ホストを引き継いでも戻さない (引き継いだ部屋の上で TOHL の開始の処理を動かすと公式サーバーに Hacking で切られる
+    // 2026-11-19 実機)。引き継いだ部屋は本編のホストのまま回し、TOHL で遊ぶなら部屋を立て直す。
     // 客の間は true を返す (かくれんぼの見張りは動かさない)
     private static bool FollowClient()
     {
@@ -309,7 +310,7 @@ public static class VanillaHideAndSeek
             return true;
         }
         bool inRoom = client != null && (client.GameState != InnerNetClient.GameStates.NotJoined || client.connection != null);
-        if (!inRoom || (client.AmHost && LobbyBehaviour.Instance))
+        if (!inRoom)
         {
             LeaveClient();
             return false;
@@ -326,11 +327,12 @@ public static class VanillaHideAndSeek
         // 溜まっているのは部屋に入った時の TOHL の処理なので、束を外した後には走らせない
         if (LateTask.Tasks.Count > 0) Logger.Info($"客になる前に LateTask を {LateTask.Tasks.Count} 件捨てます", "ClientMode");
         LateTask.Tasks.Clear();
+        // 部屋に入った時の TOHL の処理 (OnGameJoined) より先に切り替わるので、前の部屋の版の記録はここで捨てる
+        Main.playerVersion = new();
+        GameStates.InGame = false;
         Modes.PatchBundleSet.Apply(ClientBundles);
         state = State.Client;
         Logger.Info("客として部屋に入ったので、TOHL のホストの処理を外して本編の客のまま遊びます", "ClientMode");
-        // 版だけはホストと知らせ合う (ホストの一覧と、ホストが TOHL かどうかの表示に使う)
-        try { Modules.Net.ClientModeVersion.Exchange(); } catch (Exception ex) { Logger.Warn($"版を送れませんでした: {ex.Message}", "ClientMode"); }
     }
 
     private static void LeaveClient()

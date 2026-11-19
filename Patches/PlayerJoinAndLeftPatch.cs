@@ -29,7 +29,9 @@ namespace TownOfHostL
                 Main.playerVersion = new Dictionary<byte, PlayerVersion>();
                 try { AutoRehost.OnGameJoined(); } catch (Exception ex) { Logger.Warn($"AutoRehost.OnGameJoined failed: {ex.Message}", "OnGameJoined"); }
                 OnPlayerLeftPatch.ResetHandled();
-                try { RPC.RpcVersionCheck(); } catch { }
+                // 客の版は送らない (客の間は本編の客のまま動くので、ホストが知る必要が無い。
+                // 古い版の TOHL のホストは版の違う客がいると開始を止めるため)
+                if (__instance.AmHost) { try { RPC.RpcVersionCheck(); } catch { } }
                 try { if (SoundManager.Instance != null) SoundManager.Instance.ChangeAmbienceVolume(DataManager.Settings.Audio.AmbienceVolume); } catch { }
 
                 ChatUpdatePatch.DoBlockChat = false;
@@ -120,6 +122,10 @@ namespace TownOfHostL
                 BanManager.CheckDenyNamePlayer(client);
                 JoinGuard.OnPlayerJoined(client);
                 try { RPC.RpcVersionCheck(); } catch { }
+                // 入った直後の版は、入った人の側でホストの PlayerControl がまだ出来ておらず捨てられることがある。
+                // TOHL を入れた客は客の間は電文を送らないので、ホストから出来た頃にもう一度送る
+                if (AmongUsClient.Instance.AmHost)
+                    _ = new LateTask(() => { try { if (GameStates.IsLobby) RPC.RpcVersionCheck(); } catch { } }, 2f, "VersionCheckAfterJoin");
             }
             catch (Exception ex)
             {
