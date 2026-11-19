@@ -29,6 +29,7 @@ public static class ChatMute
     {
         until.Clear();
         noticedAt.Clear();
+        pushedAt = -100f;
     }
 
     private static float Remaining(PlayerControl pc)

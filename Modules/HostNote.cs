@@ -1,3 +1,4 @@
+// Based on https://github.com/haru03741-glitch/More-Roles-Plus src/Menu/ChatNotes.cs (GPL-3.0)
 using System.Collections.Generic;
 using HarmonyLib;
 
@@ -12,6 +13,9 @@ public static class HostNote
 {
     private const int MaxPending = 20;
     private static readonly List<string> pending = new();
+
+    /// <summary>部屋に入った時に呼ぶ (前の部屋で出せなかった返事を次の部屋で出さない)</summary>
+    public static void Reset() => pending.Clear();
 
     public static void Post(string text)
     {
