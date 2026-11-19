@@ -98,6 +98,8 @@ public sealed class CustomNetObject
     /// <summary>客の画面に出し終えた。</summary>
     public bool IsLive => state == State.Live;
     public bool IsGone => state == State.Gone;
+    /// <summary>まだ spawn していない (消しても客には何も届いていない)。</summary>
+    public bool IsWaiting => state == State.Waiting;
     /// <summary>
     /// 絵の名前を載せたホストの PlayerInfo を書き出している間だけ真。PlayerInfo の送信を書き換えるパッチ
     /// (送る間だけ本当の名前に戻す物など) は、この間は手を出さない。
