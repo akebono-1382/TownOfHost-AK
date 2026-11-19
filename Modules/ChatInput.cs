@@ -237,7 +237,8 @@ internal static class ChatInputPatches
     // 届いた値だけで制御文字を見ると、一・三・上・会・言 などが落ちる。そこで本物の文字を別に持つ:
     // SetText の中では渡された文字列、キー入力の処理ではその時の Input.inputString。
     // 本編は文字を先頭から順に 1 つずつ尋ねるので、届いた値と切った値を照らしながら位置を進める。合わない時は届いた値で判定する。
-    // チャット欄以外の入力欄は本編の判定のまま
+    // 名前の欄などチャット欄以外の入力欄も同じ関数を通り、同じく切られて届くので、本物の文字はどの欄でも照らす。
+    // チャット欄以外は本編の判定のまま、切られた値で断られた時だけ本物の文字で本編と同じ範囲を見直す
     private static string pending;   // 本編が今 1 文字ずつ尋ねている文字列 (null = 分からない)
     private static int pendingAt;
     private static bool inSetText;
@@ -246,15 +247,33 @@ internal static class ChatInputPatches
     [HarmonyPatch(typeof(TextBoxTMP), nameof(TextBoxTMP.IsCharAllowed)), HarmonyPostfix]
     public static void IsCharAllowed(TextBoxTMP __instance, [HarmonyArgument(0)] char c, ref bool __result)
     {
-        if (__result || __instance.Pointer != ChatInput.ChatArea) return;
         // キー入力の処理から尋ねられた時は、本編が断った時だけその回の入力の文字列を読む (毎フレームは読まない)
-        if (!inSetText && inputFrame != Time.frameCount)
+        if (!inSetText && !__result && inputFrame != Time.frameCount)
         {
             inputFrame = Time.frameCount;
             pending = Input.inputString;
             pendingAt = 0;
         }
-        if (!char.IsControl(Advance(c))) __result = true;
+        // 通した文字でも位置は進める (進めないと、後の文字を前の位置の文字と取り違える)
+        char real = Advance(c);
+        if (__result) return;
+        if (__instance.Pointer == ChatInput.ChatArea)
+        {
+            if (!char.IsControl(real)) __result = true;
+            return;
+        }
+        if (real != c) __result = VanillaAllows(__instance, real);
+    }
+
+    // 切られる 0x80 以上の文字の判定。本編は文字 (漢字・かな・ハングル・アクセント付きの字など) を通すので、
+    // 字か数字なら通し、記号は欄が記号やメールアドレスを許す時だけ本編の表で見る
+    private static bool VanillaAllows(TextBoxTMP box, char c)
+    {
+        if (box.IpMode) return false;
+        if (box.allowAllCharacters) return !char.IsControl(c);
+        if (char.IsLetterOrDigit(c)) return true;
+        if (box.AllowSymbols && TextBoxTMP.SymbolChars != null && TextBoxTMP.SymbolChars.Contains(c)) return true;
+        return box.AllowEmail && TextBoxTMP.EmailChars != null && TextBoxTMP.EmailChars.Contains(c);
     }
 
     // 届いた値 c に合う本物の文字を、尋ねている文字列の今の位置から探して返す (見つからなければ c のまま)
