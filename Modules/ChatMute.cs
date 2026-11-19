@@ -50,7 +50,10 @@ public static class ChatMute
         float left = Remaining(sender);
         if (left <= 0f) return false;
         float now = Time.realtimeSinceStartup;
-        if (now - pushedAt >= PushOutInterval)
+        // 押し出すのは、書き込みが生きている人にも見える時 (ロビー・会議中の生きている人) だけ。
+        // 死んだ人の書き込みは本編が死んだ人にしか見せない
+        bool visibleToAll = !GameStates.IsInGame || (GameStates.IsMeeting && sender.IsAlive());
+        if (visibleToAll && now - pushedAt >= PushOutInterval)
         {
             pushedAt = now;
             ChatPushOut.PushOut();
@@ -92,6 +95,25 @@ public static class ChatMute
         Logger.Info($"ミュート: {target.Data?.PlayerName} {minutes} 分", "ChatMute");
         Reply(string.Format(GetString("Mute.Done"), ChatPushOut.Escape(target.Data?.PlayerName ?? ""), minutes));
         Utils.SendMessageAutoSplit(string.Format(GetString("Mute.Notice"), minutes * 60), true, sendTo: target.PlayerId);
+    }
+
+    /// <summary>操作盤のボタン: ミュート中なら解き、そうでなければ既定の時間ミュートする</summary>
+    public static void Toggle(PlayerControl target)
+    {
+        if (target == null || target.AmOwner || !AmongUsClient.Instance.AmHost) return;
+        noticedAt.Remove(target.OwnerId);
+        var name = ChatPushOut.Escape(target.Data?.PlayerName ?? "");
+        if (IsMuted(target))
+        {
+            until.Remove(target.OwnerId);
+            HostNote.Post(string.Format(GetString("Mute.Lifted"), name));
+            Utils.SendMessageAutoSplit(GetString("Mute.LiftedNotice"), true, sendTo: target.PlayerId);
+            return;
+        }
+        until[target.OwnerId] = Time.realtimeSinceStartup + DefaultMinutes * 60f;
+        Logger.Info($"ミュート: {target.Data?.PlayerName} {DefaultMinutes} 分", "ChatMute");
+        HostNote.Post(string.Format(GetString("Mute.Done"), name, DefaultMinutes));
+        Utils.SendMessageAutoSplit(string.Format(GetString("Mute.Notice"), DefaultMinutes * 60), true, sendTo: target.PlayerId);
     }
 
     /// <summary>/unmute 相手</summary>

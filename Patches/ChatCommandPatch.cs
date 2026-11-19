@@ -504,9 +504,10 @@ namespace TownOfHostL
 
             if (!AmongUsClient.Instance.AmHost) return;
             ChatPushOut.NoteChat(player);
-            if (ChatMute.OnChat(player)) return;
+            // 禁止語の回数はミュート中でも数える (ミュート中に荒らし続けても自動のキックが効くように)
             var guard = ChatGuard.OnChat(player, text);
             if (guard == ChatGuard.Result.Kicked) return;
+            if (ChatMute.OnChat(player)) return;
 
             string[] args = text.Trim().Split(' ');
             bool viaCmd = StripCmd(ref args);

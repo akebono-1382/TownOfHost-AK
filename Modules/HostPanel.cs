@@ -543,9 +543,11 @@ public class HostPanel : MonoBehaviour
             var clientId = pc.GetClientId();
             var target = pc;
             var isMod = Moderators.Is(pc);
+            var muted = ChatMute.IsMuted(pc);
             Row(ref y, w,
                 (name, sSmall, null),
                 (GetString(isMod ? "HostPanel.ModeratorOn" : "HostPanel.ModeratorOff"), isMod ? sOn : sAction, () => Moderators.Toggle(target)),
+                (GetString(muted ? "HostPanel.MuteOn" : "HostPanel.MuteOff"), muted ? sOn : sAction, () => ChatMute.Toggle(target)),
                 (Armed($"kick{clientId}", GetString("HostPanel.Kick")), sDanger, () => Arm($"kick{clientId}", () => AmongUsClient.Instance.KickPlayer(clientId, false))),
                 (Armed($"ban{clientId}", GetString("HostPanel.Ban")), sDanger, () => Arm($"ban{clientId}", () => AmongUsClient.Instance.KickPlayer(clientId, true))));
         }
