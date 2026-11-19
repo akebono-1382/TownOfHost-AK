@@ -1,6 +1,6 @@
 // Based on https://github.com/haru03741-glitch/More-Roles-Plus src/Commands/ChatInput.cs, which is based on
 // https://github.com/Gurge44/EndlessHostRoles and https://github.com/waffle-ful/Aeterna-End-K-not Patches/TextBoxPatch.cs・ChatControlPatch.cs
-// (command suggestion, paste) and https://github.com/KARPED1EM/TownOfNext Patches/TextBoxPatch.cs (character limit) (GPL-3.0)
+// (command suggestion, paste) and https://github.com/TownOfNext/TownOfNext src/Patches/TextBoxPatch.cs (character limit) (GPL-3.0)
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
