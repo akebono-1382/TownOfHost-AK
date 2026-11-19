@@ -181,6 +181,7 @@ public sealed class Sniper : RoleBase, IImpostor
         //エイム終了
         IsAim = false;
         AimTime = 0f;
+        lastAimMarkVisible = false;
 
         //ミーティングによる変身解除なら射撃しない
         if (MeetingReset)
@@ -261,7 +262,10 @@ public sealed class Sniper : RoleBase, IImpostor
         {
             AimTime += Time.fixedDeltaTime;
         }
-        // 印 (◎) の出る・消えるが変わった時だけ名前を組み直す (止まっている間ずっと組み直すと重い)
+        // 印 (◎) の出る・消えるが変わった時だけ名前を組み直す (止まっている間ずっと組み直すと重い)。
+        // 狙える人の判定は全員を見るので 0.1 秒ごとにする
+        if (Time.time < nextAimCheckAt) return;
+        nextAimCheckAt = Time.time + AimCheckInterval;
         var visible = IsAimMarkVisible();
         if (visible != lastAimMarkVisible)
         {
@@ -270,6 +274,8 @@ public sealed class Sniper : RoleBase, IImpostor
         }
     }
     bool lastAimMarkVisible;
+    const float AimCheckInterval = 0.1f;
+    float nextAimCheckAt;
     /// <summary>エイムアシストの印を出すか。止まって 0.5 秒を過ぎ (1 回だけの設定なら 1 秒まで)、狙える人がいる間</summary>
     bool IsAimMarkVisible()
         => AimAssist && 0.5f < AimTime && (!AimAssistOneshot || AimTime < 1.0f) && GetSnipeTargets().Count > 0;
@@ -289,7 +295,7 @@ public sealed class Sniper : RoleBase, IImpostor
         if (AimAssist)
         {
             //エイムアシスト中のスナイパー
-            if (IsAimMarkVisible())
+            if (lastAimMarkVisible)
                 return $"<size=200%>{Utils.ColorString(Palette.ImpostorRed, "◎")}</size>";
         }
         return "";

@@ -88,7 +88,7 @@ namespace TownOfHostL.Roles.Impostor
         public override string GetProgressText(bool comms = false) => Utils.ColorString(0 < BomberExplosion ? Color.red : Color.gray, $"({BomberExplosion})");
         public override void OnFixedUpdate(PlayerControl _)
         {
-            if (!AmongUsClient.Instance.AmHost || !GameStates.IsInTask || !Player.IsAlive()) return;
+            if (BomberExplosionPlayers.Count == 0 || !AmongUsClient.Instance.AmHost || !GameStates.IsInTask || !Player.IsAlive()) return;
 
             foreach (var (targetId, timer) in BomberExplosionPlayers.ToArray())
             {
