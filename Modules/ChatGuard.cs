@@ -88,6 +88,8 @@ public static class ChatGuard
     public static Result OnChat(PlayerControl sender, string text)
     {
         if (sender == null || sender.AmOwner || string.IsNullOrEmpty(text) || !AmongUsClient.Instance.AmHost || !Enabled.GetBool()) return Result.None;
+        // ホストが選んだモデレーターは数えない (荒らしを注意する側の書き込みで蹴られないように)
+        if (Moderators.Is(sender)) return Result.None;
         string why = null;
         if (StartSpam.GetBool() && GameStates.IsLobby && StartWords.Contains(Normalize(text)))
             why = GetString("ChatGuard.AskingToStart");
