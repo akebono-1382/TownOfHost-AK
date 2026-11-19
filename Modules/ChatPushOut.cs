@@ -24,8 +24,9 @@ public static class ChatPushOut
     private const int MaxLength = 80;
     private static readonly List<(byte id, string text)> history = new();
 
-    // 追放の画面の間に届いた書き込みがあったか。その間は死んだ人もまだ生きている扱いなので、書き込みが生きている人にも
-    // 見えてしまう。試合に戻ってから押し出して見えなくする
+    // 追放の画面の間に、生きている扱いの人の書き込みが届いたか。追放される人は画面が終わるまで生きている扱いなので、
+    // 投票が終わった後の書き込みが生きている人のチャット欄に残る。試合に戻ってから押し出して見えなくする。
+    // 死んだ人の書き込みは本編が死んだ人にしか見せないので数えない
     private static bool chattedDuringExile;
     private const float ExilePushOutDelay = 3f;
 
@@ -40,7 +41,7 @@ public static class ChatPushOut
     public static void NoteChat(PlayerControl player)
     {
         if (player == null || player.AmOwner || !AmongUsClient.Instance.AmHost) return;
-        if (ExileController.Instance != null) chattedDuringExile = true;
+        if (ExileController.Instance != null && player.Data != null && !player.Data.IsDead) chattedDuringExile = true;
     }
 
     /// <summary>追放の画面が終わって試合に戻った時に呼ぶ (ホストだけ)</summary>
