@@ -346,6 +346,8 @@ public static partial class CustomRoleManager
     /// <returns>結合したMark</returns>
     public static string GetMarkOthers(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
     {
+        // 見る人 × 見られる人のぶん呼ばれる。登録が無ければ何も作らない
+        if (MarkOthers.Count == 0) return "";
         var sb = new StringBuilder(100);
         foreach (var marker in MarkOthers)
         {
@@ -364,6 +366,7 @@ public static partial class CustomRoleManager
     /// <returns>結合したLowerText</returns>
     public static string GetLowerTextOthers(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
     {
+        if (LowerOthers.Count == 0) return "";
         var sb = new StringBuilder(100);
         foreach (var lower in LowerOthers)
         {
@@ -381,6 +384,7 @@ public static partial class CustomRoleManager
     /// <returns>結合したSuffix</returns>
     public static string GetSuffixOthers(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false)
     {
+        if (SuffixOthers.Count == 0) return "";
         var sb = new StringBuilder(100);
         foreach (var suffix in SuffixOthers)
         {

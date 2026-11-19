@@ -247,6 +247,8 @@ namespace TownOfHostL
                     break;
             }
 
+            // 送るたびに通る。記録が切られている時は、名前を引く処理 (全員の走査など) をしない
+            if (!Logger.IsTagEnabled("SendRPC")) return;
             string rpcName = RPC.GetRpcName(callId);
             string target = targetClientId < 0 ? "All" : AmongUsClient.Instance.GetClient(targetClientId)?.PlayerName ?? targetClientId.ToString();
             string from = Main.AllPlayerControls.FirstOrDefault(c => c.NetId == targetNetId)?.Data?.PlayerName ?? targetNetId.ToString();

@@ -200,8 +200,12 @@ public static class TargetDeadArrow
         var seerId = seer.PlayerId;
         var seerIsDead = !seer.IsAlive();
 
-        var arrowList = new List<ArrowInfo>(TargetArrows.Keys.Where(a => a.From == seer.PlayerId));
-        if (arrowList.Count == 0) return;
+        // 全員の FixedUpdate から呼ばれるので、矢印が無い間は何も作らない
+        if (TargetArrows.Count == 0) return;
+        List<ArrowInfo> arrowList = null;
+        foreach (var a in TargetArrows.Keys)
+            if (a.From == seerId) (arrowList ??= new()).Add(a);
+        if (arrowList == null) return;
 
         var update = false;
         foreach (var arrowInfo in arrowList)

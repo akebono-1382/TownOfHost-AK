@@ -1344,6 +1344,8 @@ public static partial class Utils
         if (MushroomMixupUpdateSystemPatch.InSabotage) return; //キノコカオス中は無効
 
         var logger = Logger.Handler("NotifyRoles");
+        // 1 回の NotifyRoles で見る人 × 見られる人のぶん呼ばれるので、記録が切られている時は名前を組まない
+        bool loopLog = Logger.IsTagEnabled(logger.Tag);
         // 呼び出し元を StackFrame で調べるのは重いので、ログが出る時だけにする
         if (Logger.IsTagEnabled(logger.Tag))
         {
@@ -1370,7 +1372,7 @@ public static partial class Utils
             //if (seer.IsModClient()) continue;
             string fontSize = isForMeeting ? "1.5" : Main.RoleTextSize.ToString();
             if (isForMeeting && (seer.GetClient().PlatformData.Platform is Platforms.Playstation or Platforms.Switch)) fontSize = "70%";
-            logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:START");
+            if (loopLog) logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:START");
 
             SelfMark.Clear();
             TownOfHostL.Core.NameParts.AppendSelfMark(SelfMark, seer, isForMeeting);
@@ -1454,7 +1456,7 @@ public static partial class Utils
                 {
                     //targetがseer自身の場合は何もしない
                     if (target == seer) continue;
-                    logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:START");
+                    if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:START");
 
                     TargetMark.Clear();
                     TownOfHostL.Core.NameParts.AppendMark(TargetMark, seer, target, isForMeeting);
@@ -1497,10 +1499,10 @@ public static partial class Utils
                     //適用
                     target.RpcSetNamePrivate(TargetName, true, seer, force: NoCache);
 
-                    logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:END");
+                    if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:END");
                 }
             }
-            logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:END");
+            if (loopLog) logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:END");
         }
     }
     public static void MarkEveryoneDirtySettings()
