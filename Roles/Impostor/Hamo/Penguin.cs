@@ -207,15 +207,19 @@ class Penguin : RoleBase, IImpostor
             }
             if (AbductTimer <= 0f && !Player.MyPhysics.Animations.IsPlayingAnyLadderAnimation())
             {
-                // 先にIsDeadをtrueにする(はしごチェイス封じ)
-                AbductVictim.Data.IsDead = true;
-                GameData.Instance.DirtyAllData();
+                // 先にIsDeadをtrueにする(はしごチェイス封じ)。相手がはしごを降りるまで毎フレームここへ来るので、送るのは 1 回だけ
+                if (!AbductVictim.Data.IsDead)
+                {
+                    AbductVictim.Data.IsDead = true;
+                    AbductVictim.Data.MarkDirty();
+                }
                 // ペンギン自身がはしご上にいる場合，はしごを降りてからキルする
                 if (!AbductVictim.MyPhysics.Animations.IsPlayingAnyLadderAnimation())
                 {
                     var abductVictim = AbductVictim;
                     _ = new LateTask(() =>
                     {
+                        if (abductVictim == null || abductVictim.Data == null || abductVictim.Data.Disconnected) return;
                         var sId = abductVictim.NetTransform.lastSequenceId + 5;
                         abductVictim.NetTransform.SnapTo(Player.transform.position, (ushort)sId);
                         Player.MurderPlayer(abductVictim);
