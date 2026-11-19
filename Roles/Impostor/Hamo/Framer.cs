@@ -177,7 +177,7 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         var sender = CustomRpcSender.Create(name: $"Framer.SendOutfit({target.Data?.PlayerName})");
         foreach (var seer in Main.AllPlayerControls)
         {
-            if (seer == null || (seer == target && !includeTarget)) continue;
+            if (seer == null || seer == target) continue;
 
             if (seer == PlayerControl.LocalPlayer)
             {
@@ -191,33 +191,6 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
             sender.AutoStartRpc(target.NetId, (byte)RpcCalls.Shapeshift, clientId)
                 .Write(pc)
                 .Write(false)
-                .EndRpc();
-
-            continue;
-
-            if (seer == PlayerControl.LocalPlayer)
-            {
-                target.SetColor(outfit.ColorId);
-                target.SetHat(outfit.HatId, outfit.ColorId);
-                target.SetSkin(outfit.SkinId, outfit.ColorId);
-                target.SetVisor(outfit.VisorId, outfit.ColorId);
-                continue;
-            }
-            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetColor, clientId)
-                .Write(target.Data.NetId)
-                .Write((byte)outfit.ColorId)
-                .EndRpc();
-            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetHatStr, clientId)
-                .Write(outfit.HatId)
-                .Write(target.GetNextRpcSequenceId(RpcCalls.SetHatStr))
-                .EndRpc();
-            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetSkinStr, clientId)
-                .Write(outfit.SkinId)
-                .Write(target.GetNextRpcSequenceId(RpcCalls.SetSkinStr))
-                .EndRpc();
-            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetVisorStr, clientId)
-                .Write(outfit.VisorId)
-                .Write(target.GetNextRpcSequenceId(RpcCalls.SetVisorStr))
                 .EndRpc();
         }
         sender.SendMessage();
