@@ -31,7 +31,7 @@ namespace TownOfHostL
         public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] byte callId, [HarmonyArgument(1)] MessageReader reader)
         {
             var rpcType = (RpcCalls)callId;
-            Log.Info("ReceiveRPC", $"{__instance?.Data?.PlayerId}({__instance?.Data?.PlayerName}):{callId}({RPC.GetRpcName(callId)})");
+            if (Logger.IsTagEnabled("ReceiveRPC")) Log.Info("ReceiveRPC", $"{__instance?.Data?.PlayerId}({__instance?.Data?.PlayerName}):{callId}({RPC.GetRpcName(callId)})");
             MessageReader subReader = MessageReader.Get(reader);
             switch (rpcType)
             {
