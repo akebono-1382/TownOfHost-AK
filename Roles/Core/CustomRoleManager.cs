@@ -670,6 +670,7 @@ public enum CustomRoles
     MadJester,
     MadGuesser,
     MadConnecter,
+    MadProxy,
 
     MadDilemma,
     jO,
@@ -845,7 +846,7 @@ public enum CustomRoles
     HamoOnlyStart = 20000,
     Alien, AlienHijack, Amanojaku, Amnesia, Amnesiac, Autocrat, ConnectSaver, CountKiller, DoppelGanger, Elector,
     EvilSatellite, GrimReaper, Guesser, JackalAlien, JackalMafia, Jackaldoll, Jumbo, King, LastNeutral, Limiter,
-    MadProxy, MadWorker, MagicHand, Moon, Opener, Powerful, Remotekiller, Serial, Speeding, Stack, Stamina,
+    MadWorker, MagicHand, Moon, Opener, Powerful, Remotekiller, Serial, Speeding, Stack, Stamina,
     Strawdoll, SwitchSheriff, Water, WolfBoy,
 }
 public enum CustomRoleTypes
