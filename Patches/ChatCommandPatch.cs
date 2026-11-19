@@ -568,19 +568,22 @@ namespace TownOfHostL
         // 公式サーバーに切断されるので、同じ相手へは 1 秒に 3 本ほどまでにする)
         private const float DirectWait = 0.1f;
         private const float SameTargetWait = 0.3f;
-        private static byte lastSendTo = byte.MaxValue;
+        // 宛先ごとの最後に送った時刻 (宛先が交互に並んでも、同じ相手への間隔を守る)
+        private static readonly Dictionary<byte, float> lastSentAt = new();
         public static void Postfix(ChatController __instance)
         {
             if (!AmongUsClient.Instance.AmHost || Main.MessagesToSend.Count < 1) return;
             byte next = Main.MessagesToSend[0].Item2;
-            float wait = next == byte.MaxValue ? Main.MessageWait.Value : next == lastSendTo ? SameTargetWait : DirectWait;
+            float wait = next == byte.MaxValue ? Main.MessageWait.Value : DirectWait;
             if (wait > __instance.timeSinceLastMessage) return;
+            float now = UnityEngine.Time.realtimeSinceStartup;
+            if (next != byte.MaxValue && lastSentAt.TryGetValue(next, out var last) && now - last < SameTargetWait) return;
             if (DoBlockChat) return;
             var player = PlayerControl.LocalPlayer;
             if (player == null) return;
             (string msg, byte sendTo, string title, bool custom) = Main.MessagesToSend[0];
             Main.MessagesToSend.RemoveAt(0);
-            lastSendTo = sendTo;
+            if (sendTo != byte.MaxValue) lastSentAt[sendTo] = now;
             __instance.timeSinceLastMessage = 0f;
 
             // custom は本文を見出しの名前に入れ、チャットは改行だけにする形

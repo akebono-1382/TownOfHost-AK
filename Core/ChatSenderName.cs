@@ -46,7 +46,10 @@ public static class ChatSenderName
     {
         if (sender == null || sender.Data == null) return MinBody;
         int budget = PacketLimit - Overhead - System.Text.Encoding.UTF8.GetByteCount(RestoreFor(sender) ?? "");
-        if (sender.Data.IsDead && GameStates.IsInGame) budget -= DeadHostInfo;
+        // ホストが死んでいる間は、名前を借りる人が送るまでに居なくなると情報を挟む送り分けになるので、その分を常に空ける
+        // (送信の関所は大きなパケットを分けるが、分けると情報とチャットの届く順が崩れる)
+        var host = PlayerControl.LocalPlayer;
+        if (GameStates.IsInGame && (sender.Data.IsDead || (host != null && host.Data != null && host.Data.IsDead))) budget -= DeadHostInfo;
         return Math.Max(budget, MinBody);
     }
 
