@@ -261,11 +261,7 @@ public abstract class VoteGuesser : RoleBase
         string dispText = $"{decoration}\n{targetText}\n";
         string chatText = "\n\n";
 
-        PlayerControl sender = PlayerControl.LocalPlayer;
-        if (sender.Data.IsDead)
-        {
-            sender = PlayerControl.AllPlayerControls.ToArray().OrderBy(x => x.PlayerId).Where(x => !x.Data.IsDead).FirstOrDefault();
-        }
+        PlayerControl sender = TownOfHostL.Core.ChatSenderName.Sender();
         string name = sender.Data.PlayerName;
         ChatCommands.SendCustomChat(dispText, chatText, name, sender);
     }

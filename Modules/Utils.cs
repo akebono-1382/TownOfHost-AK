@@ -1062,7 +1062,7 @@ public static partial class Utils
         const int MAX_LENGTH = 320;
         const int MAX_LINES = 13;
         // 1 行が長すぎると下の分割では切れないので、バイト数でも割る。予算は戻す名前やホストの生死で変わる
-        int MAX_LINE_BYTES = TownOfHostL.Core.ChatSenderName.BodyBudget(PlayerControl.LocalPlayer);
+        int MAX_LINE_BYTES = TownOfHostL.Core.ChatSenderName.BodyBudget(TownOfHostL.Core.ChatSenderName.Sender());
         const string FORMAT_TAG_START = "<align=left><color=#ffffff>";
 
         string titleText = (title == "") ? $"<color=#aaaaff>{GetString("DefaultSystemMessageTitle")}</color>" : title;

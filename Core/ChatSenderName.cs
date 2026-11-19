@@ -18,9 +18,28 @@ public static class ChatSenderName
     // 本文は戻す名前とヘッダの分を引いた残りに収める
     public const int PacketLimit = 990;
     private const int Overhead = 80;
-    // ホストが死んでいる時は前後に自分の情報 (NetworkedPlayerInfo) を 1 回ずつ付けて生きている人にも見せる
+    // 名前を借りる人が死んでいる時 (生きている人が居ない時のホスト) は、前後に自分の情報 (NetworkedPlayerInfo) を
+    // 1 回ずつ付けて生きている扱いにして送る
     private const int DeadHostInfo = 300;
     private const int MinBody = 300;
+
+    /// <summary>
+    /// お知らせを送るのに名前を借りる人。ふだんはホスト。試合中にホストが死んでいる時は、生きている中で ID が最小の人の
+    /// 名前を見出しに付け替えて送る (死んだ人の書き込みは生きている人に見えないので、ホストのままだと宛先ごとに
+    /// 生き返った扱いの情報を挟んで送り分けることになる)。生きている人が居なければホスト
+    /// </summary>
+    public static PlayerControl Sender()
+    {
+        var host = PlayerControl.LocalPlayer;
+        if (host == null || host.Data == null || !host.Data.IsDead || !GameStates.IsInGame) return host;
+        PlayerControl best = null;
+        foreach (var pc in Main.AllPlayerControls)
+        {
+            if (pc == null || pc.AmOwner || pc.Data == null || pc.Data.IsDead || pc.Data.Disconnected) continue;
+            if (best == null || pc.PlayerId < best.PlayerId) best = pc;
+        }
+        return best ?? host;
+    }
 
     /// <summary>1 通の本文 (見出しを含む) に使えるバイト数</summary>
     public static int BodyBudget(PlayerControl sender)
