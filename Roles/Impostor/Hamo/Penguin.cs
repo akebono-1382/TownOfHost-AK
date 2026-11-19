@@ -192,7 +192,12 @@ class Penguin : RoleBase, IImpostor
         if (!AmongUsClient.Instance.AmHost || AbductVictim == null) return;
         if (playerId != Player.PlayerId && playerId != AbductVictim.PlayerId) return;
         try { RemoveVictim(); }
-        catch (System.Exception ex) { Logger.Warn($"抜けた人の連れ去りを解けませんでした: {ex.Message}", "Penguin"); }
+        catch (System.Exception ex)
+        {
+            // 途中で例外になっても、抜けた人を掴んだままにしない
+            AbductVictim = null;
+            Logger.Warn($"抜けた人の連れ去りを解けませんでした: {ex.Message}", "Penguin");
+        }
     }
     public override void OnSpawn(bool initialState)
     {

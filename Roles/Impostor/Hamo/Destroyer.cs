@@ -190,7 +190,17 @@ public sealed class Destroyer : RoleBase, IImpostor
         if (playerId == victimId)
         {
             TownOfHostL.Modules.PlayerSpeed.Remove(playerId, "DestroyerVictim");
-            Release();
+            TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(Destroyer));
+            try { Release(); }
+            catch (System.Exception ex)
+            {
+                // 抜けた相手に触れて例外になっても、自分の足止めは外したままにする
+                victim = null;
+                victimId = byte.MaxValue;
+                slowed = false;
+                Player.MarkDirtySettings();
+                Logger.Warn($"抜けた相手を放せませんでした: {ex.Message}", "Destroyer");
+            }
         }
     }
 

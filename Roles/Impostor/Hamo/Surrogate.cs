@@ -19,6 +19,8 @@ public static class SurrogateSystem
     private static readonly Dictionary<byte, byte> OwnerToProxy = new();
     private static readonly Dictionary<byte, byte> ProxyToOwner = new();
     private static readonly HashSet<byte> FollowingDeathProcessed = new();
+    // キルの後の変身の番号。続けてキルした時、前の変身の戻しが新しい変身を途中で解かないようにする
+    private static readonly Dictionary<byte, int> TransformSerial = new();
 
     // 試合ごとに空にする (残すと、次の試合で同じ番号の人がプロキシを作れず、前の試合の組で入れ替えや後追いが動く)
     [GameModuleInitializer]
@@ -27,6 +29,7 @@ public static class SurrogateSystem
         OwnerToProxy.Clear();
         ProxyToOwner.Clear();
         FollowingDeathProcessed.Clear();
+        TransformSerial.Clear();
     }
 
     /// <summary>持ち主が生き返ったら、また死んだ時に代わりの人が後を追うようにする</summary>
@@ -137,12 +140,22 @@ public static class SurrogateSystem
 
         float duration = Surrogate.MadProxyTransformDuration;
         if (duration <= 0f) return;
+        int serial = (TransformSerial.TryGetValue(proxy.PlayerId, out var last) ? last : 0) + 1;
+        TransformSerial[proxy.PlayerId] = serial;
         proxy.RpcShapeshift(owner, false);
-        _ = new LateTask(() =>
+        void Revert()
         {
-            if (proxy != null && proxy.IsAlive() && proxy.Is(CustomRoles.MadProxy))
-                proxy.RpcShapeshift(proxy, false);
-        }, duration, "MadProxyTransformEnd");
+            if (proxy == null || !proxy.IsAlive() || !proxy.Is(CustomRoles.MadProxy)) return;
+            if (!TransformSerial.TryGetValue(proxy.PlayerId, out var now) || now != serial) return;
+            // 会議や追放の演出の間は変身の電文を送らず、明けてから戻す
+            if (GameStates.IsMeeting || GameStates.ExiledAnimate)
+            {
+                _ = new LateTask(Revert, 1f, "MadProxyTransformEnd");
+                return;
+            }
+            proxy.RpcShapeshift(proxy, false);
+        }
+        _ = new LateTask(Revert, duration, "MadProxyTransformEnd");
     }
 
     public static void CheckOwnerDeath(PlayerControl owner)
