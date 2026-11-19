@@ -124,6 +124,7 @@ namespace TownOfHostL
                         break;
                 }
             }
+            if (AmongUsClient.Instance.AmHost) Modules.ChatPushOut.AfterExile();
             FallFromLadder.Reset();
             Utils.CountAlivePlayers(true);
             Utils.AfterMeetingTasks();

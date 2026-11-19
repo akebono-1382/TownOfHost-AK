@@ -23,8 +23,37 @@ public static class ChatPushOut
     private const int MaxLength = 80;
     private static readonly List<(byte id, string text)> history = new();
 
+    // 追放の画面の間に届いた書き込みがあったか。その間は死んだ人もまだ生きている扱いなので、書き込みが生きている人にも
+    // 見えてしまう。試合に戻ってから押し出して見えなくする
+    private static bool chattedDuringExile;
+    private const float ExilePushOutDelay = 3f;
+
     [GameModuleInitializer]
-    public static void Reset() => history.Clear();
+    public static void Reset()
+    {
+        history.Clear();
+        chattedDuringExile = false;
+    }
+
+    /// <summary>客の書き込みが届いた時に呼ぶ (ホストだけ)。追放の画面の間なら覚えておく</summary>
+    public static void NoteChat(PlayerControl player)
+    {
+        if (player == null || player.AmOwner || !AmongUsClient.Instance.AmHost) return;
+        if (ExileController.Instance != null) chattedDuringExile = true;
+    }
+
+    /// <summary>追放の画面が終わって試合に戻った時に呼ぶ (ホストだけ)</summary>
+    public static void AfterExile()
+    {
+        if (!chattedDuringExile || !AmongUsClient.Instance.AmHost) return;
+        chattedDuringExile = false;
+        _ = new LateTask(() =>
+        {
+            if (!GameStates.IsInGame || GameStates.IsMeeting) return;
+            Logger.Info("追放の画面の間の書き込みを押し出します", "ChatPushOut");
+            PushOut(resend: false);
+        }, ExilePushOutDelay, "ChatPushOutAfterExile");
+    }
 
     /// <summary>
     /// チャットを送り直しの控えに入れる (ホストだけ)。コマンドは入れない。
@@ -35,20 +64,20 @@ public static class ChatPushOut
         if (player == null || string.IsNullOrWhiteSpace(text) || !AmongUsClient.Instance.AmHost) return;
         text = text.Trim();
         if (text.StartsWith('/')) return;
-        if (GameStates.IsInGame && (!GameStates.IsMeeting || !player.IsAlive())) return;
+        if (GameStates.IsInGame && (!GameStates.IsMeeting || !player.IsAlive() || ExileController.Instance != null)) return;
         if (text.Length > MaxLength) text = text[..MaxLength] + "…";
         history.Add((player.PlayerId, text));
         if (history.Count > MaxHistory) history.RemoveAt(0);
     }
 
-    /// <summary>全員のチャット欄を大きな空白で押し出し、控えの会話を送り直す</summary>
-    public static void PushOut()
+    /// <summary>全員のチャット欄を大きな空白で押し出し、resend なら控えの会話を送り直す</summary>
+    public static void PushOut(bool resend = true)
     {
         if (!AmongUsClient.Instance.AmHost) return;
         Logger.Info("チャットを空白で押し出します", "ChatPushOut");
         // 続けて押し出させても、送信待ちに同じ空白・同じまとめがあれば重ねて積まない (Utils.EnqueueMessage)
         Utils.SendRawChat(Blank);
-        if (history.Count == 0) return;
+        if (!resend || history.Count == 0) return;
         var sb = new StringBuilder();
         foreach (var (id, text) in history)
         {

@@ -503,6 +503,7 @@ namespace TownOfHostL
             }
 
             if (!AmongUsClient.Instance.AmHost) return;
+            ChatPushOut.NoteChat(player);
             var guard = ChatGuard.OnChat(player, text);
             if (guard == ChatGuard.Result.Kicked) return;
 
