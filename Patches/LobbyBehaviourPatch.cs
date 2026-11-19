@@ -3,6 +3,8 @@ using HarmonyLib;
 namespace TownOfHostL;
 
 // https://github.com/SuperNewRoles/SuperNewRoles/blob/master/SuperNewRoles/Patches/LobbyBehaviourPatch.cs
+// 手元の音だけを触るので、TOHL 入りの客でもどのモードでも当てる
+[TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
 [HarmonyPatch(typeof(LobbyBehaviour))]
 public class LobbyBehaviourPatch
 {

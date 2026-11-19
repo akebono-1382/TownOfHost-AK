@@ -5,11 +5,55 @@ using TownOfHostL.Modules;
 
 namespace TownOfHostL
 {
+    // 手元だけのキー操作 (解像度・翻訳の読み直しと書き出し・ログのダンプ・実行ファイルのフォルダ)。
+    // TOHL の設定や役職に触れないので、TOHL 入りの客でもホストでも、どのモードでも当てる
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(ControllerManager), nameof(ControllerManager.Update))]
-    class ControllerManagerUpdatePatch
+    class ControllerLocalKeysPatch
     {
         static readonly (int, int)[] resolutions = { (480, 270), (640, 360), (800, 450), (1024, 576), (1280, 720), (1366, 768), (1600, 900) };
         static int resolutionIndex = 0;
+        public static void Postfix()
+        {
+            if (!Input.anyKeyDown) return;
+            if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing) return;
+            //解像度変更
+            if (Input.GetKeyDown(KeyCode.F11))
+            {
+                resolutionIndex++;
+                if (resolutionIndex >= resolutions.Length) resolutionIndex = 0;
+                ResolutionManager.SetResolution(resolutions[resolutionIndex].Item1, resolutions[resolutionIndex].Item2, false);
+            }
+            //カスタム翻訳のリロード
+            if (ControllerManagerUpdatePatch.GetKeysDown(KeyCode.F5, KeyCode.T))
+            {
+                Logger.Info("Reload Custom Translation File", "KeyCommand");
+                Translator.LoadLangs();
+                Logger.SendInGame("Reloaded Custom Translation File");
+            }
+            if (ControllerManagerUpdatePatch.GetKeysDown(KeyCode.F5, KeyCode.X))
+            {
+                Logger.Info("Export Custom Translation File", "KeyCommand");
+                Translator.ExportCustomTranslation();
+                Logger.SendInGame("Exported Custom Translation File");
+            }
+            //ログファイルのダンプ
+            if (ControllerManagerUpdatePatch.GetKeysDown(KeyCode.F1, KeyCode.LeftControl))
+            {
+                Logger.Info("Dump Logs", "KeyCommand");
+                Utils.DumpLog();
+            }
+            //実行ファイルのフォルダを開く
+            if (ControllerManagerUpdatePatch.GetKeysDown(KeyCode.F10))
+            {
+                Utils.OpenDirectory(System.Environment.CurrentDirectory);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(ControllerManager), nameof(ControllerManager.Update))]
+    class ControllerManagerUpdatePatch
+    {
         public static void Postfix(ControllerManager __instance)
         {
             // 設定画面の検索欄に字を打っている間は、キー操作として受け取らない
@@ -42,41 +86,10 @@ namespace TownOfHostL
                     OptionSerializer.LoadFromClipboard();
                 }
             }
-            //解像度変更
-            if (Input.GetKeyDown(KeyCode.F11))
-            {
-                resolutionIndex++;
-                if (resolutionIndex >= resolutions.Length) resolutionIndex = 0;
-                ResolutionManager.SetResolution(resolutions[resolutionIndex].Item1, resolutions[resolutionIndex].Item2, false);
-            }
-            //カスタム翻訳のリロード
-            if (GetKeysDown(KeyCode.F5, KeyCode.T))
-            {
-                Logger.Info("Reload Custom Translation File", "KeyCommand");
-                Translator.LoadLangs();
-                Logger.SendInGame("Reloaded Custom Translation File");
-            }
-            if (GetKeysDown(KeyCode.F5, KeyCode.X))
-            {
-                Logger.Info("Export Custom Translation File", "KeyCommand");
-                Translator.ExportCustomTranslation();
-                Logger.SendInGame("Exported Custom Translation File");
-            }
-            //ログファイルのダンプ
-            if (GetKeysDown(KeyCode.F1, KeyCode.LeftControl))
-            {
-                Logger.Info("Dump Logs", "KeyCommand");
-                Utils.DumpLog();
-            }
             //現在の設定をテキストとしてコピー
             if (GetKeysDown(KeyCode.LeftAlt, KeyCode.C) && !Input.GetKey(KeyCode.LeftShift) && !GameStates.IsNotJoined)
             {
                 Utils.CopyCurrentSettings();
-            }
-            //実行ファイルのフォルダを開く
-            if (GetKeysDown(KeyCode.F10))
-            {
-                Utils.OpenDirectory(System.Environment.CurrentDirectory);
             }
 
             //--以下ホスト専用コマンド--//
@@ -241,7 +254,7 @@ namespace TownOfHostL
             }*/
             //マスゲーム用コード終わり
         }
-        static bool GetKeysDown(params KeyCode[] keys)
+        internal static bool GetKeysDown(params KeyCode[] keys)
         {
             if (keys.Any(k => Input.GetKeyDown(k)) && keys.All(k => Input.GetKey(k)))
             {

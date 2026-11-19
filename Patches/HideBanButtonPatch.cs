@@ -2,6 +2,8 @@ using HarmonyLib;
 
 namespace TownOfHostL
 {
+    // 本編の不具合の手元の対策なので、TOHL 入りの客でもどのモードでも当てる
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(ChatController), nameof(ChatController.Toggle))]
     class CancelBanMenuStuckPatch
     {

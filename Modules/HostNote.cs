@@ -38,6 +38,16 @@ public static class HostNote
         return true;
     }
 
+    // 部屋に入るたびに捨てる。部屋に入る処理の本体は通常モードの束にあり、本編のかくれんぼの間は外れるので、ここで別に受ける
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
+    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
+    static class GameJoinedPatch
+    {
+        public static void Postfix() => Reset();
+    }
+
+    // 本編のかくれんぼの間 (通常モードの束を外す) にも返事を出すので、どのモードでも当てる
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
     static class HudUpdatePatch
     {

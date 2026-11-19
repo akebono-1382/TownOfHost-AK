@@ -4,6 +4,8 @@ using TownOfHostL.Modules.ClientOptions;
 
 namespace TownOfHostL
 {
+    // 手元の設定の項目なので、TOHL 入りの客の部屋の中でも出す
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(OptionsMenuBehaviour), nameof(OptionsMenuBehaviour.Start))]
     public static class OptionsMenuBehaviourStartPatch
     {
@@ -63,6 +65,8 @@ namespace TownOfHostL
         }
     }
 
+    // 上の Start と対にする
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(OptionsMenuBehaviour), nameof(OptionsMenuBehaviour.Close))]
     public static class OptionsMenuBehaviourClosePatch
     {
