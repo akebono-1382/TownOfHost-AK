@@ -13,6 +13,31 @@ public static class ChatSenderName
 {
     private static int resendToken;
 
+    // 公式サーバーは 1 パケット 999 バイトまでの名前の書き換えを通し、1000 バイトを超えると届かずに切断することがある。
+    // チャット 1 通は「見出しの名前に本文を入れる書き換え + チャット + 名前の戻し」を 1 パケットに入れるので、
+    // 本文は戻す名前とヘッダの分を引いた残りに収める
+    public const int PacketLimit = 990;
+    private const int Overhead = 80;
+    // ホストが死んでいる時は前後に自分の情報 (NetworkedPlayerInfo) を 1 回ずつ付けて生きている人にも見せる
+    private const int DeadHostInfo = 300;
+    private const int MinBody = 300;
+
+    /// <summary>1 通の本文 (見出しを含む) に使えるバイト数</summary>
+    public static int BodyBudget(PlayerControl sender)
+    {
+        if (sender == null || sender.Data == null) return MinBody;
+        int budget = PacketLimit - Overhead - System.Text.Encoding.UTF8.GetByteCount(RestoreFor(sender) ?? "");
+        if (sender.Data.IsDead && GameStates.IsInGame) budget -= DeadHostInfo;
+        return Math.Max(budget, MinBody);
+    }
+
+    /// <summary>組み終えたパケットが上限を超えていたら記録する (本文の予算の見積もりが外れた時の手がかり)</summary>
+    public static void CheckPacket(Hazel.MessageWriter stream, string tag)
+    {
+        if (stream != null && stream.Length > PacketLimit)
+            Logger.Warn($"チャットのパケットが {stream.Length} バイトで上限 {PacketLimit} を超えています", tag);
+    }
+
     /// <summary>客の画面に戻す名前。ロビーでは今の名前 (名前の飾りを含む) をそのまま戻す</summary>
     public static string RestoreFor(PlayerControl sender)
     {

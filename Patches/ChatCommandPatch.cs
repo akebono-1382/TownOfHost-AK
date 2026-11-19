@@ -621,6 +621,7 @@ namespace TownOfHostL
                     .Write(restoreName)
                     .EndRpc();
                 writer.EndMessage();
+                TownOfHostL.Core.ChatSenderName.CheckPacket(writer.stream, "MessagesToSend");
                 writer.SendMessage();
                 TownOfHostL.Core.ChatSenderName.Restored(player, restoreName, clientId);
             }
@@ -664,8 +665,9 @@ namespace TownOfHostL
                     .Write(sender.Data.NetId)
                     .Write(restoreName)
                     .EndRpc()
-                    .EndMessage()
-                    .SendMessage();
+                    .EndMessage();
+                TownOfHostL.Core.ChatSenderName.CheckPacket(writer.stream, "CustomSend");
+                writer.SendMessage();
                 TownOfHostL.Core.ChatSenderName.Restored(sender, restoreName, clientId);
             }
         }
@@ -726,6 +728,7 @@ namespace TownOfHostL
                     }
 
                     writer.EndMessage();
+                    TownOfHostL.Core.ChatSenderName.CheckPacket(writer.stream, "DeadHostChat");
                     writer.SendMessage();
                     TownOfHostL.Core.ChatSenderName.Restored(host, restoreName, targetClientId);
                 }

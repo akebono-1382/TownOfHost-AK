@@ -1061,9 +1061,8 @@ public static partial class Utils
 
         const int MAX_LENGTH = 320;
         const int MAX_LINES = 13;
-        // 1行が長すぎると下の分割では切れず、1パケットの上限(1200バイト)を超えちゃうようなので
-        // ホストが死んでいる時は名前の前後に NetworkedPlayerInfo が 2 回付くので、本文を小さくして 1200 バイトに収める
-        int MAX_LINE_BYTES = PlayerControl.LocalPlayer != null && PlayerControl.LocalPlayer.Data != null && PlayerControl.LocalPlayer.Data.IsDead ? 600 : 900;
+        // 1 行が長すぎると下の分割では切れないので、バイト数でも割る。予算は戻す名前やホストの生死で変わる
+        int MAX_LINE_BYTES = TownOfHostL.Core.ChatSenderName.BodyBudget(PlayerControl.LocalPlayer);
         const string FORMAT_TAG_START = "<align=left><color=#ffffff>";
 
         string titleText = (title == "") ? $"<color=#aaaaff>{GetString("DefaultSystemMessageTitle")}</color>" : title;
