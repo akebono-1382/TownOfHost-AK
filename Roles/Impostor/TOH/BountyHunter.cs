@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Hazel;
 using UnityEngine;
 using AmongUs.GameOptions;
 
@@ -71,23 +70,6 @@ public sealed class BountyHunter : RoleBase, IImpostor
     {
         if (AmongUsClient.Instance.AmHost)
             ResetTarget();
-    }
-    private void SendRPC(byte targetId)
-    {
-        using var sender = CreateSender(CustomRPC.SetBountyTarget);
-        sender.Writer.Write(targetId);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.SetBountyTarget) return;
-
-        byte targetId = reader.ReadByte();
-
-        if (ShowTargetArrow && Target != null) TargetArrow.Remove(Player.PlayerId, Target.PlayerId);
-        Target = Utils.GetPlayerById(targetId);
-        if (ShowTargetArrow) TargetArrow.Add(Player.PlayerId, targetId);
-        Logger.Info($"{Player.GetNameWithRole()}のターゲットを{Target?.GetNameWithRole() ?? targetId.ToString()}に変更", "BountyHunter");
     }
     //public static void SetKillCooldown(byte id, float amount) => Main.AllPlayerKillCooldown[id] = amount;
     public override void ApplyGameOptions(IGameOptions opt) => AURoleOptions.ShapeshifterCooldown = TargetChangeTime;
@@ -178,8 +160,6 @@ public sealed class BountyHunter : RoleBase, IImpostor
         if (ShowTargetArrow) TargetArrow.Add(playerId, targetId);
         Logger.Info($"{Player.GetNameWithRole()}のターゲットを{Target.GetNameWithRole()}に変更", "BountyHunter");
 
-        //RPCによる同期
-        SendRPC(targetId);
         return target;
     }
     public override string GetAbilityButtonText() => GetString("BountyHunterChangeButtonText");

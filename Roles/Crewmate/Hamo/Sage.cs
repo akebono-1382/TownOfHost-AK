@@ -264,8 +264,6 @@ public sealed class Sage : RoleBase
 
 
 
-        SendRpc();
-
         Utils.NotifyRoles();
 
         Logger.Info($"{Player.Data?.PlayerName} がバリアを発動", "Sage");
@@ -307,8 +305,6 @@ public sealed class Sage : RoleBase
         }
 
 
-
-        SendRpc();
 
         Utils.NotifyRoles();
 
@@ -541,48 +537,6 @@ public sealed class Sage : RoleBase
         return "";
 
     }
-
-
-
-    void SendRpc()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(isBarrierActive);
-
-        sender.Writer.Write(barrierTimer);
-
-        sender.Writer.Write(cooldownTimer);
-
-        sender.Writer.Write(savedPosition.x);
-
-        sender.Writer.Write(savedPosition.y);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        isBarrierActive = reader.ReadBoolean();
-
-        barrierTimer = reader.ReadSingle();
-
-        cooldownTimer = reader.ReadSingle();
-
-        float x = reader.ReadSingle();
-
-        float y = reader.ReadSingle();
-
-        savedPosition = new Vector2(x, y);
-
-    }
-
 
 }
 

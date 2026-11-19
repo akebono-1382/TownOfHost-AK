@@ -1,6 +1,5 @@
 using System.Linq;
 using System.Collections.Generic;
-using Hazel;
 using UnityEngine;
 
 using AmongUs.GameOptions;
@@ -67,26 +66,6 @@ public sealed class Bakery : RoleBase, ISoloWinner
     {
         PoisonPlayer = null;
     }
-    private void SendRPC(byte targetId = byte.MaxValue)
-    {
-        using var sender = CreateSender(CustomRPC.SetNBakryPoison);
-        sender.Writer.Write(targetId);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.SetNBakryPoison) return;
-
-        var targetId = reader.ReadByte();
-        if (targetId != byte.MaxValue)
-        {
-            // 受けた ID の人を指す (前は PoisonPlayer の PlayerId を書き換えていて、null だと例外・そうでなければ本物の PlayerId を壊していた)
-            PoisonPlayer = Utils.GetPlayerById(targetId);
-        }
-        else
-        {
-            PoisonPlayer = null;
-        }
-    }
     public static bool IsPoisoned(PlayerControl target = null)
     {
         foreach (var nBakery in nBakeries)
@@ -133,7 +112,6 @@ public sealed class Bakery : RoleBase, ISoloWinner
         if (!nBakeries.Contains(this) || info.IsSuicide) return;
 
         PoisonPlayer = null;
-        if (AmongUsClient.Instance.AmHost) SendRPC();
         Logger.Info($"{target.GetNameWithRole()}の配布毒パン回収", "NBakery");
     }
 
@@ -176,10 +154,6 @@ public sealed class Bakery : RoleBase, ISoloWinner
             else //配る予定だった人が死んでいたら
             {
                 PoisonPlayer = null;
-                if (AmongUsClient.Instance.AmHost)
-                {
-                    SendRPC();
-                }
                 SendMessageAutoSplit($"{formatTag}{GetString("BakeryChangeNONE")}", true, BakeryTitle, formatTag: formatTag);
             }
         }
@@ -266,7 +240,6 @@ public sealed class Bakery : RoleBase, ISoloWinner
         else //吊られた時のKey取り消し 以降のパンセットいらないので返す
         {
             PoisonPlayer = null;
-            if (AmongUsClient.Instance.AmHost) SendRPC();
             return;
         }
 
@@ -282,7 +255,6 @@ public sealed class Bakery : RoleBase, ISoloWinner
         if (targetList.Count == 0) return;
         var PoisonedSelectPlayer = targetList[rand.Next(targetList.Count)];
         PoisonPlayer = PoisonedSelectPlayer;
-        if (AmongUsClient.Instance.AmHost) SendRPC(PoisonPlayer.PlayerId);
         Logger.Info($"{Player.GetNameWithRole()}の次ターン配布先：{PoisonedSelectPlayer.GetNameWithRole()}", "NBakery");
     }
 }

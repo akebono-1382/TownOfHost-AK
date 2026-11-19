@@ -2,7 +2,6 @@
 
 using UnityEngine;
 
-using Hazel;
 
 using System.Linq;
 
@@ -153,25 +152,6 @@ public sealed class MeetingSheriff : RoleBase, ISelfVoter
 
     }
 
-    private void SendRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(Usedcount);
-
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        Usedcount = reader.ReadInt32();
-
-    }
-
     public override void OnStartMeeting()
 
     {
@@ -289,8 +269,6 @@ public sealed class MeetingSheriff : RoleBase, ISelfVoter
         Usedcount++;
 
         MeetingUsedcount++;//1会議のカウント
-
-        SendRPC();
 
 
 

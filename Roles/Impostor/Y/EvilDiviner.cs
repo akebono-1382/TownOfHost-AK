@@ -1,6 +1,5 @@
 using AmongUs.GameOptions;
 using System.Collections.Generic;
-using Hazel;
 using UnityEngine;
 
 using TownOfHostL.Roles.Core;
@@ -53,20 +52,6 @@ public sealed class EvilDiviner : RoleBase, IImpostor
     {
         divinationCount = DivinationMaxCount;
         Player.AddDoubleTrigger();
-    }
-    private void SendRPC(byte playerId, byte targetId)
-    {
-        using var sender = CreateSender(CustomRPC.SetEvilDiviner);
-        sender.Writer.Write(playerId);
-        sender.Writer.Write(targetId);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.SetEvilDiviner) return;
-
-        reader.ReadByte();
-        divinationTargets.Add(reader.ReadByte());
     }
 
     public float CalculateKillCooldown() => KillCooldown;

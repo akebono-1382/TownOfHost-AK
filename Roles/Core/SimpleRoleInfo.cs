@@ -47,10 +47,6 @@ public partial class SimpleRoleInfo
     /// </summary>
     public bool IntroAsCrewmate { get; private set; }
     /// <summary>
-    /// 役職の公開情報 (RPC.RpcPublicRoleSync) を、宛先の MOD の客が受け取る処理。宛先の PlayerId と役職を読んだ後の reader を渡す
-    /// </summary>
-    public Action<MessageReader> PublicRpcReceiver { get; private set; }
-    /// <summary>
     /// 配るタスクの数を役職が決める。呼ぶ時点の数は、設定の上書きと属性 (Workhorse) を通した後の物。null を返すとそのまま。
     /// タスクを配る時は役職クラスがまだ無いことがあるので、クラスでなく登録で持つ
     /// </summary>
@@ -143,7 +139,6 @@ public partial class SimpleRoleInfo
         CustomRoles? introTeam = null,
         bool introShowsImpostorCount = false,
         bool? introAsCrewmate = null,
-        Action<MessageReader> publicRpcReceiver = null,
         Func<PlayerControl, (bool hasCommonTasks, int numLong, int numShort)?> taskCount = null,
         bool onlyVentCleaningTask = false,
         KillingFaction killingFaction = null,
@@ -176,7 +171,6 @@ public partial class SimpleRoleInfo
         info.IntroTeam = introTeam;
         info.IntroShowsImpostorCount = introShowsImpostorCount;
         info.IntroAsCrewmate = introAsCrewmate ?? (isDesyncImpostor && customRoleType == CustomRoleTypes.Crewmate);
-        info.PublicRpcReceiver = publicRpcReceiver;
         info.TaskCount = taskCount;
         info.OnlyVentCleaningTask = onlyVentCleaningTask;
         info.KillingFaction = killingFaction;

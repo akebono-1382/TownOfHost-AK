@@ -114,7 +114,6 @@ public partial class PlayerState
         IsDead = true;
         if (AmongUsClient.Instance.AmHost)
         {
-            RPC.SendDeathReason(PlayerId, DeathReason);
             var host = PlayerControl.LocalPlayer;
             if (host != null && host.PlayerId == PlayerId) CompleteHostTasksOnDeath(host);
             // 死に方によらない「誰かが死んだ」の知らせ。同じ人に 2 度呼ばれても 1 度だけ
@@ -129,7 +128,6 @@ public partial class PlayerState
         IsDead = false;
         DeathReason = CustomDeathReason.etc;
         RealKiller = (DateTime.MinValue, byte.MaxValue);
-        if (AmongUsClient.Instance.AmHost) RPC.SendDeathReason(PlayerId, DeathReason, isDead: false);
     }
     /// <summary>
     /// ホストの死後のタスク免除。残りのタスクを終えたことにする (タスクの合計からは外さない)。

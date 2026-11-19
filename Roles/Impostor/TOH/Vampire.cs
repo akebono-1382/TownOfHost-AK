@@ -128,7 +128,7 @@ namespace TownOfHostL.Roles.Impostor
                         Logger.Info($"Vampireに噛まれている{target.name}を自爆させました。", "Vampire.KillBitten");
                         if (!isButton && vampire.IsAlive())
                         {
-                            RPC.PlaySoundRPC(vampire.PlayerId, Sounds.KillSound);
+                            RPC.PlaySound(vampire.PlayerId, Sounds.KillSound);
                         }
                     }
                     else

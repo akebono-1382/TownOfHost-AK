@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using HarmonyLib;
 using UnityEngine;
-using Hazel;
 
 using AmongUs.GameOptions;
 using TownOfHostL.Roles.Core;
@@ -116,36 +115,7 @@ public sealed class Psychic : RoleBase
             player.MarkDirtySettings();
             Utils.NotifyRoles(SpecifySeer: Player);
 
-            // 霊視確定時にカスタムRPCで全クライアントへ同期する
-            // targetId=-1 なので1つのMessageWriterで済み hacking判定を受けない
-            SendRPC(Player.PlayerId, (byte)selectedId);
         }
-    }
-
-    /// <summary>
-    /// 霊視結果を全クライアントに送信する
-    /// </summary>
-    /// <param name="psychicId">霊媒師のPlayerId</param>
-    /// <param name="targetId">霊視対象のPlayerId</param>
-    private void SendRPC(byte psychicId, byte targetId)
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.SyncPsychicResult);
-        // RoleRPCSender が psychicId を先頭に書いてくれるため
-        // ここでは霊視対象のPlayerId のみ追記する
-        sender.Writer.Write(targetId);
-    }
-
-    /// <summary>
-    /// SyncPsychicResult RPCを受信したときの処理
-    /// ホスト以外のクライアントがローカルの CheckRolePlayer を更新する
-    /// </summary>
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.SyncPsychicResult) return;
-        // psychicId は DispatchRpc → RoleBase 側で消費済み
-        byte targetId = reader.ReadByte();
-        VentSelect.ReceiveSyncResult(Player.PlayerId, targetId);
     }
 
     public override void OverrideDisplayRoleNameAsSeer(PlayerControl seen, bool isMeeting, ref TownOfHostL.Core.RoleNameView view)
@@ -272,8 +242,6 @@ public sealed class Psychic : RoleBase
             SelectFix[playerId] = true;
             selectedId = SelectPlayer[playerId].PlayerId;
 
-            // ホスト側のみ CheckRolePlayer を更新する
-            // 他クライアントは SyncPsychicResult RPC 受信時に ReceiveSyncResult で更新する
             if (!CheckRolePlayer.ContainsKey(playerId)) CheckRolePlayer.Add(playerId, new());
             CheckRolePlayer[playerId].Add(SelectPlayer[playerId].PlayerId);
             TergetFixTimer.Remove(playerId);
@@ -284,18 +252,6 @@ public sealed class Psychic : RoleBase
             player.RpcResetAbilityCooldown();
 
             return true;
-        }
-
-        /// <summary>
-        /// SyncPsychicResult RPC 受信時に呼ばれる
-        /// ホスト以外のクライアントが CheckRolePlayer を更新する
-        /// </summary>
-        public static void ReceiveSyncResult(byte psychicId, byte targetId)
-        {
-            if (!CheckRolePlayer.ContainsKey(psychicId)) CheckRolePlayer.Add(psychicId, new());
-            if (!CheckRolePlayer[psychicId].Contains(targetId))
-                CheckRolePlayer[psychicId].Add(targetId);
-            Logger.Info($"Psychic({psychicId}) ReceiveSyncResult target:{targetId}", "Psychic");
         }
 
         public static bool IsShowTargetRole(PlayerControl seer, PlayerControl target)

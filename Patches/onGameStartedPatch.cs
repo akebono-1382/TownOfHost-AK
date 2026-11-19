@@ -214,7 +214,6 @@ class ChangeRoleSettings
             Main.VisibleTasksCount = true;
             if (__instance.AmHost)
             {
-                RPC.SyncCustomSettingsRPC();
                 if (ModeCatalog.Current.IsHideAndSeek)
                 {
                     Options.HideAndSeekKillDelayTimer = ModeCatalog.Current.StartWaitTime;
@@ -528,13 +527,6 @@ class SelectRolesPatch
 
         // 役職ごとに付ける属性
         RoleAddAddons.GrantAll();
-
-        foreach (var pair in PlayerState.AllPlayerStates)
-        {
-            ExtendedPlayerControl.RpcSetCustomRole(pair.Key, pair.Value.GetNowMainRole());
-            foreach (var subRole in pair.Value.SubRoles)
-                ExtendedPlayerControl.RpcSetCustomRole(pair.Key, subRole);
-        }
 
         CustomRoleManager.CreateInstance();
         foreach (var pc in Main.AllPlayerControls)

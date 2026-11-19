@@ -8,8 +8,6 @@ using HarmonyLib;
 
 using UnityEngine;
 
-using Hazel;
-
 
 
 using TownOfHostL.Patches.ISystemType;
@@ -40,8 +38,7 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
             CustomRoleTypes.Impostor,
             (int)Options.offsetId.Hamo + 3800,
             SetupOptionItem,
-            "Eb",
-            publicRpcReceiver: ReceivePublickRpc
+            "Eb"
         );
 
     public EvilBlender(PlayerControl player)
@@ -162,16 +159,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
 
     {
 
-        if (UseingId is not byte.MaxValue)
-
-        {
-
-            UseingId = byte.MaxValue;
-
-            Main.AllPlayerControls.DoIf(pc => pc.IsModClient(), pc => SendPublicRpc(pc.PlayerId, 0, null));
-
-        }
-
         UseingId = byte.MaxValue;
 
         PlayerRooms.Clear();
@@ -272,14 +259,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
 
         {
 
-            if (player.IsModClient())
-
-            {
-
-                SendPublicRpc(player.PlayerId, 0, null);
-
-            }
-
             if (player.IsAlive() is false) continue;
 
 
@@ -319,8 +298,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
             }
 
             Logger.Info($"{player.Data?.PlayerName} => {Room}", "EvilBlender");
-
-            if (player.IsModClient()) SendPublicRpc(player.PlayerId, 1, Room);
 
         }
 
@@ -424,8 +401,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
 
                 dellist.Add(data.Key);
 
-                if (pc.IsModClient()) SendPublicRpc(pc.PlayerId, 2, null);
-
                 continue;
 
             }
@@ -447,8 +422,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
 
 
                     Logger.Info($"Complete:{pc.Data?.PlayerName}", "EvilBlender");
-
-                    if (pc.IsModClient()) SendPublicRpc(pc.PlayerId, 2, null);
 
                     continue;
 
@@ -499,8 +472,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
             Main.SabotageActivetimer = 0;
 
             Utils.NotifyRoles();
-
-            Main.AllPlayerControls.DoIf(p => p.IsModClient(), p => SendPublicRpc(p.PlayerId, 0, null));
 
             return;
 
@@ -569,83 +540,6 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
     }
 
 
-
-    //flug 1 : playerroomの追加　2 : playerroomの削除
-
-    void SendPublicRpc(byte playerid, int flug, SystemTypes? room)
-
-    {
-
-        // 書き始めた電文は必ず送り切る (部屋が分からない時は書く前にやめる)
-        if (flug == 1 && room.HasValue is false) return;
-
-        MessageWriter writer = RPC.RpcPublicRoleSync(playerid, CustomRoles.EvilBlender);
-
-        writer.Write(flug);
-
-        switch (flug)
-
-        {
-
-            case 0:
-
-                writer.Write(UseingId);
-
-                break;
-
-            case 1:
-
-                writer.Write((byte)room.Value);
-
-                break;
-
-        }
-
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-    }
-
-    public static void ReceivePublickRpc(MessageReader reader)
-
-    {
-
-        switch (reader.ReadInt32())
-
-        {
-
-            case 0:
-
-                UseingId = reader.ReadByte();
-
-                if (UseingId == byte.MaxValue) break;
-
-                if (Utils.GetPlayerById(UseingId)?.GetRoleClass() is EvilBlender EvilBlender)
-
-                {
-
-                    EvilBlender.limittimer = 0;
-
-                }
-
-                break;
-
-            case 1:
-
-                var roombyte = reader.ReadByte();
-
-                PlayerRooms.Add(PlayerControl.LocalPlayer.PlayerId, (SystemTypes)roombyte);
-
-                break;
-
-            case 2:
-
-                PlayerRooms.Remove(PlayerControl.LocalPlayer.PlayerId);
-
-                break;
-
-        }
-
-    }
 
     void IKiller.OnMurderPlayerAsKiller(MurderInfo info)
 

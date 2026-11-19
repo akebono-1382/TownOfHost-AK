@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Hazel;
 using AmongUs.GameOptions;
 using UnityEngine;
 
@@ -94,7 +93,6 @@ public sealed class Lawyer : RoleBase, ILateWinner
             }
             var SelectedTarget = targetList[rand.Next(targetList.Count)];
             Target = SelectedTarget;
-            SendRPC(Player.PlayerId, SelectedTarget.PlayerId, "SetTarget");
             Logger.Info($"{Player.GetNameWithRole()}:{SelectedTarget.GetNameWithRole()}", "Lawyer");
         }
     }
@@ -111,39 +109,6 @@ public sealed class Lawyer : RoleBase, ILateWinner
         return targetList;
     }
     public override void ApplyGameOptions(IGameOptions opt) => opt.SetVision(HasImpostorVision);
-    private void SendRPC(byte LawyerId, byte targetId = byte.MaxValue, string Progress = "")
-    {
-        switch (Progress)
-        {
-            case "SetTarget":
-                var sender = CreateSender(CustomRPC.SetLawyerTarget);
-                sender.Writer.Write(LawyerId);
-                sender.Writer.Write(targetId);
-                break;
-            case "":
-                if (!AmongUsClient.Instance.AmHost) return;
-                var Rsender = CreateSender(CustomRPC.SetRemoveLawyerTarget);
-                Rsender.Writer.Write(LawyerId);
-                break;
-        }
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType == CustomRPC.SetLawyerTarget)
-        {
-            byte LawyerId = reader.ReadByte();
-            byte TargetId = reader.ReadByte();
-            if (Player == null || Player.PlayerId != LawyerId) return;
-
-            Target = Utils.GetPlayerById(TargetId);
-        }
-        else if (rpcType == CustomRPC.SetRemoveLawyerTarget)
-        {
-            byte LawyerId = reader.ReadByte();
-            if (Player == null || Player.PlayerId != LawyerId) return;
-            Target = null;
-        }
-    }
     /// <summary>依頼人が追放以外で死んだら追跡者になる (追放された時は OnExileWrapUp で、生きていれば少し後に変わる)</summary>
     public static void OnPlayerDeadOthers(byte playerId, CustomDeathReason _)
     {
@@ -185,7 +150,6 @@ public sealed class Lawyer : RoleBase, ILateWinner
 
     public void ChangeRole()
     {
-        SendRPC(Player.PlayerId);
         Player.RpcSetCustomRole(CustomRoles.Pursuer);
         Utils.NotifyRoles();
     }

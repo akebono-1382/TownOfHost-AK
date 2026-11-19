@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using AmongUs.GameOptions;
-using Hazel;
 using UnityEngine;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
@@ -133,7 +132,6 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
         }
 
         Utils.NotifyRoles();
-        SendRpc();
     }
 
     public override void OnFixedUpdate(PlayerControl player)
@@ -174,7 +172,6 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
                     ? positionHistory[Player.PlayerId].Count - 1
                     : 0;
                 Utils.NotifyRoles();
-                SendRpc();
             }
             return;
         }
@@ -195,7 +192,6 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
                     movingPlatformUsedDuringRec.Clear();
                     Player.RpcResetAbilityCooldown();
                     Utils.NotifyRoles();
-                    SendRpc();
                     return;
                 }
 
@@ -239,7 +235,6 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
         positionHistory.Clear();
         rewindSkipPlayers.Clear();
         movingPlatformUsedDuringRec.Clear();
-        SendRpc();
     }
 
     public override void OnStartMeeting()
@@ -260,20 +255,6 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
         if (!Player.IsAlive()) return;
         AURoleOptions.PhantomCooldown = PhantomCooldown;
         Player.RpcResetAbilityCooldown();
-    }
-
-    void SendRpc()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(isRecording);
-        sender.Writer.Write(isRewinding);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        isRecording = reader.ReadBoolean();
-        isRewinding = reader.ReadBoolean();
     }
 
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)

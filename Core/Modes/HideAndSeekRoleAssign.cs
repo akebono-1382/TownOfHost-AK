@@ -40,11 +40,6 @@ static class HideAndSeekRoleAssign
             SelectRolesPatch.AssignCustomRolesFromList(CustomRoles.HASFox, list)?.ForEach(pc => pc.RpcSetColor(3));
             SelectRolesPatch.AssignCustomRolesFromList(CustomRoles.HASTroll, list)?.ForEach(pc => pc.RpcSetColor(2));
         }
-        foreach (var pair in PlayerState.AllPlayerStates)
-        {
-            //RPCによる同期
-            ExtendedPlayerControl.RpcSetCustomRole(pair.Key, pair.Value.GetNowMainRole());
-        }
         //色設定処理
         SetColorPatch.IsAntiGlitchDisabled = true;
 

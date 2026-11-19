@@ -1,5 +1,4 @@
 using AmongUs.GameOptions;
-using Hazel;
 using TownOfHostL.Modules;
 using TownOfHostL.Patches;
 using TownOfHostL.Roles.Core;
@@ -175,7 +174,6 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
 
         beamMode = !beamMode;
         ApplyModeDesync(beamMode);
-        SendRpc();
         Utils.NotifyRoles(SpecifySeer: Player);
     }
 
@@ -233,7 +231,6 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         _prevCharging = true;
         _prevBeamMark = false;
         Utils.NotifyRoles(ForceLoop: true);
-        SendRpc();
     }
 
     /// <summary>撃つたび・状態を戻すたびに進める。会議で戻した後に、前の発射の後処理 (当たらなかった時の自爆など) を走らせない</summary>
@@ -269,14 +266,14 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         if (MeetingHud.Instance != null)
         {
             if (IsCharging || ShowBeamMark || IsFiring)
-            { ResetBeamState(); Utils.NotifyRoles(); SendRpc(); }
+            { ResetBeamState(); Utils.NotifyRoles(); }
             return;
         }
 
         if (!Player.IsAlive() && (IsCharging || ShowBeamMark))
         {
             ResetBeamState();
-            Utils.NotifyRoles(); SendRpc();
+            Utils.NotifyRoles();
             return;
         }
 
@@ -323,7 +320,6 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         if (!Player.IsAlive()) return;
 
         BeamFacingLeft = beam?.FacingLeft ?? Player.cosmetics.FlipX;
-        SendBeamDirection(BeamFacingLeft);
         beam?.Fire(BeamColor, HadouHoBeam.NormalSize);
         Utils.AllPlayerKillFlash();
 
@@ -335,7 +331,6 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         _prevBeamMark = true;
         ShotLimit--;
         Utils.NotifyRoles(ForceLoop: true);
-        SendRpc();
         ApplyBeamHit();
 
         var generation = ++fireGeneration;
@@ -348,13 +343,12 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
                 beam?.End(); IsFiring = false;
                 TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(SheriffHadouHo));
                 Player.MarkDirtySettings();
-                Utils.NotifyRoles(); SendRpc(); return;
+                Utils.NotifyRoles(); return;
             }
 
             ShowBeamMark = false; _prevBeamMark = false;
             beam?.End();
             Utils.NotifyRoles(ForceLoop: true);
-            SendRpc();
 
             if (!HasHit && SelfDestructOnMiss)
             {
@@ -411,13 +405,12 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
     {
         ResetBeamState();
         Utils.NotifyRoles(ForceLoop: true);
-        SendRpc();
     }
 
     public override void OnStartMeeting()
     {
         ResetBeamState();
-        if (beamMode) { beamMode = false; SendRpc(); }
+        if (beamMode) beamMode = false;
     }
 
     public override void AfterMeetingTasks()
@@ -497,32 +490,4 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
 
     public override string GetAbilityButtonText() => Translator.GetString("SheriffHadouHoAbilityButtonText");
 
-
-    void SendRpc()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write((byte)0);
-        sender.Writer.Write(IsCharging);
-        sender.Writer.Write(ShowBeamMark);
-        sender.Writer.Write(ShotLimit);
-        sender.Writer.Write(beamMode);
-    }
-
-    void SendBeamDirection(bool left)
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write((byte)1);
-        sender.Writer.Write(left);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        byte tag = reader.ReadByte();
-        if (tag == 1) { BeamFacingLeft = reader.ReadBoolean(); return; }
-        IsCharging = reader.ReadBoolean();
-        ShowBeamMark = reader.ReadBoolean();
-        ShotLimit = reader.ReadInt32();
-        beamMode = reader.ReadBoolean();
-    }
 }

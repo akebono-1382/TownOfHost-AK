@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Hazel;
 using InnerNet;
 using TMPro;
 using TownOfHostL.Modules;
@@ -164,7 +163,6 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
         deadBodyPositions.Clear();
 
         eatCooldownTimer = 0f;
-        RpcClearDiePlayerPos();
     }
 
     public bool? CheckKillFlash(MurderInfo info)
@@ -173,24 +171,8 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
         deadBodyPositions[info.AppearanceTarget.PlayerId] = pos;
         GetArrow.Add(Player.PlayerId, pos);
         if (info.AppearanceKiller.GetCustomRole() is CustomRoles.Viper) Viperkilledplayers[info.AppearanceTarget.PlayerId] = Utils.ViperDissolveTime;
-        RpcAddDiePlayerPos(info.AppearanceTarget.PlayerId, pos);
 
         return OptionShowArrow.GetBool();
-    }
-
-    public void RpcAddDiePlayerPos(byte targetId, Vector2 pos)
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.AdddeadBodyPositions);
-        sender.Writer.Write(targetId);
-        NetHelpers.WriteVector2(pos, sender.Writer);
-    }
-    public void RpcClearDiePlayerPos()
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.CleardeadBodyPositions);
     }
 
     public override void OnFixedUpdate(PlayerControl player)
@@ -274,7 +256,6 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
             reason = DontReportReason.Eat;
             EatenBodies.Add(target.PlayerId);
             deadBodyPositions.Where(poss => poss.Key == target.PlayerId).Do(poss => GetArrow.Remove(Player.PlayerId, poss.Value));
-            RpcEatPlayer(target.PlayerId);
             eatOrSwallowCount++;
             Logger.Info($"食べた数：{eatOrSwallowCount}", "Eater");
 
@@ -338,42 +319,6 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
         }
     }
 
-
-    public void RpcEatPlayer(byte targetId)
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.EatPlayer);
-        sender.Writer.Write(targetId);
-    }
-    enum RPC_Types
-    {
-        EatPlayer,
-        AdddeadBodyPositions,
-        CleardeadBodyPositions
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        switch ((RPC_Types)reader.ReadPackedInt32())
-        {
-            case RPC_Types.EatPlayer:
-                var targetId = reader.ReadByte();
-                EatenBodies.Add(targetId);
-                deadBodyPositions.Where(poss => poss.Key == targetId).Do(poss => GetArrow.Remove(Player.PlayerId, poss.Value));
-                break;
-            case RPC_Types.AdddeadBodyPositions:
-                var playerPos = NetHelpers.ReadVector2(reader);
-                deadBodyPositions[reader.ReadByte()] = playerPos;
-                GetArrow.Add(Player.PlayerId, playerPos);
-                break;
-            case RPC_Types.CleardeadBodyPositions:
-                deadBodyPositions.Do(oniku => GetArrow.Remove(Player.PlayerId, oniku.Value));
-                deadBodyPositions.Clear();
-                break;
-        }
-    }
 
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
     {

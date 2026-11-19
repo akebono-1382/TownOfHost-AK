@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using AmongUs.GameOptions;
-using Hazel;
 
 using TownOfHostL.Attributes;
 using TownOfHostL.Modules;
@@ -126,23 +125,6 @@ public sealed class SchrodingerCatKiller : RoleBase, IKiller, IAdditionalWinner,
             return false;
         }
         return won.Value;
-    }
-    public void RpcSetTeam(TeamType team)
-    {
-        Team = team;
-        if (AmongUsClient.Instance.AmHost)
-        {
-            using var sender = CreateSender(CustomRPC.SetSchrodingerCatTeam);
-            sender.Writer.Write((byte)team);
-        }
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.SetSchrodingerCatTeam)
-        {
-            return;
-        }
-        Team = (TeamType)reader.ReadByte();
     }
     public static Color GetCatColor(TeamType catType)
     {

@@ -5,7 +5,6 @@ using AmongUs.GameOptions;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
 using static TownOfHostL.Translator;
-using Hazel;
 
 namespace TownOfHostL.Roles.Neutral;
 public sealed class Arsonist : RoleBase, IKiller
@@ -87,28 +86,6 @@ public sealed class Arsonist : RoleBase, IKiller
     {
         opt.SetVision(false);
     }
-    public void SendRPC(CustomRPC rpcType, byte targetId = byte.MaxValue, bool isDoused = false)
-    {
-        using var sender = CreateSender(rpcType);
-        sender.Writer.Write(targetId);
-
-        if (rpcType == CustomRPC.SetDousedPlayer)
-            sender.Writer.Write(isDoused);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        var targetId = reader.ReadByte();
-        switch (rpcType)
-        {
-            case CustomRPC.SetDousedPlayer:
-                bool doused = reader.ReadBoolean();
-                IsDoused[targetId] = doused;
-                break;
-            case CustomRPC.SetCurrentDousingTarget:
-                TargetInfo = new(targetId, 0f);
-                break;
-        }
-    }
     public void OnCheckMurderAsKiller(MurderInfo info)
     {
         var (killer, target) = info.AttemptTuple;
@@ -120,7 +97,6 @@ public sealed class Arsonist : RoleBase, IKiller
         {
             TargetInfo = new(target.PlayerId, 0f);
             Utils.NotifyRoles(SpecifySeer: killer);
-            SendRPC(CustomRPC.SetCurrentDousingTarget, target.PlayerId);
         }
         info.DoKill = false;
     }
@@ -138,7 +114,6 @@ public sealed class Arsonist : RoleBase, IKiller
             {
                 TargetInfo = null;
                 Utils.NotifyRoles(SpecifySeer: Player);
-                SendRPC(CustomRPC.SetCurrentDousingTarget);
             }
             else
             {
@@ -153,9 +128,7 @@ public sealed class Arsonist : RoleBase, IKiller
                     Player.SetKillCooldown();
                     TargetInfo = null;//塗が完了したのでTupleから削除
                     IsDoused[ar_target.PlayerId] = true;//塗り完了
-                    SendRPC(CustomRPC.SetDousedPlayer, ar_target.PlayerId, true);
                     Utils.NotifyRoles();//名前変更
-                    SendRPC(CustomRPC.SetCurrentDousingTarget);
                 }
                 else
                 {
@@ -169,7 +142,6 @@ public sealed class Arsonist : RoleBase, IKiller
                     {
                         TargetInfo = null;
                         Utils.NotifyRoles(SpecifySeer: Player);
-                        SendRPC(CustomRPC.SetCurrentDousingTarget);
 
                         Logger.Info($"Canceled: {Player.GetNameWithRole()}", "Arsonist");
                     }
@@ -193,7 +165,7 @@ public sealed class Arsonist : RoleBase, IKiller
                     state.SetDead();
                 }
                 else
-                    RPC.PlaySoundRPC(pc.PlayerId, Sounds.KillSound);
+                    RPC.PlaySound(pc.PlayerId, Sounds.KillSound);
             }
             CustomWinnerHolder.ShiftWinnerAndSetWinner(CustomWinner.Arsonist); //焼殺で勝利した人も勝利させる
             CustomWinnerHolder.WinnerIds.Add(Player.PlayerId);

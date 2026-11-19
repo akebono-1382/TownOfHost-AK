@@ -2,7 +2,6 @@
 
 using AmongUs.GameOptions;
 
-using Hazel;
 
 using UnityEngine;
 
@@ -354,7 +353,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
         ApplyModeDesync(appointMode);
 
-        SendRPC();
 
         Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -402,7 +400,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
             ApplyModeDesync(false);
 
-            SendRPC();
 
             return;
 
@@ -476,7 +473,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
                 nearTimer = 0f;
 
-                SendRPC();
 
                 return;
 
@@ -540,7 +536,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
             Player.RpcMurderPlayer(Player);
 
-            SendRPC();
 
             return;
 
@@ -552,7 +547,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
         {
 
-            SendRPC();
 
             return;
 
@@ -598,7 +592,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
 
 
-        SendRPC();
 
         Utils.NotifyRoles();
 
@@ -705,39 +698,6 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
     }
 
 
-
-    private void SendRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(appointMode);
-
-        sender.Writer.Write(hasAppointed);
-
-        sender.Writer.Write(nowcool);
-
-        sender.Writer.Write(NextAppointCandidate);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        appointMode = reader.ReadBoolean();
-
-        hasAppointed = reader.ReadBoolean();
-
-        nowcool = reader.ReadSingle();
-
-        NextAppointCandidate = reader.ReadByte();
-
-    }
 
 
 

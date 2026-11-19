@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
 using TownOfHostL.Core.Win;
 using TownOfHostL.Modules;
 using TownOfHostL.Patches;
@@ -128,7 +127,6 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
             {
                 IsShowMyRole = true;
                 isnotice = true;
-                SendRPC_ShowMyRole();
 
                 foreach (var seer in Main.AllAlivePlayerControls)
                 {
@@ -174,29 +172,11 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
         }
         return false;
     }
-    void SendRPC_ShowMyRole()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.IsShowMyRole);
-    }
     #endregion
     #region RoomTask
     int? IRoomTasker.GetMaxTaskCount() => null;
     bool IRoomTasker.IsAssignRoomTask() => IsActiveNotice && !CompleteRoomTask && Player.IsAlive();
-    void IRoomTasker.OnComplete(int completeroom) => SendRPC_CompleteRoom();
-    void IRoomTasker.ChangeRoom(PlainShipRoom TaskRoom) => SendRPC_ChengeRoom(TaskRoom);
-    public void SendRPC_CompleteRoom()
-    {
-        CompleteRoomTask = true;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.CompleteRoom);
-    }
-    public void SendRPC_ChengeRoom(PlainShipRoom TaskPSR)
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.ChengeRoom);
-        sender.Writer.Write((byte)TaskPSR.RoomId);
-    }
+    void IRoomTasker.OnComplete(int completeroom) => CompleteRoomTask = true;
     public override string MeetingAddMessage()
     {
         if (SelfVoteManager.Canuseability() is false) return "";
@@ -348,34 +328,6 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
         if (battery <= 80) return "<mark=#75ba47><color=#000000>||||||||||</mark>   </size></color>";
         if (battery <= 90) return "<mark=#3fb81d><color=#000000>|||||||||||</mark>  </size></color>";
         else return "<mark=#03ff4a><color=#000000>||||||||||</mark> </size></color>";
-    }
-    #endregion
-    #region RPC
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        var iroomtasker = Player.GetRoleClass() is IRoomTasker roomTasker ? roomTasker : null;
-        switch ((RPC_Types)reader.ReadPackedInt32())
-        {
-            case RPC_Types.ChengeRoom:
-                iroomtasker?.ReceiveRoom(Player.PlayerId, reader);
-                break;
-            case RPC_Types.CompleteRoom:
-                var a = MessageReader.Get(reader);
-                iroomtasker?.ReceiveCompleteRoom(Player.PlayerId, reader);
-                CompleteRoomTask = true;
-                break;
-            case RPC_Types.IsShowMyRole:
-                IsShowMyRole = true;
-                break;
-        }
-    }
-
-    enum RPC_Types
-    {
-        ChengeRoom,
-        CompleteRoom,
-        IsShowMyRole
     }
     #endregion
     public override CustomRoles TellResults(PlayerControl player)

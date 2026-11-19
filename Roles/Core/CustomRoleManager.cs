@@ -332,16 +332,6 @@ public static partial class CustomRoleManager
     }
     public static void SubRoleAdd(byte playerId, CustomRoles subRole)
         => AddOnList.Get(subRole)?.OnAdd?.Invoke(playerId);
-    /// <summary>
-    /// 受信したRPCから送信先を読み取ってRoleClassに配信する
-    /// </summary>
-    /// <param name="reader"></param>
-    /// <param name="rpcType"></param>
-    public static void DispatchRpc(MessageReader reader, CustomRPC rpcType)
-    {
-        var playerId = reader.ReadByte();
-        GetByPlayerId(playerId)?.ReceiveRPC(reader, rpcType);
-    }
     //NameSystem
     public static HashSet<Func<PlayerControl, PlayerControl, bool, string>> MarkOthers = new();
     public static HashSet<Func<PlayerControl, PlayerControl, bool, bool, string>> LowerOthers = new();

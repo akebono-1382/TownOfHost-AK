@@ -2,7 +2,6 @@
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Hazel;
 using TownOfHostL.Roles.Core;
 using UnityEngine;
 using static TownOfHostL.Translator;
@@ -107,7 +106,6 @@ public sealed class Analyzer : RoleBase
                 sendtype.Add(CustomRoleTypes.Impostor);
                 GetArrow.Remove(Player.PlayerId, ImpVentId.Value.pos);
                 ImpVentId = null;
-                SendRpc(CustomRoleTypes.Impostor);
                 Utils.NotifyRoles(SpecifySeer: Player);
                 Used = true;
             }
@@ -121,7 +119,6 @@ public sealed class Analyzer : RoleBase
                 sendtype.Add(CustomRoleTypes.Crewmate);
                 GetArrow.Remove(Player.PlayerId, CrewmateVentId.Value.pos);
                 CrewmateVentId = null;
-                SendRpc(CustomRoleTypes.Crewmate);
                 Utils.NotifyRoles(SpecifySeer: Player);
                 Used = true;
             }
@@ -135,7 +132,6 @@ public sealed class Analyzer : RoleBase
                 sendtype.Add(CustomRoleTypes.Neutral);
                 GetArrow.Remove(Player.PlayerId, NeutralVentId.Value.pos);
                 NeutralVentId = null;
-                SendRpc(CustomRoleTypes.Neutral);
                 Utils.NotifyRoles(SpecifySeer: Player);
                 Used = true;
             }
@@ -197,7 +193,6 @@ public sealed class Analyzer : RoleBase
         sendtype = [];
         turnusecount = 0;
         ResetVent();
-        SendRpc();
     }
     public override void OnStartMeeting()
     {
@@ -280,58 +275,6 @@ public sealed class Analyzer : RoleBase
             NeutralVentId = (Neutralvent.Id, Neutralvent.transform.position);
             GetArrow.Add(Player.PlayerId, Neutralvent.transform.position);
         }
-    }
-    void SendRpc(CustomRoleTypes roleTypes = CustomRoleTypes.Madmate)
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(Usecount);
-        sender.Writer.Write(turnusecount);
-        sender.Writer.Write(ImpVentId.HasValue ? ImpVentId.Value.id : -5);
-        sender.Writer.Write(CrewmateVentId.HasValue ? CrewmateVentId.Value.id : -5);
-        sender.Writer.Write(NeutralVentId.HasValue ? NeutralVentId.Value.id : -5);
-        sender.Writer.Write(roleTypes is CustomRoleTypes.Madmate ? -5 : (int)roleTypes);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        Usecount = reader.ReadInt32();
-        turnusecount = reader.ReadInt32();
-        var iid = reader.ReadInt32();
-        if (0 <= iid)
-        {
-            if (ImpVentId.HasValue)
-            {
-                GetArrow.Remove(Player.PlayerId, ImpVentId.Value.pos);
-            }
-            var impvent = ShipStatus.Instance.AllVents.FirstOrDefault(x => x.Id == iid);
-            ImpVentId = (impvent.Id, impvent.transform.position);
-            GetArrow.Add(Player.PlayerId, impvent.transform.position);
-        }
-        var cid = reader.ReadInt32();
-        if (0 <= cid)
-        {
-            if (CrewmateVentId.HasValue)
-            {
-                GetArrow.Remove(Player.PlayerId, CrewmateVentId.Value.pos);
-            }
-            var Crewvent = ShipStatus.Instance.AllVents.FirstOrDefault(x => x.Id == cid);
-            CrewmateVentId = (Crewvent.Id, Crewvent.transform.position);
-            GetArrow.Add(Player.PlayerId, Crewvent.transform.position);
-        }
-        var nid = reader.ReadInt32();
-        if (0 <= nid)
-        {
-            if (NeutralVentId.HasValue)
-            {
-                GetArrow.Remove(Player.PlayerId, NeutralVentId.Value.pos);
-            }
-            var Neuvent = ShipStatus.Instance.AllVents.FirstOrDefault(x => x.Id == nid);
-            NeutralVentId = (Neuvent.Id, Neuvent.transform.position);
-            GetArrow.Add(Player.PlayerId, Neuvent.transform.position);
-        }
-        var type = reader.ReadInt32();
-        if (type < 0) sendtype = [];
-        else sendtype.Add((CustomRoleTypes)type);
     }
     public override bool OnCompleteTask()
     {

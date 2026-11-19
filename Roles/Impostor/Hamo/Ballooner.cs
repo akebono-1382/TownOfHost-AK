@@ -1,6 +1,5 @@
 
 using AmongUs.GameOptions;
-using Hazel;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
 using UnityEngine;
@@ -165,7 +164,6 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
         if (OptionSuicide.GetBool() is false)
         {
             ResetBalloon();
-            SendRPC();
             Utils.NotifyRoles();
         }
         Player.SetKillCooldown(ForceProtect: true);
@@ -180,16 +178,6 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
 
     public override string GetAbilityButtonText() => GetString("BalloonerAbility");
 
-    public void SendRPC()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        ResetBalloon();
-    }
     public override void CheckWinner(GameOverReason reason)
     {
     }

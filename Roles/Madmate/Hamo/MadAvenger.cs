@@ -249,7 +249,7 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
                 killcount++;
             }
             else
-                RPC.PlaySoundRPC(pc.PlayerId, Sounds.KillSound);
+                RPC.PlaySound(pc.PlayerId, Sounds.KillSound);
         }
     }
 

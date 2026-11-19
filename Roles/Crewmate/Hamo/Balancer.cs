@@ -18,7 +18,6 @@ using static TownOfHostL.Modules.MeetingVoteManager;
 
 using static TownOfHostL.Modules.MeetingTimeManager;
 
-using Hazel;
 
 using TownOfHostL.Roles.Core.Interfaces;
 using static TownOfHostL.Translator;
@@ -369,14 +368,6 @@ public sealed class Balancer : RoleBase, ISelfVoter
                 target1 = Target1;
 
                 target2 = Target2;
-
-
-
-                using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-                sender.Writer.Write(target1);
-
-                sender.Writer.Write(target2);
 
 
 
@@ -801,21 +792,5 @@ public sealed class Balancer : RoleBase, ISelfVoter
 
     }
 
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        used = true;
-
-        Id = Player.PlayerId;
-
-        target1 = reader.ReadByte();
-
-        target2 = reader.ReadByte();
-
-    }
 
 }

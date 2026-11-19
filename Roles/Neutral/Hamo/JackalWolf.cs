@@ -7,7 +7,6 @@ using AmongUs.GameOptions;
 
 
 
-using Hazel;
 
 using TownOfHostL.Roles.Core;
 
@@ -419,30 +418,6 @@ public sealed class JackalWolf : RoleBase, ILNKiller, IUsePhantomButton, IDouble
         text = default;
 
         return false;
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-
-        try
-
-        {
-
-            AddRole?.ReceiveRPC(reader, rpcType);
-
-        }
-
-        catch (Exception ex)
-
-        {
-
-            Logger.Error($"{ex}", "Assassin");
-
-        }
 
     }
 

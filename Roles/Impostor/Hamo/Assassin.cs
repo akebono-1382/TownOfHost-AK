@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Hazel;
 using TownOfHostL.Core.Win;
 using TownOfHostL.Modules;
 using TownOfHostL.Patches;
@@ -246,7 +245,6 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         if (NowState is AssassinMeeting.DieWait)
         {
             NowState = AssassinMeeting.EndMeeting;
-            SendStateRPC();
             Player.RpcExileV3();
             MyState.SetDead();
             return;
@@ -283,7 +281,6 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
                     }
                     NowUse = true;
                     NowState = AssassinMeeting.Guessing;
-                    SendStateRPC();
 
                     AntiBlackout.SendGameData();
                     GameDataSerializePatch.SerializeMessageCount--;
@@ -357,7 +354,6 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
                 Player.RpcSetName(string.Format(GetString("AssassinGuessNonCollect"), tage) + "<size=0>");
                 MeetingVoteManager.Voteresult = string.Format(GetString("AssassinGuessNonCollect"), tage);
             }
-            SendStateRPC();
             Exiled = Player.Data;
             _ = new LateTask(() => Player.RpcSetName(name), 6f, "AssassinSetName");
             return true;
@@ -368,7 +364,6 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
                 if (Exiled?.PlayerId == Player.PlayerId)
                 {
                     NowState = AssassinMeeting.CallMetting;
-                    SendStateRPC();
                     Logger.Info("追放されちゃった！", "Assassin");
                     Exiled = null;
                     IsTie = false;
@@ -479,32 +474,6 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         }
         text = default;
         return false;
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        try
-        {
-            AddRole?.ReceiveRPC(reader, rpcType);
-        }
-        catch (Exception ex)
-        {
-            Logger.Error($"{ex}", "Assassin");
-        }
-    }
-
-    public void ReceiveStateRPC(MessageReader reader)
-    {
-        NowState = (AssassinMeeting)reader.ReadInt32();
-        NowUse = NowState is AssassinMeeting.Guessing;
-    }
-
-    public void SendStateRPC() //一時用、いつか別の方法で実装する //いい案なんかないかな、
-    {
-        if (!Main.AllPlayerControls.Any(pc => pc.PlayerId != 0 && pc.IsModClient())) return;
-        var writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.SyncAssassinState, SendOption.Reliable);
-        writer.Write(Player.PlayerId);
-        writer.Write((int)NowState);
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
 
     bool IUsePhantomButton.IsPhantomRole => AddRole is IUsePhantomButton iusephantom && iusephantom?.IsPhantomRole is true;

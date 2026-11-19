@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AmongUs.GameOptions;
-using Hazel;
 using UnityEngine;
 using TownOfHostL.Modules;
 using TownOfHostL.Roles.Core;
@@ -180,7 +179,6 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
         SetSpeed(AimSpeed);
         ShowGuide(NovaBeamTile.Style.Guide);
         ClientEffects.Charge(Player, chargeTime + fireDelay, new Color(0.5f, 0.94f, 1f));
-        SendRpc();
         Utils.NotifyRoles(ForceLoop: true);
     }
 
@@ -257,7 +255,7 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
         }
         // ビーム用のダミーは、出すのに時間がかかるので、最初に作って見えない所へ置いておく
         // (出すのは CNO の側で 1 体ずつ、イントロ明けと会議明けの待ちの後)
-        if (!tilesSpawned && GameStates.IsInTask && !ClientEffects.SkipBeamDummies)
+        if (!tilesSpawned && GameStates.IsInTask)
         {
             tilesSpawned = true;
             NovaBeamTile.SetupPixel(beamSize);
@@ -296,7 +294,7 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
             if (Time.time >= nextAlarmAt)
             {
                 nextAlarmAt = Time.time + AlarmInterval;
-                RPC.PlaySoundRPC(byte.MaxValue, Sounds.SabotageAlarm);
+                RPC.PlaySound(byte.MaxValue, Sounds.SabotageAlarm);
             }
         }
         else if (beaming)
@@ -346,7 +344,6 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
         SetSpeed(Main.MinSpeed);
         ShowGuide(NovaBeamTile.Style.Locked);
         if (NovaBeamTile.Smooth && tiles.Count > 1) NovaBeamTile.ShowBeamAll(tiles.Skip(1), NovaBeamTile.BarName(angle), true);
-        SendRpc();
         Utils.NotifyRoles(SpecifySeer: Player);
         if (fireDelay <= 0f) Fire();
     }
@@ -360,7 +357,6 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
         ClientEffects.ChargeStop(Player);
         ClientEffects.NovaClear(Player);
         foreach (var tile in tiles) tile.Park();
-        SendRpc();
         Utils.NotifyRoles(ForceLoop: true);
     }
 
@@ -379,7 +375,6 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
         ClientEffects.Beam(Player, anchor + Dir * BeamStart, angle, reach - BeamStart, beamSize + 0.9f, BeamTime);
         ClientEffects.Sound(ClientEffects.SoundKind.BeamFire);
         DrawBeam();
-        SendRpc();
         Utils.NotifyRoles(ForceLoop: true);
         ApplyBeamHit();
         Logger.Info($"{Player.GetNameWithRole().RemoveHtmlTags()} が {ShownAngle()}度 にビームを撃ちました(届く長さ {reach:F1})", "Nova");
@@ -506,24 +501,6 @@ public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
     }
 
     public override string GetAbilityButtonText() => "発射";
-
-    private void SendRpc()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(charging);
-        sender.Writer.Write(waiting);
-        sender.Writer.Write(beaming);
-        sender.Writer.Write(angle);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        charging = reader.ReadBoolean();
-        waiting = reader.ReadBoolean();
-        beaming = reader.ReadBoolean();
-        angle = reader.ReadSingle();
-    }
 }
 
 // ノヴァのビームの絵を貼るダミー(0 番は照準の★)。使わない時は、マップの外へ置いておく。

@@ -17,7 +17,6 @@ public static partial class Options
     public static OptionItem ClientEffectsMeeting;
     public static OptionItem ClientEffectsDeath;
     public static OptionItem ClientEffectsShake;
-    public static OptionItem ClientEffectsSkipDummy;
     public static OptionItem ClientEffectsTeleport;
     public static OptionItem MadmateTell;
     static readonly string[] Tellopt = { "NoProcessing", "Crewmate", "Madmate", "Impostor" };
@@ -62,7 +61,6 @@ public static partial class Options
         ClientEffectsMeeting = BooleanOptionItem.Create("ClientEffectsMeeting", true, TabGroup.ModMainSettings, false).SetParent(ClientEffects);
         ClientEffectsDeath = BooleanOptionItem.Create("ClientEffectsDeath", true, TabGroup.ModMainSettings, false).SetParent(ClientEffects);
         ClientEffectsShake = BooleanOptionItem.Create("ClientEffectsShake", true, TabGroup.ModMainSettings, false).SetParent(ClientEffects);
-        ClientEffectsSkipDummy = BooleanOptionItem.Create("ClientEffectsSkipDummy", true, TabGroup.ModMainSettings, false).SetParent(ClientEffects);
         ClientEffectsTeleport = BooleanOptionItem.Create("ClientEffectsTeleport", true, TabGroup.ModMainSettings, false).SetParent(ClientEffects);
     }
 }

@@ -5,8 +5,6 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-using Hazel;
-
 
 
 using TownOfHostL.Roles.Core;
@@ -242,8 +240,6 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
 
         HaveKillCount++;
 
-        SendRPC_SetKillCount();
-
     }
 
 
@@ -309,8 +305,6 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
         {
 
             MagicCount++;
-
-            SendRPC_AddTarget(target.PlayerId);
 
             check = (Maximum <= MagicCount && Maximum > 0) || MagicCooldown != DefaultCooldown;
 
@@ -419,8 +413,6 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
 
         HaveKillCount -= MagicUseKillCount;
 
-        SendRPC_MagicKill();
-
         Player.SetKillCooldown(ForceProtect: true);
 
         _ = new LateTask(() => Utils.NotifyRoles(), 0.1f);
@@ -495,107 +487,6 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
         return "";
 
     }
-
-
-
-    public void SendRPC_AddTarget(byte targetId)
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.WritePacked((int)RPC_Types.AddMagicTarget);
-
-        sender.Writer.Write(targetId);
-
-        sender.Writer.Write(MagicCount);
-
-    }
-
-
-
-    public void SendRPC_SetKillCount()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.WritePacked((int)RPC_Types.SetKillCount);
-
-        sender.Writer.Write(HaveKillCount);
-
-    }
-
-
-
-    public void SendRPC_MagicKill()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.WritePacked((int)RPC_Types.MagicKill);
-
-        sender.Writer.Write(HaveKillCount);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        switch ((RPC_Types)reader.ReadPackedInt32())
-
-        {
-
-            case RPC_Types.AddMagicTarget:
-
-                byte targetId = reader.ReadByte();
-
-                if (!MagicTarget.Contains(targetId))
-
-                    MagicTarget.Add(targetId);
-
-                MagicCount = reader.ReadInt32();
-
-                break;
-
-            case RPC_Types.SetKillCount:
-
-                HaveKillCount = reader.ReadInt32();
-
-                break;
-
-            case RPC_Types.MagicKill:
-
-                MagicTarget.Clear();
-
-                HaveKillCount = reader.ReadInt32();
-
-                break;
-
-        }
-
-    }
-
-
-
-    enum RPC_Types
-
-    {
-
-        AddMagicTarget,
-
-        SetKillCount,
-
-        MagicKill
-
-    }
-
-
 
     public override void CheckWinner(GameOverReason reason)
 

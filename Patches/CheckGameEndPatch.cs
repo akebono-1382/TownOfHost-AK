@@ -124,11 +124,6 @@ namespace TownOfHostL
                 }
             }
 
-            // CustomWinnerHolderの情報の同期
-            var winnerWriter = self.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.EndGame, SendOption.Reliable);
-            CustomWinnerHolder.WriteTo(winnerWriter);
-            self.FinishRpcImmediately(winnerWriter);
-
             // 蘇生を確実にゴーストロール設定の後に届けるための遅延
             yield return new WaitForSeconds(EndGameDelay);
 

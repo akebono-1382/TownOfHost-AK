@@ -6,8 +6,6 @@ using UnityEngine;
 
 using AmongUs.GameOptions;
 
-using Hazel;
-
 
 
 using TownOfHostL.Modules;
@@ -613,9 +611,7 @@ public sealed class Evolver : RoleBase, IImpostor, IUsePhantomButton
 
 
 
-        RPC.PlaySoundRPC(Player.PlayerId, Sounds.TaskComplete);
-
-        SendRPC();
+        RPC.PlaySound(Player.PlayerId, Sounds.TaskComplete);
 
         Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -797,33 +793,6 @@ public sealed class Evolver : RoleBase, IImpostor, IUsePhantomButton
         }
 
         return "";
-
-    }
-
-
-
-    private void SendRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(CurrentKillCooldown);
-
-        sender.Writer.Write(EvolveCount);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        CurrentKillCooldown = reader.ReadSingle();
-
-        EvolveCount = reader.ReadInt32();
 
     }
 

@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using AmongUs.GameOptions;
 
-using Hazel;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
 using TownOfHostL.Roles.Impostor;
@@ -73,53 +72,13 @@ public sealed class Merlin : RoleBase, IRoomTasker
     void IRoomTasker.OnComplete(int completeroom)
     {
         this.completeroom = completeroom;
-        SendRPC_CompleteRoom(completeroom);
         CheckFin();
         MyTaskState.Update(Player);
-    }
-    void IRoomTasker.ChangeRoom(PlainShipRoom TaskRoom)
-    {
-        SendRPC_ChengeRoom(TaskRoom);
     }
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
     {
         seen ??= seer;
         if (isForMeeting || seer != seen) return "";
         return (seer.GetRoleClass() as IRoomTasker)?.GetLowerText(seer, RoleInfo.RoleColorCode) ?? "";
-    }
-    public void SendRPC_CompleteRoom(int completeroom)
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.CompleteRoom);
-        sender.Writer.Write(completeroom);
-    }
-    public void SendRPC_ChengeRoom(PlainShipRoom TaskPSR)
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)RPC_Types.ChengeRoom);
-        sender.Writer.Write((byte)TaskPSR.RoomId);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        var iroomtasker = Player.GetRoleClass() is IRoomTasker roomTasker ? roomTasker : null;
-        switch ((RPC_Types)reader.ReadPackedInt32())
-        {
-            case RPC_Types.ChengeRoom:
-                iroomtasker?.ReceiveRoom(Player.PlayerId, reader);
-                break;
-            case RPC_Types.CompleteRoom:
-                var a = MessageReader.Get(reader);
-                iroomtasker?.ReceiveCompleteRoom(Player.PlayerId, reader);
-                completeroom = a.ReadInt32();
-                MyTaskState.Update(Player);
-                break;
-        }
-    }
-
-    enum RPC_Types
-    {
-        ChengeRoom,
-        CompleteRoom
     }
 }

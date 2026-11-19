@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Hazel;
 using UnityEngine;
 using AmongUs.GameOptions;
 
@@ -148,35 +147,6 @@ public sealed class PlagueDoctor : RoleBase, IKiller
         //ペスト医師でないか、自己感染可能かつ感染者作成済み
         return pd == null || (CanInfectSelf && pd.InfectCount == 0);
     }
-    public void SendRPC(byte targetId, float rate)
-    {
-        var count = PlagueDoctors.FirstOrDefault(x => x.Player.PlayerId == targetId)?.InfectCount;
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(InfectCount);
-        sender.Writer.Write(targetId);
-        sender.Writer.Write(rate);
-        sender.Writer.Write(count.HasValue);
-        if (count.HasValue)
-        {
-            sender.Writer.Write(count.Value);
-        }
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        InfectCount = reader.ReadInt32();
-        var targetId = reader.ReadByte();
-        var rate = reader.ReadSingle();
-        var hasCount = reader.ReadBoolean();
-        if (hasCount)
-        {
-            var target = PlagueDoctors.FirstOrDefault(x => x.Player.PlayerId == targetId);
-            if (target != null) target.InfectCount = reader.ReadInt32();
-        }
-
-        InfectInfos[targetId] = rate;
-    }
     public void OnCheckMurderAsKiller(MurderInfo info)
     {
         var (killer, target) = info.AttemptTuple;
@@ -253,7 +223,6 @@ public sealed class PlagueDoctor : RoleBase, IKiller
                 {
                     changed = true;
                     Logger.Info($"InfectRate[{target.GetNameWithRole().RemoveHtmlTags()}]:{newRate}%", "OnCheckMurderAsKiller");
-                    if (PlagueDoctors.Count > 0) PlagueDoctors[0].SendRPC(target.PlayerId, newRate);
                     string Infectmeg = "50%";
                     if (newRate >= 100) Infectmeg = "100%";
                     Utils.AddGameLog("PlagueDoctor", string.Format(GetString("Log.PlagueDoctor"), (target.PlayerId).ColoredName(), Infectmeg));
@@ -331,7 +300,6 @@ public sealed class PlagueDoctor : RoleBase, IKiller
         Logger.Info($"InfectRate[{player.GetNameWithRole().RemoveHtmlTags()}]:100%", "OnCheckMurderAsKiller");
         Utils.AddGameLog("PlagueDoctor", string.Format(GetString("Log.PlagueDoctor"), (player.PlayerId).ColoredName(), "100%"));
         InfectInfos[player.PlayerId] = 100;
-        SendRPC(player.PlayerId, 100);
         Utils.NotifyRoles();
         CheckWin();
     }

@@ -4,7 +4,6 @@ using System.Linq;
 
 using AmongUs.GameOptions;
 
-using Hazel;
 
 using UnityEngine;
 
@@ -300,7 +299,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
         ApplyModeDesync(nominateMode);
 
-        SendRPC();
 
         Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -374,7 +372,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
                 SetMode(Player, true);
 
-                SendRPC();
 
                 return false;
 
@@ -390,7 +387,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
                 SetMode(Player, false);
 
-                SendRPC();
 
                 return false;
 
@@ -442,7 +438,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
                 SetMode(Player, false);
 
-                SendRPC();
 
                 return false;
 
@@ -542,7 +537,7 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
     {
 
-        if (nominateMode) { nominateMode = false; SendRPC(); }
+        if (nominateMode) { nominateMode = false; }
 
         NextShikigamiCandidate = byte.MaxValue;
 
@@ -666,7 +661,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
                 nearTimer = 0f;
 
-                SendRPC();
 
             }
 
@@ -835,7 +829,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
 
 
-        SendRPC();
 
         _ = new LateTask(() => Utils.NotifyRoles(), 0.2f, "Onmyoji.Shikigami");
 
@@ -915,7 +908,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
             nearTimer = 0f;
 
-            SendRPC();
 
         }
 
@@ -1147,57 +1139,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
 
 
-    public void SendRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(ShikigamiIds.Count);
-
-        foreach (var id in ShikigamiIds)
-
-            sender.Writer.Write(id);
-
-        sender.Writer.Write(hasCompletedTaskRequirement);
-
-        sender.Writer.Write(nominateMode);
-
-        sender.Writer.Write(createCooldownTimer);
-
-        sender.Writer.Write(NextShikigamiCandidate);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        int count = reader.ReadInt32();
-
-        ShikigamiIds = new();
-
-        for (int i = 0; i < count; i++)
-
-            ShikigamiIds.Add(reader.ReadByte());
-
-        hasCompletedTaskRequirement = reader.ReadBoolean();
-
-        nominateMode = reader.ReadBoolean();
-
-        createCooldownTimer = reader.ReadSingle();
-
-        if (reader.BytesRemaining > 0)
-
-            NextShikigamiCandidate = reader.ReadByte();
-
-    }
-
-
-
     public override string GetAbilityButtonText() => GetString("OnmyojiAbilityButtonText");
 
 
@@ -1289,8 +1230,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
     readonly Dictionary<byte, Vector2> deadBodyPositions;
 
 
-
-    enum RPCType { SyncState, AddDeadBodyArrow, RemoveDeadBodyArrow, ClearDeadBodyArrows }
 
 
 
@@ -1396,7 +1335,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
         NameColorManager.Add(Player.PlayerId, OwnerId, "#9b59b6");
 
-        SendStateRPC();
 
     }
 
@@ -1533,7 +1471,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
         ResetCooldown = true;
 
-        SendStateRPC();
 
         Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -1605,7 +1542,7 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
 
 
-    void AddDeadBodyArrow(byte id, Vector2 pos, bool sync = true)
+    void AddDeadBodyArrow(byte id, Vector2 pos)
 
     {
 
@@ -1613,13 +1550,12 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
         deadBodyPositions[id] = pos; GetArrow.Add(Player.PlayerId, pos);
 
-        if (sync) RpcAddDeadBodyArrow(id, pos);
 
     }
 
 
 
-    void RemoveDeadBodyArrow(byte id, bool sync = true)
+    void RemoveDeadBodyArrow(byte id)
 
     {
 
@@ -1627,68 +1563,18 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
         GetArrow.Remove(Player.PlayerId, pos); deadBodyPositions.Remove(id);
 
-        if (sync) RpcRemoveDeadBodyArrow(id);
 
     }
 
 
 
-    void ClearDeadBodyArrows(bool sync = true)
+    void ClearDeadBodyArrows()
 
     {
 
         foreach (var pos in deadBodyPositions.Values) GetArrow.Remove(Player.PlayerId, pos);
 
-        deadBodyPositions.Clear(); if (sync) RpcClearDeadBodyArrows();
-
-    }
-
-
-
-    void RpcAddDeadBodyArrow(byte id, Vector2 pos) { if (!AmongUsClient.Instance.AmHost) return; using var s = CreateSender(CustomRPC.CustomRoleSync); s.Writer.WritePacked((int)RPCType.AddDeadBodyArrow); s.Writer.Write(id); NetHelpers.WriteVector2(pos, s.Writer); }
-
-    void RpcRemoveDeadBodyArrow(byte id) { if (!AmongUsClient.Instance.AmHost) return; using var s = CreateSender(CustomRPC.CustomRoleSync); s.Writer.WritePacked((int)RPCType.RemoveDeadBodyArrow); s.Writer.Write(id); }
-
-    void RpcClearDeadBodyArrows() { if (!AmongUsClient.Instance.AmHost) return; using var s = CreateSender(CustomRPC.CustomRoleSync); s.Writer.WritePacked((int)RPCType.ClearDeadBodyArrows); }
-
-
-
-    void SendStateRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.WritePacked((int)RPCType.SyncState);
-
-        sender.Writer.Write(OwnerId);
-
-        sender.Writer.Write(isShifted);
-
-        sender.Writer.Write(suicideCooldownTimer);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        switch ((RPCType)reader.ReadPackedInt32())
-
-        {
-
-            case RPCType.SyncState: OwnerId = reader.ReadByte(); isShifted = reader.ReadBoolean(); suicideCooldownTimer = reader.ReadSingle(); break;
-
-            case RPCType.AddDeadBodyArrow: AddDeadBodyArrow(reader.ReadByte(), NetHelpers.ReadVector2(reader), sync: false); break;
-
-            case RPCType.RemoveDeadBodyArrow: RemoveDeadBodyArrow(reader.ReadByte(), sync: false); break;
-
-            case RPCType.ClearDeadBodyArrows: ClearDeadBodyArrows(sync: false); break;
-
-        }
+        deadBodyPositions.Clear();
 
     }
 

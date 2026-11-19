@@ -6171,7 +6171,6 @@ CCYellowCatInfo,You have become the YellowCat,黄陣営に所属した,你成为
 "ClientEffectsMeeting","Cut-in for special meetings","特殊会議の始まりにカットインを出す"
 "ClientEffectsDeath","Effects by cause of death, meeting kills, Seer souls, Jumbo steps","死因ごとの演出(爆発・狙撃・罠・毒・会議中のキル・シーアの魂など)"
 "ClientEffectsShake","Screen shake","画面の揺れ"
-"ClientEffectsSkipDummy","No dummies when everyone has the mod (lighter)","全員がMODを入れている時はダミーを出さない(軽量化)"
 "ClientEffectsTeleport","Teleport effect","テレポートの演出(消えた所と現れた所に光の渦)"
 "GuessUiCrewmate","Crewmates","クルー"
 "GuessUiImpostor","Impostors","インポスター"

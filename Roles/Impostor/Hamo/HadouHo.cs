@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Hazel;
 using TownOfHostL.Modules;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
@@ -161,7 +160,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         Utils.NotifyRoles(ForceLoop: true);
         _prevCharging = true;
         _prevBeamMark = false;
-        SendRpc();
     }
 
     /// <summary>撃つたび・状態を戻すたびに進める。会議で戻した後に、前の発射の後処理 (当たらなかった時の自爆など) を走らせない</summary>
@@ -201,7 +199,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
             {
                 ResetState();
                 Utils.NotifyRoles();
-                SendRpc();
             }
             return;
         }
@@ -210,7 +207,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         {
             ResetState();
             Utils.NotifyRoles();
-            SendRpc();
             return;
         }
 
@@ -238,7 +234,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
     {
         if (IsDead || !Player.IsAlive()) return;
         BeamFacingLeft = beam?.FacingLeft ?? Player.cosmetics.FlipX;
-        SendBeamDirection(BeamFacingLeft);
         TownOfHostL.Modules.ClientEffects.ChargeStop(Player);
         var beamFrom = Player.GetTruePosition() + (BeamFacingLeft ? Vector2.left : Vector2.right) * 0.5f;
         TownOfHostL.Modules.ClientEffects.Beam(Player, beamFrom, BeamFacingLeft ? 180f : 0f, TownOfHostL.Modules.ClientEffects.MapReach(beamFrom, BeamFacingLeft ? Vector2.left : Vector2.right), 2.2f, BeamTime);
@@ -249,7 +244,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         _prevCharging = false;
         _prevBeamMark = true;
         Utils.NotifyRoles(ForceLoop: true);
-        SendRpc();
         ApplyBeamHit();
 
         var generation = ++fireGeneration;
@@ -263,13 +257,13 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
                 beam?.End(); IsFiring = false;
                 TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(HadouHo));
                 Player.MarkDirtySettings();
-                Utils.NotifyRoles(); SendRpc(); return;
+                Utils.NotifyRoles(); return;
             }
             Charging = false;
 
             ShowBeamMark = false; _prevBeamMark = false;
             beam?.End();
-            Utils.NotifyRoles(ForceLoop: true); SendRpc();
+            Utils.NotifyRoles(ForceLoop: true);
 
             if (!HasHit && SelfDestructOnMiss)
             {
@@ -323,7 +317,7 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
     {
         ResetState();
         Player.SyncSettings();
-        Utils.NotifyRoles(ForceLoop: true); SendRpc();
+        Utils.NotifyRoles(ForceLoop: true);
     }
 
     public override void OnStartMeeting()
@@ -337,32 +331,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         if (!AmongUsClient.Instance.AmHost || !Player.IsAlive()) return;
         AURoleOptions.PhantomCooldown = Cooldown;
         Player.RpcResetAbilityCooldown();
-    }
-
-    void SendRpc()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(IsCharging);
-        sender.Writer.Write(ShowBeamMark);
-    }
-
-    void SendBeamDirection(bool left)
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write((byte)1);
-        sender.Writer.Write(left);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        if (reader.Length - reader.Position == 2) { reader.ReadByte(); BeamFacingLeft = reader.ReadBoolean(); return; }
-        bool oldCharging = IsCharging;
-        bool oldBeamMark = ShowBeamMark;
-        IsCharging = reader.ReadBoolean();
-        ShowBeamMark = reader.ReadBoolean();
-        if (oldCharging != IsCharging || oldBeamMark != ShowBeamMark)
-            Utils.NotifyRoles(ForceLoop: true);
     }
 
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
@@ -394,7 +362,7 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
             beam?.End(); IsFiring = false;
             TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(HadouHo));
             Player.MarkDirtySettings();
-            Utils.NotifyRoles(); SendRpc(); return;
+            Utils.NotifyRoles(); return;
         }
         Charging = false;
         IsCharging = false;
@@ -402,7 +370,7 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         _prevBeamMark = false;
         ShowBeamMark = false; _prevBeamMark = false;
         beam?.End();
-        Utils.NotifyRoles(ForceLoop: true); SendRpc();
+        Utils.NotifyRoles(ForceLoop: true);
         TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(HadouHo)); Player.MarkDirtySettings();
         var charge = OptionChargeTime.GetFloat() - chargeTimer;
         var waittime = OptionBeamTime.GetFloat() + charge;

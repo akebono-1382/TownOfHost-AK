@@ -512,7 +512,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
 
 
-        SendRpc();
 
         Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -686,7 +685,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
             Player.SetKillCooldown(nowcool, ForceProtect: true);
 
-            SendRpc();
 
             Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -749,7 +747,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         IsLoaded = loaded;
 
-        SendRpc();
 
         if (loaded)
 
@@ -841,7 +838,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         Utils.NotifyRoles(ForceLoop: true);
 
-        SendRpc();
 
     }
 
@@ -969,7 +965,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
                     skNearTimer = 0f;
 
-                    SendRpc();
 
                 }
 
@@ -1059,7 +1054,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
                 Utils.NotifyRoles();
 
-                SendRpc();
 
             }
 
@@ -1077,7 +1071,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
             Utils.NotifyRoles();
 
-            SendRpc();
 
             return;
 
@@ -1123,7 +1116,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
     {
         if (IsDead || !Player.IsAlive()) return;
         BeamFacingLeft = beam?.FacingLeft ?? Player.cosmetics.FlipX;
-        SendBeamDirection(BeamFacingLeft);
         beam?.Fire("#00b4eb", HadouHoBeam.NormalSize);
 
         Utils.AllPlayerKillFlash();
@@ -1137,7 +1129,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         Utils.NotifyRoles(ForceLoop: true);
 
-        SendRpc();
 
         ApplyBeamHit();
 
@@ -1151,7 +1142,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
     {
         if (IsDead || !Player.IsAlive()) return;
         BeamFacingLeft = beam?.FacingLeft ?? Player.cosmetics.FlipX;
-        SendBeamDirection(BeamFacingLeft);
         beam?.Fire("#FF0000", HadouHoBeam.SuperSize);
 
         Utils.AllPlayerKillFlash();
@@ -1191,7 +1181,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         Utils.NotifyRoles(ForceLoop: true);
 
-        SendRpc();
 
         ApplySuperBeamHit();
 
@@ -1217,7 +1206,7 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
             Player.MarkDirtySettings(); Player.RpcSetColor((byte)PlayerColor);
 
-            Utils.NotifyRoles(); SendRpc(); return;
+            Utils.NotifyRoles(); return;
 
         }
 
@@ -1229,7 +1218,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         Utils.NotifyRoles(ForceLoop: true);
 
-        SendRpc();
 
 
 
@@ -1383,7 +1371,7 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
     {
 
-        ResetAllState(); Utils.NotifyRoles(ForceLoop: true); SendRpc();
+        ResetAllState(); Utils.NotifyRoles(ForceLoop: true);
 
     }
 
@@ -1395,7 +1383,7 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         ResetAllState();
 
-        if (skMode) { skMode = false; SendRpc(); }
+        if (skMode) { skMode = false; }
 
         skCandidateId = byte.MaxValue;
 
@@ -1467,7 +1455,7 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
             Utils.SendMessage("<color=#00b4eb>この役職はSKにできません。</color>", Player.PlayerId);
 
-            SendRpc(); return;
+            return;
 
         }
 
@@ -1512,84 +1500,10 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
 
 
-        SendRpc(); Utils.NotifyRoles();
+        Utils.NotifyRoles();
 
     }
 
-
-
-    public void SendRpc()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(IsCharging);
-
-        sender.Writer.Write(IsSuperCharging);
-
-        sender.Writer.Write(ShowBeamMark);
-
-        sender.Writer.Write(CanSideKick);
-
-        sender.Writer.Write(IsLoaded);
-
-        sender.Writer.Write(IsSuperBeam);
-
-        sender.Writer.Write(skMode);
-
-        sender.Writer.Write(skCandidateId);
-
-    }
-
-
-
-    void SendBeamDirection(bool left)
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write((byte)1);
-
-        sender.Writer.Write(left);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        if (reader.Length - reader.Position == 2)
-
-        {
-
-            reader.ReadByte(); BeamFacingLeft = reader.ReadBoolean(); return;
-
-        }
-
-        IsCharging = reader.ReadBoolean();
-
-        IsSuperCharging = reader.ReadBoolean();
-
-        ShowBeamMark = reader.ReadBoolean();
-
-        CanSideKick = reader.ReadBoolean();
-
-        IsLoaded = reader.ReadBoolean();
-
-        IsSuperBeam = reader.ReadBoolean();
-
-        skMode = reader.ReadBoolean();
-
-        if (reader.BytesRemaining > 0)
-
-            skCandidateId = reader.ReadByte();
-
-    }
 
 
 
@@ -1792,7 +1706,6 @@ public sealed class Tama : RoleBase, IKiller
 
         OwnerId = ownerId;
 
-        SendRPC();
 
     }
 
@@ -1888,7 +1801,6 @@ public sealed class Tama : RoleBase, IKiller
 
 
 
-        SendRPC();
 
         Utils.NotifyRoles(SpecifySeer: Player);
 
@@ -1968,7 +1880,6 @@ public sealed class Tama : RoleBase, IKiller
 
                 jhh.SetLoaded(false);
 
-            SendRPC();
 
             return;
 
@@ -1989,7 +1900,6 @@ public sealed class Tama : RoleBase, IKiller
 
             Player.RpcChangeRole(CustomRoles.JackalHadouHo);
 
-            SendRPC();
 
             Utils.NotifyRoles();
 
@@ -2055,7 +1965,6 @@ public sealed class Tama : RoleBase, IKiller
 
                 jhh.SetLoaded(false);
 
-            SendRPC();
 
             Utils.NotifyRoles();
 
@@ -2071,32 +1980,6 @@ public sealed class Tama : RoleBase, IKiller
 
     public override bool ShowsRoleTo(PlayerControl seer, bool isMeeting) => seer.Is(CountTypes.Jackal);
 
-
-
-    public void SendRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(OwnerId);
-
-        sender.Writer.Write(hasLoaded);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        OwnerId = reader.ReadByte();
-
-        hasLoaded = reader.ReadBoolean();
-
-    }
 
 
 

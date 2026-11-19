@@ -2,7 +2,6 @@ using AmongUs.GameOptions;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Hazel;
 
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
@@ -63,17 +62,6 @@ public sealed class AntiReporter : RoleBase, IImpostor, IUsePhantomButton
         OptionAntiReporterResetse = IntegerOptionItem.Create(RoleInfo, OptionName.AntiReporterResetse, new(0, 999, 1), 20, false)
             .SetValueFormat(OptionFormat.Seconds).SetZeroNotation(OptionZeroNotation.Infinity);
     }
-    private void SendRPC()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(Use);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        Use = reader.ReadInt32();
-    }
     public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
         AdjustKillCooldown = true;
@@ -86,7 +74,6 @@ public sealed class AntiReporter : RoleBase, IImpostor, IUsePhantomButton
         Use--;
         Player.SetKillCooldown(ForceProtect: true, target: target);
         Logger.Info($"{target.Data?.PlayerName}のメガホンワンクリックだから間違えて壊しちゃった☆ ﾃﾍｯ", "AntiReporter");
-        SendRPC();
         Brokens.Add(target.PlayerId);
         Utils.NotifyRoles(SpecifySeer: Player);
     }

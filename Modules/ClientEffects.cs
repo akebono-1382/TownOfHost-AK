@@ -6,12 +6,10 @@ using UnityEngine;
 
 namespace TownOfHostL.Modules;
 
-// MOD を入れている人(ホストも)の画面だけに出す専用の演出。
-// MOD の無い人には今まで通りダミーやサボタージュで見せ、MOD のある人はダミーを隠して、自分の画面で直接描く・専用の音を鳴らす。
-// 通信は MOD を入れている人にだけ送る(MOD の無い人には何も届かないので、通信が増えない)
+// ホストの画面だけに出す専用の演出。客にはダミーやサボタージュで見せ、ホストの画面ではダミーを隠して直接描く・専用の音を鳴らす。
+// 通信は送らない
 public static class ClientEffects
 {
-    public enum Kind : byte { HideDummy, NovaGuide, Beam, NovaClear, Sound, SluggerHit, MeetingCutIn, Death, Shake, Charge, ChargeStop, MeetingKill, SeerSoul, Jumbo, Teleport, GuessUi, Bind, BloodStain }
     // 番号は音の乱数の種に使うので、詰めずに残す (0 と 1 は使っていない)
     public enum SoundKind : byte { BeamFire = 2, SluggerHit, Heartbeat, MeetingSting, Boom, Gunshot, Flame, Sparkle, Chime, Swing, Push, Rocket, Footstep, Soul, ChargeLoop, SniperEquip, SniperShot, Clank }
     public enum DeathFx : byte { None, Explosion, Sniped, Flame, Evaporate, Magic, Blood, Fall, Launch, Jaws, Poison, Bubble, Vortex, Squash, Slash, Backfire, Heartbreak, Warp }
@@ -24,9 +22,6 @@ public static class ClientEffects
     public static bool ShakeOn => On && Options.ClientEffectsShake.GetBool();
     public static bool TeleportOn => On && Options.ClientEffectsTeleport.GetBool();
     static float Volume => Mathf.Clamp01((Options.ClientEffectsVolume?.GetInt() ?? 80) / 100f);
-
-    // 全員が MOD を入れている時は、MOD の無い人用のダミーを出さなくてよい(通信がかなり減る)
-    public static bool SkipBeamDummies => BeamOn && Options.ClientEffectsSkipDummy.GetBool() && EveryoneHasMod();
 
     static readonly HashSet<uint> hiddenDummies = new();
     static readonly Dictionary<uint, List<Renderer>> dummyRenderers = new();
@@ -49,60 +44,13 @@ public static class ClientEffects
 
     static float nextHideAt;
 
-    // ===== 送る =====
-
     static bool CanSend => AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost && PlayerControl.LocalPlayer != null;
 
-    // 客の TOHL は客の間ホストの処理と電文の受け口を外しているので、この演出は届かない。
-    // ほかの人はみな本編の客として扱い、ダミーやサボタージュで見せる
-    static bool IsModPlayer(PlayerControl pc) => false;
 
-    public static bool EveryoneHasMod()
-    {
-        foreach (var pc in Main.AllPlayerControls)
-        {
-            if (pc == null || pc.AmOwner || pc.Data == null || pc.Data.Disconnected) continue;
-            if (!IsModPlayer(pc)) return false;
-        }
-        return true;
-    }
-
-    static readonly List<int> targets = new();
-    static List<int> Targets()
-    {
-        targets.Clear();
-        foreach (var pc in Main.AllPlayerControls)
-        {
-            if (pc == null || pc.Data == null || pc.Data.Disconnected || !IsModPlayer(pc)) continue;
-            var id = pc.GetClientId();
-            if (id >= 0 && !targets.Contains(id)) targets.Add(id);
-        }
-        return targets;
-    }
-
-    static void Send(Kind kind, Action<MessageWriter> write, SendOption option = SendOption.Reliable, PlayerControl only = null)
-    {
-        if (only != null)
-        {
-            if (!IsModPlayer(only)) return;
-            targets.Clear();
-            targets.Add(only.GetClientId());
-        }
-        else Targets();
-        foreach (var clientId in targets)
-        {
-            var w = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.ClientEffect, option, clientId);
-            w.Write((byte)kind);
-            write(w);
-            AmongUsClient.Instance.FinishRpcImmediately(w);
-        }
-    }
-
-    /// <summary>MOD を入れている人とホストの画面から、その netId のダミーを隠す。送れなかった時は false。</summary>
+    /// <summary>ホストの画面から、その netId のダミーを隠す。ホストでない時は false。</summary>
     public static bool HideDummy(uint netId)
     {
         if (!CanSend) return false;
-        Send(Kind.HideDummy, w => w.WritePacked(netId));
         hiddenDummies.Add(netId);
         dummyAddedAt[netId] = Time.time;
         nextHideAt = 0f;
@@ -113,29 +61,12 @@ public static class ClientEffects
     {
         if (!CanSend || !BeamOn || owner == null) return;
         var color = owner.Data.DefaultOutfit.ColorId;
-        Send(Kind.NovaGuide, w =>
-        {
-            w.Write(owner.PlayerId);
-            NetHelpers.WriteVector2(body, w);
-            w.Write(angle);
-            w.Write(locked);
-            w.Write((byte)color);
-        }, SendOption.None);
         ShowGuide(owner.PlayerId, body, angle, locked, color);
     }
 
     public static void Beam(PlayerControl owner, Vector2 from, float angle, float length, float width, float time)
     {
         if (!CanSend || !BeamOn || owner == null) return;
-        Send(Kind.Beam, w =>
-        {
-            w.Write(owner.PlayerId);
-            NetHelpers.WriteVector2(from, w);
-            w.Write(angle);
-            w.Write(length);
-            w.Write(width);
-            w.Write(time);
-        });
         ShowBeam(owner.PlayerId, from, angle, length, width, time);
         Shake(0.6f, 0.5f);
     }
@@ -143,7 +74,6 @@ public static class ClientEffects
     public static void NovaClear(PlayerControl owner)
     {
         if (!CanSend || !BeamOn || owner == null) return;
-        Send(Kind.NovaClear, w => w.Write(owner.PlayerId));
         Clear(owner.PlayerId);
     }
 
@@ -151,13 +81,6 @@ public static class ClientEffects
     {
         if (!CanSend || !SoundOn) return;
         var volume = (byte)Mathf.RoundToInt(Volume * 100f);
-        Send(Kind.Sound, w =>
-        {
-            w.Write((byte)sound);
-            w.Write(at.HasValue);
-            if (at.HasValue) NetHelpers.WriteVector2(at.Value, w);
-            w.Write(volume);
-        });
         Play(sound, at, volume / 100f);
     }
 
@@ -166,12 +89,6 @@ public static class ClientEffects
         if (!CanSend) return;
         if (SluggerOn)
         {
-            Send(Kind.SluggerHit, w =>
-            {
-                NetHelpers.WriteVector2(pos, w);
-                NetHelpers.WriteVector2(dir, w);
-                w.Write(dist);
-            });
             ShowSluggerHit(pos, dir, dist);
         }
         Sound(SoundKind.SluggerHit, pos);
@@ -183,46 +100,22 @@ public static class ClientEffects
         if (!CanSend || !MeetingOn || string.IsNullOrEmpty(title)) return;
         var volume = (byte)Mathf.RoundToInt((SoundOn ? Volume : 0f) * 100f);
         highlight ??= Array.Empty<byte>();
-        Send(Kind.MeetingCutIn, w =>
-        {
-            w.Write(title);
-            w.Write(colorCode ?? "#ffffff");
-            w.Write(volume);
-            w.Write(style);
-            w.Write((byte)highlight.Length);
-            foreach (var id in highlight) w.Write(id);
-        });
         QueueCutIn(title, colorCode, volume / 100f, style, highlight);
     }
 
-    static void WriteColor(MessageWriter w, Color c)
-    {
-        w.Write((byte)(c.r * 255f));
-        w.Write((byte)(c.g * 255f));
-        w.Write((byte)(c.b * 255f));
-    }
 
-    static Color ReadColor(MessageReader r) => new(r.ReadByte() / 255f, r.ReadByte() / 255f, r.ReadByte() / 255f);
 
     // ため: 体のまわりに光が集まり、輪が縮んでいく(波動砲・スラッガー)
     public static void Charge(PlayerControl owner, float duration, Color color)
     {
         if (!CanSend || !On || owner == null) return;
         var volume = (byte)Mathf.RoundToInt((SoundOn ? Volume : 0f) * 100f);
-        Send(Kind.Charge, w =>
-        {
-            w.Write(owner.PlayerId);
-            w.Write(duration);
-            WriteColor(w, color);
-            w.Write(volume);
-        });
         ShowCharge(owner.PlayerId, duration, color, volume / 100f);
     }
 
     public static void ChargeStop(PlayerControl owner)
     {
         if (!CanSend || !On || owner == null) return;
-        Send(Kind.ChargeStop, w => w.Write(owner.PlayerId));
         StopCharge(owner.PlayerId);
     }
 
@@ -231,12 +124,6 @@ public static class ClientEffects
     static void MeetingKill(PlayerControl target, byte style)
     {
         var volume = (byte)Mathf.RoundToInt((SoundOn ? Volume : 0f) * 100f);
-        Send(Kind.MeetingKill, w =>
-        {
-            w.Write(target.PlayerId);
-            w.Write(volume);
-            w.Write(style);
-        });
         ShowMeetingKill(target.PlayerId, volume / 100f, style);
     }
 
@@ -245,12 +132,6 @@ public static class ClientEffects
     {
         if (!CanSend || !DeathOn || target == null) return;
         var volume = (byte)Mathf.RoundToInt((SoundOn ? Volume : 0f) * 100f);
-        Send(Kind.Bind, w =>
-        {
-            w.Write(target.PlayerId);
-            w.Write(duration);
-            w.Write(volume);
-        });
         ShowBind(target.PlayerId, duration, volume / 100f);
     }
 
@@ -317,11 +198,6 @@ public static class ClientEffects
     public static bool BloodStain(uint netId, Vector2 pos)
     {
         if (!CanSend || !DeathOn) return false;
-        Send(Kind.BloodStain, w =>
-        {
-            w.WritePacked(netId);
-            NetHelpers.WriteVector2(pos, w);
-        });
         ShowBloodStain(netId, pos);
         HideDummy(netId);
         return true;
@@ -395,16 +271,10 @@ public static class ClientEffects
         if (!CanSend || !DeathOn || seer == null) return;
         var volume = (byte)Mathf.RoundToInt((SoundOn ? Volume : 0f) * 100f);
         if (seer.AmOwner) { ShowSoul(pos, colorId, volume / 100f); return; }
-        Send(Kind.SeerSoul, w =>
-        {
-            NetHelpers.WriteVector2(pos, w);
-            w.Write((byte)colorId);
-            w.Write(volume);
-        }, only: seer);
     }
 
-    // ジャンボの足音: 試合の始めに一度だけ誰がジャンボかを送り、あとは各自の画面で歩いた距離から鳴らす(通信は増えない)
-    static void SendJumbos()
+    // ジャンボの足音: 試合の始めに一度だけ誰がジャンボかを調べ、あとはホストの画面で歩いた距離から鳴らす
+    static void SetupJumbos()
     {
         jumboSent = true;
         jumbos.Clear();
@@ -414,13 +284,6 @@ public static class ClientEffects
             if (pc != null && pc.Is(TownOfHostL.Roles.Core.CustomRoles.Jumbo)) jumbos.Add(pc.PlayerId);
         if (jumbos.Count == 0) return;
         jumboVolume = Volume;
-        var volume = (byte)Mathf.RoundToInt(Volume * 100f);
-        Send(Kind.Jumbo, w =>
-        {
-            w.Write((byte)jumbos.Count);
-            foreach (var id in jumbos) w.Write(id);
-            w.Write(volume);
-        });
     }
 
     public static DeathFx FxOf(CustomDeathReason reason) => reason switch
@@ -460,145 +323,11 @@ public static class ClientEffects
         var pos = target.GetTruePosition();
         var from = killer != null && killer != target ? killer.GetTruePosition() : pos + Vector2.left;
         var volume = (byte)Mathf.RoundToInt((SoundOn ? Volume : 0f) * 100f);
-        Send(Kind.Death, w =>
-        {
-            w.Write((byte)fx);
-            NetHelpers.WriteVector2(pos, w);
-            NetHelpers.WriteVector2(from, w);
-            w.Write(volume);
-        });
         ShowDeath(fx, pos, from, volume / 100f);
     }
 
     // ===== 受け取る =====
 
-    public static void Receive(MessageReader reader)
-    {
-        if (AmongUsClient.Instance.AmHost) return;
-        try
-        {
-            switch ((Kind)reader.ReadByte())
-            {
-                case Kind.HideDummy:
-                    {
-                        uint hideId = reader.ReadPackedUInt32();
-                        hiddenDummies.Add(hideId);
-                        dummyAddedAt[hideId] = Time.time;
-                    }
-                    nextHideAt = 0f;
-                    break;
-                case Kind.NovaGuide:
-                    {
-                        var id = reader.ReadByte();
-                        var body = NetHelpers.ReadVector2(reader);
-                        var angle = reader.ReadSingle();
-                        var locked = reader.ReadBoolean();
-                        var color = reader.ReadByte();
-                        ShowGuide(id, body, angle, locked, color);
-                        break;
-                    }
-                case Kind.Beam:
-                    {
-                        var id = reader.ReadByte();
-                        var from = NetHelpers.ReadVector2(reader);
-                        ShowBeam(id, from, reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-                        Shake(0.6f, 0.5f);
-                        break;
-                    }
-                case Kind.NovaClear:
-                    Clear(reader.ReadByte());
-                    break;
-                case Kind.Sound:
-                    {
-                        var sound = (SoundKind)reader.ReadByte();
-                        Vector2? at = reader.ReadBoolean() ? NetHelpers.ReadVector2(reader) : null;
-                        Play(sound, at, reader.ReadByte() / 100f);
-                        break;
-                    }
-                case Kind.SluggerHit:
-                    {
-                        var pos = NetHelpers.ReadVector2(reader);
-                        var dir = NetHelpers.ReadVector2(reader);
-                        ShowSluggerHit(pos, dir, reader.ReadSingle());
-                        break;
-                    }
-                case Kind.Charge:
-                    {
-                        var id = reader.ReadByte();
-                        var duration = reader.ReadSingle();
-                        var color = ReadColor(reader);
-                        ShowCharge(id, duration, color, reader.ReadByte() / 100f);
-                        break;
-                    }
-                case Kind.ChargeStop:
-                    StopCharge(reader.ReadByte());
-                    break;
-                case Kind.MeetingKill:
-                    {
-                        var id = reader.ReadByte();
-                        var volume = reader.ReadByte() / 100f;
-                        ShowMeetingKill(id, volume, reader.ReadByte());
-                        break;
-                    }
-                case Kind.SeerSoul:
-                    {
-                        var pos = NetHelpers.ReadVector2(reader);
-                        var color = reader.ReadByte();
-                        ShowSoul(pos, color, reader.ReadByte() / 100f);
-                        break;
-                    }
-                case Kind.Teleport:
-                    {
-                        var from = NetHelpers.ReadVector2(reader);
-                        var to = NetHelpers.ReadVector2(reader);
-                        ShowTeleport(from, to, reader.ReadByte() / 100f);
-                        break;
-                    }
-                case Kind.BloodStain:
-                    {
-                        var netId = reader.ReadPackedUInt32();
-                        ShowBloodStain(netId, NetHelpers.ReadVector2(reader));
-                        break;
-                    }
-                case Kind.Bind:
-                    {
-                        var id = reader.ReadByte();
-                        var duration = reader.ReadSingle();
-                        ShowBind(id, duration, reader.ReadByte() / 100f);
-                        break;
-                    }
-                case Kind.Jumbo:
-                    {
-                        jumbos.Clear();
-                        jumboSteps.Clear();
-                        var count = reader.ReadByte();
-                        for (var i = 0; i < count; i++) jumbos.Add(reader.ReadByte());
-                        jumboVolume = reader.ReadByte() / 100f;
-                        break;
-                    }
-                case Kind.MeetingCutIn:
-                    {
-                        var title = reader.ReadString();
-                        var color = reader.ReadString();
-                        var volume = reader.ReadByte() / 100f;
-                        var style = reader.ReadByte();
-                        var ids = new byte[reader.ReadByte()];
-                        for (var i = 0; i < ids.Length; i++) ids[i] = reader.ReadByte();
-                        QueueCutIn(title, color, volume, style, ids);
-                        break;
-                    }
-                case Kind.Death:
-                    {
-                        var fx = (DeathFx)reader.ReadByte();
-                        var pos = NetHelpers.ReadVector2(reader);
-                        var from = NetHelpers.ReadVector2(reader);
-                        ShowDeath(fx, pos, from, reader.ReadByte() / 100f);
-                        break;
-                    }
-            }
-        }
-        catch (Exception e) { Logger.Warn($"演出を受け取れませんでした: {e.Message}", "ClientEffects"); }
-    }
 
     // ===== 毎フレーム =====
 
@@ -617,7 +346,7 @@ public static class ClientEffects
             }
         }
         if (!On && running.Count == 0 && runningHud.Count == 0 && hiddenDummies.Count == 0) return;
-        if (CanSend && !jumboSent && On && GameStates.IsInTask && !GameStates.Intro) SendJumbos();
+        if (CanSend && !jumboSent && On && GameStates.IsInTask && !GameStates.Intro) SetupJumbos();
         if (hiddenDummies.Count > 0 && Time.time >= nextHideAt && AmongUsClient.Instance != null)
         {
             nextHideAt = Time.time + 0.1f;
@@ -1872,12 +1601,6 @@ public static class ClientEffects
         if (!GameStates.IsInTask || GameStates.Intro || GameStates.CalledMeeting || Time.time < quietUntil) return;
         if (Vector2.Distance(from, to) < 3f) return;
         var volume = (byte)Mathf.RoundToInt((SoundOn && Time.time >= soundlessUntil ? Volume : 0f) * 100f);
-        Send(Kind.Teleport, w =>
-        {
-            NetHelpers.WriteVector2(from, w);
-            NetHelpers.WriteVector2(to, w);
-            w.Write(volume);
-        });
         ShowTeleport(from, to, volume / 100f);
     }
 

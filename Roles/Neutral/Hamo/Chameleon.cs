@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
 
@@ -98,18 +97,7 @@ public sealed class Chameleon : RoleBase, IAdditionalWinner
 
         Logger.Info($"Now : {NowTeam}", "Chameleon");
 
-        SendRpc();
         if (oldteam != NowTeam) Utils.NotifyRoles(SpecifySeer: Player);
-    }
-    void SendRpc()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.WritePacked((int)NowTeam);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        NowTeam = (CustomRoles)reader.ReadPackedInt32();
     }
     public override void OverrideShowMainRoleText(ref UnityEngine.Color roleColor, ref string roleText) => roleText = Translator.GetString($"{NowTeam}").Color(Utils.GetRoleColor(NowTeam)) + Translator.GetString("Chameleon");
     public override void AfterMeetingTasks() => _ = new LateTask(() => { if (!GameStates.CalledMeeting) ChengeTeam(); }, 5f, "");

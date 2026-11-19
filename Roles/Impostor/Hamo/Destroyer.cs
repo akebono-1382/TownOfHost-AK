@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using AmongUs.GameOptions;
-using Hazel;
 using UnityEngine;
 using TownOfHostL.Modules;
 using TownOfHostL.Patches;
@@ -94,7 +93,6 @@ public sealed class Destroyer : RoleBase, IImpostor
         Player.SetKillCooldown(ForceProtect: true);
         StartPet();
         Logger.Info($"{Player.GetNameWithRole().RemoveHtmlTags()} が {target.GetNameWithRole().RemoveHtmlTags()} をつぶし始めました", "Destroyer");
-        SendRPC();
         Utils.NotifyRoles(SpecifySeer: Player);
     }
 
@@ -115,7 +113,6 @@ public sealed class Destroyer : RoleBase, IImpostor
             slowed = false;
             Player.MarkDirtySettings();
         }
-        SendRPC();
         Utils.NotifyRoles(SpecifySeer: Player);
     }
 
@@ -227,19 +224,5 @@ public sealed class Destroyer : RoleBase, IImpostor
         seen ??= seer;
         if (isForMeeting || victim == null || seer.PlayerId != Player.PlayerId || seen.PlayerId != Player.PlayerId) return "";
         return Utils.ColorString(RoleInfo.RoleColor, string.Format(GetString("DestroyerCrushing"), Mathf.Max(0, Mathf.CeilToInt(crushUntil - Time.time))));
-    }
-
-    void SendRPC()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(victim?.PlayerId ?? byte.MaxValue);
-        sender.Writer.Write(Mathf.Max(0f, crushUntil - Time.time));
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        var id = reader.ReadByte();
-        victim = id == byte.MaxValue ? null : Utils.GetPlayerById(id);
-        crushUntil = Time.time + reader.ReadSingle();
     }
 }

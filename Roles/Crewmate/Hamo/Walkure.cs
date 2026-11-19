@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
 using UnityEngine;
 using TownOfHostL.Modules;
 using TownOfHostL.Roles.Core;
@@ -155,7 +154,6 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
         isExiled = false;
         deathPenaltyDone = false;
         SetMode(Player, false);
-        SendRPC();
     }
 
     public override void OnDestroy()
@@ -167,7 +165,6 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
     {
         meetingRevealCount = 0;
         SetMode(Player, false);
-        SendRPC();
     }
 
     bool ISelfVoter.CanUseVoted() => CanUseRevealAbility();
@@ -201,7 +198,6 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
                     SetMode(Player, false);
                     break;
             }
-            SendRPC();
             return false;
         }
 
@@ -243,7 +239,6 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
 
         Player.SyncSettings();
         Utils.NotifyRoles(ForceLoop: true);
-        SendRPC();
     }
 
     private void SendRevealMessage(PlayerControl target)
@@ -377,7 +372,6 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
         }
 
         Utils.NotifyRoles(ForceLoop: true);
-        SendRPC();
     }
 
     private static PlayerControl TakeRandomCrew(List<PlayerControl> crews, IRandom rand)
@@ -525,32 +519,5 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
         }
 
         Logger.Info($"{actor.GetNameWithRole().RemoveHtmlTags()} self-destructed by Walkure reflection ({source}).", "Walkure");
-    }
-
-    private void SendRPC()
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(meetingRevealCount);
-        sender.Writer.Write(isDead);
-        sender.Writer.Write(isExiled);
-        sender.Writer.Write(deathPenaltyDone);
-        sender.Writer.Write(revealedPlayerIds.Count);
-        foreach (var id in revealedPlayerIds)
-            sender.Writer.Write(id);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        meetingRevealCount = reader.ReadInt32();
-        isDead = reader.ReadBoolean();
-        isExiled = reader.ReadBoolean();
-        deathPenaltyDone = reader.ReadBoolean();
-
-        revealedPlayerIds.Clear();
-        var count = reader.ReadInt32();
-        for (var i = 0; i < count; i++)
-            revealedPlayerIds.Add(reader.ReadByte());
     }
 }

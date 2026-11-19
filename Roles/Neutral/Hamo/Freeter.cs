@@ -1,6 +1,5 @@
 using AmongUs.GameOptions;
 
-using Hazel;
 
 using System.Linq;
 
@@ -291,7 +290,6 @@ public sealed class Freeter : RoleBase, IKiller, IAdditionalWinner
 
 
 
-        SendRPC();
 
         _ = new LateTask(() => Utils.NotifyRoles(SpecifySeer: Player), 0.2f, "Freeter Bet");
 
@@ -331,7 +329,6 @@ public sealed class Freeter : RoleBase, IKiller, IAdditionalWinner
 
             initialBetTargetRole = CustomRoles.NotAssigned;
 
-            SendRPC();
 
             SendMessage(GetString("Freeter_BetTargetDead"), Player.PlayerId);
 
@@ -437,7 +434,6 @@ public sealed class Freeter : RoleBase, IKiller, IAdditionalWinner
 
         unemployedTurns++;
 
-        SendRPC();
 
 
 
@@ -632,36 +628,4 @@ public sealed class Freeter : RoleBase, IKiller, IAdditionalWinner
         return closest;
 
     }
-
-
-
-    public void SendRPC()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(BetTargetId);
-
-        sender.Writer.Write(hasBeenEmployed);
-
-        sender.Writer.Write(unemployedTurns);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        BetTargetId = reader.ReadByte();
-
-        hasBeenEmployed = reader.ReadBoolean();
-
-        unemployedTurns = reader.ReadInt32();
-
-    }
-
 }

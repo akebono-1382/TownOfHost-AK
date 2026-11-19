@@ -1,7 +1,6 @@
 using TownOfHostL.Roles.Neutral;
 using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
 using UnityEngine;
 using TownOfHostL.Core.Win;
 using TownOfHostL.Roles.Core;
@@ -232,7 +231,6 @@ public sealed class PavlovOwner : RoleBase, IKiller, IAdditionalWinner, ISchrodi
     {
         RemainingImprintCount = PavlovDog.GetMaxImprintCount();
         LastCanImprintState = CanImprintNow();
-        SendRPC();
         RefreshState(force: true);
     }
 
@@ -263,7 +261,6 @@ public sealed class PavlovOwner : RoleBase, IKiller, IAdditionalWinner, ISchrodi
         if (PavlovDog.IsPavlovTeam(target)) return;
 
         RemainingImprintCount--;
-        SendRPC();
         RefreshState(force: true);
 
         if (PavlovDog.GetOwnerSuicideOnImpostor() && target.GetCustomRole().IsImpostor())
@@ -317,20 +314,6 @@ public sealed class PavlovOwner : RoleBase, IKiller, IAdditionalWinner, ISchrodi
         return true;
     }
 
-
-    void SendRPC()
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(RemainingImprintCount);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        RemainingImprintCount = reader.ReadInt32();
-        RefreshState(force: true);
-    }
 }
 
 /*public sealed class PavlovDogImprint : PavlovDogBase
@@ -386,7 +369,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
     public void SetOwner(byte ownerId)
     {
         OwnerId = ownerId;
-        SendRPC();
     }
 
     public float CalculateKillCooldown()
@@ -431,7 +413,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
 
         RampageTimer = null;
         info.AttemptKiller.MarkDirtySettings();
-        SendRPC();
     }
 
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
@@ -439,7 +420,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
         if (!IsRampage || !PavlovDog.GetResetRampageTimerOnMeeting()) return;
 
         RampageTimer = null;
-        SendRPC();
     }
 
     public override void OnStartMeeting()
@@ -447,7 +427,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
         if (!IsRampage || !PavlovDog.GetResetRampageTimerOnMeeting()) return;
 
         RampageTimer = null;
-        SendRPC();
     }
 
     public override void OnFixedUpdate(PlayerControl player)
@@ -460,7 +439,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
             {
                 IsRampage = false;
                 RampageTimer = null;
-                SendRPC();
             }
             return;
         }
@@ -474,7 +452,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
             IsRampage = true;
             RampageTimer = 0f;
             RestartRampageAbilityCooldown();
-            SendRPC();
             return;
         }
 
@@ -484,7 +461,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
         {
             RampageTimer = 0f;
             RestartRampageAbilityCooldown();
-            SendRPC();
             return;
         }
 
@@ -505,7 +481,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
         if (owner == null) return;
 
         OwnerId = owner.PlayerId;
-        SendRPC();
     }
 
     bool ShouldStartRampage()
@@ -531,7 +506,6 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
 
         IsRampage = false;
         RampageTimer = null;
-        SendRPC();
     }
 
     public override bool CanUseAbilityButton() => IsRampage;
@@ -555,24 +529,4 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
     public override bool KnowsRoleOf(PlayerControl seen, bool isMeeting) => PavlovDog.IsPavlovTeam(Player) && PavlovDog.IsPavlovTeam(seen);
 
     public override bool ShowsRoleTo(PlayerControl seer, bool isMeeting) => PavlovDog.IsPavlovTeam(seer) && PavlovDog.IsPavlovTeam(Player);
-
-    protected void SendRPC()
-    {
-        if (!AmongUsClient.Instance.AmHost) return;
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(OwnerId);
-        sender.Writer.Write(IsRampage);
-        sender.Writer.Write(RampageTimer != null);
-        sender.Writer.Write(RampageTimer ?? 0f);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        OwnerId = reader.ReadByte();
-        IsRampage = reader.ReadBoolean();
-        var hasTimer = reader.ReadBoolean();
-        var timer = reader.ReadSingle();
-        RampageTimer = hasTimer ? timer : null;
-    }
 }

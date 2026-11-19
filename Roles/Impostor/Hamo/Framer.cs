@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using AmongUs.GameOptions;
-using Hazel;
 using UnityEngine;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
@@ -91,7 +90,6 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
     public bool SingleAction(PlayerControl killer, PlayerControl target)
     {
         sourceId = target.PlayerId;
-        SendRpc();
         Logger.Info($"{killer.GetNameWithRole().RemoveHtmlTags()} → {target.GetNameWithRole().RemoveHtmlTags()}：姿の元に選択", "Framer");
         Utils.NotifyRoles(SpecifySeer: killer);
         return false;
@@ -118,7 +116,6 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         // インポスターが対象で、自覚できる設定なら本人にも見せる
         var targetSees = impostorAware && target.GetCustomRole().IsImpostor();
         SendOutfit(target, outfit, targetSees);
-        SendRpc();
         Logger.Info($"{target.GetNameWithRole().RemoveHtmlTags()} を {source.GetNameWithRole().RemoveHtmlTags()} の姿に変えました(残り{remaining}回)", "Framer");
         Utils.NotifyRoles();
     }
@@ -252,18 +249,4 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         => Utils.ColorString(remaining > 0 ? RoleInfo.RoleColor : Color.gray, $"[{remaining}]");
 
     public override string GetAbilityButtonText() => Translator.GetString("FramerAbilityButtonText");
-
-    private void SendRpc()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(remaining);
-        sender.Writer.Write(sourceId);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        remaining = reader.ReadInt32();
-        sourceId = reader.ReadByte();
-    }
 }

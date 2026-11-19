@@ -1,6 +1,5 @@
 using UnityEngine;
 using AmongUs.GameOptions;
-using Hazel;
 
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
@@ -71,28 +70,6 @@ class Penguin : RoleBase, IImpostor
         Penguins.Add(this);
     }
     public override void ApplyGameOptions(IGameOptions opt) => AURoleOptions.ShapeshifterCooldown = AbductVictim != null ? AbductTimer : 255f;
-    private void SendRPC()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(AbductVictim?.PlayerId ?? 255);
-    }
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        var victim = reader.ReadByte();
-        if (victim == 255)
-        {
-            AbductVictim = null;
-            AbductTimer = 255f;
-        }
-        else
-        {
-            AbductVictim = Utils.GetPlayerById(victim);
-            AbductTimer = AbductTimerLimit;
-        }
-    }
     void AddVictim(PlayerControl target)
     {
         PlayerState.GetByPlayerId(target.PlayerId).CanUseMovingPlatform = MyState.CanUseMovingPlatform = false;
@@ -100,7 +77,6 @@ class Penguin : RoleBase, IImpostor
         AbductVictim = target;
         AbductTimer = AbductTimerLimit;
         Player.RpcResetAbilityCooldown(sync: true);
-        SendRPC();
         movecount = 0;
         oldpos = Player.GetTruePosition();
         lastTpPos = new(float.MaxValue, float.MaxValue);
@@ -120,7 +96,6 @@ class Penguin : RoleBase, IImpostor
         MyState.CanUseMovingPlatform = true;
         AbductTimer = 255f;
         Player.RpcResetAbilityCooldown(sync: true);
-        SendRPC();
         movecount = 0;
     }
     public void OnCheckMurderAsKiller(MurderInfo info)

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
 using TownOfHostL.Roles.Crewmate;
@@ -71,16 +70,6 @@ namespace TownOfHostL.Roles.Impostor
             OptionCooldown = FloatOptionItem.Create(RoleInfo, GeneralOption.Cooldown, new(0f, 999f, 0.5f), 15f, false).SetValueFormat(OptionFormat.Seconds);
         }
 
-        private void SendRPC()
-        {
-            using var sender = CreateSender(CustomRPC.CustomRoleSync);
-            sender.Writer.Write(BomberExplosion);
-        }
-        public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-        {
-            if (rpcType != CustomRPC.CustomRoleSync) return;
-            BomberExplosion = reader.ReadInt32();
-        }
         public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
         {
             if (BomberExplosion <= 0) return;
@@ -91,7 +80,6 @@ namespace TownOfHostL.Roles.Impostor
             AdjustKillCooldown = false;
             if (!BomberExplosionPlayers.TryAdd(target.PlayerId, 0f)) return;
             BomberExplosion--;
-            SendRPC();
             Player.RpcResetAbilityCooldown(sync: true);
             Player.SetKillCooldown(ForceProtect: true, target: target);
             Utils.NotifyRoles(SpecifySeer: Player);
@@ -122,7 +110,7 @@ namespace TownOfHostL.Roles.Impostor
                             if (CustomRoleManager.OnCheckMurder(Player, target2, target2, target2, true, true, 1, deathReason: CustomDeathReason.Bombed))
                             {
                                 count++;
-                                RPC.PlaySoundRPC(Player.PlayerId, Sounds.KillSound);
+                                RPC.PlaySound(Player.PlayerId, Sounds.KillSound);
                                 Logger.Info($"{target2.name}を爆発させました。", "bomber");
                             }
                             if (maxbomb <= count) maxbomb = count;

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
 using UnityEngine;
@@ -121,24 +120,6 @@ public sealed class Obolus : RoleBase, ILNKiller, IAdditionalWinner
         Daycount = 1;
         WinFlag = false;
     }
-    private void SendRPC()
-    {
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-        sender.Writer.Write(KillCount);
-        sender.Writer.Write(WinFlag);
-        sender.Writer.Write(Daycount);
-        sender.Writer.Write(NeedCount);
-        sender.Writer.Write(KilledOnThisTurn);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        KillCount = reader.ReadInt32();
-        WinFlag = reader.ReadBoolean();
-        Daycount = reader.ReadInt32();
-        NeedCount = reader.ReadInt32();
-        KilledOnThisTurn = reader.ReadBoolean();
-    }
     public bool CanUseKillButton() => KillCount > 0 && Daycount > OptionKillLockTurn.GetInt() && !KilledOnThisTurn;
     public bool CanUseSabotageButton() => false;
     public bool CanUseImpostorVentButton() => CanVent;
@@ -166,7 +147,6 @@ public sealed class Obolus : RoleBase, ILNKiller, IAdditionalWinner
         (var killer, var target) = info.AttemptTuple;
         KilledOnThisTurn = true;
         --KillCount;
-        SendRPC();
         if (IstargetRole(target.GetCustomRole()))
         {
             --NeedCount;
@@ -181,7 +161,6 @@ public sealed class Obolus : RoleBase, ILNKiller, IAdditionalWinner
             {
                 //脳筋だけどこれで（）
                 KilledOnThisTurn = false;
-                SendRPC();
             }
         }, Main.LagTime, "");
     }
@@ -200,7 +179,6 @@ public sealed class Obolus : RoleBase, ILNKiller, IAdditionalWinner
     {
         ++Daycount;
         KilledOnThisTurn = false;
-        SendRPC();
     }
     public override string GetProgressText(bool comms = false)
     {

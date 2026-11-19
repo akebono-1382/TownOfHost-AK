@@ -120,7 +120,7 @@ public class RoomTaskAssign
 
                     timer = 0;
 
-                    RPC.PlaySoundRPC(playerid, Sounds.TaskComplete);
+                    RPC.PlaySound(playerid, Sounds.TaskComplete);
 
 
 
@@ -216,63 +216,9 @@ public class RoomTaskAssign
 
     }
 
-    public void ReceiveRoom(MessageReader reader)
-
-    {
-
-        var roomId = (SystemTypes)reader.ReadByte();
-
-        TaskPSR = ShipStatus.Instance.AllRooms.FirstOrDefault(x => x.RoomId == roomId);
 
 
 
-        if (TaskPSR == null)
-
-        {
-
-            Logger.Error($"{roomId}の部屋を見つけることができませんでした ShipStatus:{ShipStatus.Instance.name}", "RoomTaskAssign_ReceiveRoom");
-
-            return;
-
-        }
-
-
-
-        if (RoomArrow != Vector2.zero) GetArrow.Remove(playerid, RoomArrow);
-
-
-
-        RoomArrow = TaskPSR.transform.position;
-
-        GetArrow.Add(playerid, RoomArrow);
-
-        TaskRoom = TaskPSR.RoomId;
-
-
-
-        Logger.Info($"{playerid}-NextTask : {TaskRoom}", "RoomTaskAssign_ReceiveRoom");
-
-    }
-
-
-
-    public void ReceiveCompleteRoom(MessageReader reader)
-
-    {
-
-        TaskRoom = null;
-
-        TaskPSR = null;
-
-        if (reader.BytesRemaining > 0)
-
-        {
-
-            completeroom = reader.ReadInt32();
-
-        }
-
-    }
 
 
 

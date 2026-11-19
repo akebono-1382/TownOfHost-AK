@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Hazel;
 using UnityEngine;
 using AmongUs.GameOptions;
 
@@ -121,17 +120,6 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
         ShotLimit = ShotLimitOpt.GetInt();
         Logger.Info($"{Utils.GetPlayerById(playerId)?.GetNameWithRole()} : 残り{ShotLimit}発", "Sheriff");
     }
-    private void SendRPC()
-    {
-        using var sender = CreateSender(CustomRPC.SetSheriffShotLimit);
-        sender.Writer.Write(ShotLimit);
-    }
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.SetSheriffShotLimit) return;
-
-        ShotLimit = reader.ReadInt32();
-    }
     public float CalculateKillCooldown() => CanUseKillButton() ? CurrentKillCooldown : 0f;
     public bool CanUseKillButton()
         => Player.IsAlive()
@@ -154,7 +142,6 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
         }
         ShotLimit--;
         Logger.Info($"{killer.GetNameWithRole()} : 残り{ShotLimit}発", "Sheriff");
-        SendRPC();
         if (!CanBeKilledBy(target))
         {
             PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;

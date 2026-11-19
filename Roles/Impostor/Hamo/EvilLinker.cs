@@ -4,8 +4,6 @@ using System.Linq;
 
 using AmongUs.GameOptions;
 
-using Hazel;
-
 using TownOfHostL.Modules;
 
 using TownOfHostL.Patches;
@@ -157,8 +155,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
         {
 
-            SendActionRpc();
-
             return;
 
         }
@@ -275,8 +271,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
         {
 
-            SendActionRpc();
-
             return;
 
         }
@@ -350,8 +344,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
         }
 
 
-
-        SendRpc();
 
         Utils.NotifyRoles();
 
@@ -556,8 +548,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
 
 
-        SendRpc();
-
     }
 
 
@@ -623,73 +613,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
         string pend = pendingDummy != null ? " <color=#ffff00>1/2</color>" : "";
 
         return $"<color={RoleInfo.RoleColorCode}>{string.Format(Translator.GetString("EvilLinkerPairsProgress"), placedCount, MaxPairs)}{pend}</color>";
-
-    }
-
-
-
-    void SendRpc()
-
-    {
-
-        if (!AmongUsClient.Instance.AmHost) return;
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write((byte)0);
-
-        sender.Writer.Write(placedCount);
-
-        sender.Writer.Write(cooldownTimer);
-
-        sender.Writer.Write(pendingDummy != null);
-
-    }
-
-
-
-    void SendActionRpc()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write((byte)1);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        byte kind = reader.ReadByte();
-
-
-
-        if (kind == 0)
-
-        {
-
-            placedCount = reader.ReadInt32();
-
-            cooldownTimer = reader.ReadSingle();
-
-            reader.ReadBoolean();
-
-        }
-
-        else if (kind == 1)
-
-        {
-
-            if (AmongUsClient.Instance.AmHost)
-
-                PerformPlacePortal();
-
-        }
 
     }
 

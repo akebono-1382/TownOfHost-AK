@@ -6,7 +6,6 @@ using System.Linq;
 
 using AmongUs.GameOptions;
 
-using Hazel;
 
 using UnityEngine;
 
@@ -352,7 +351,7 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
 
 
-    public void SyncState() { SendRpc(); Utils.NotifyRoles(); }
+    public void RefreshNames() { Utils.NotifyRoles(); }
 
 
 
@@ -548,7 +547,7 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
         target.MarkDirtySettings();
 
-        SyncState();
+        RefreshNames();
 
         Utils.AddGameLog("StandMaster",
 
@@ -570,7 +569,6 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
         isRevealed = false;
 
-        SendRpc();
 
     }
 
@@ -612,7 +610,7 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
 
 
-        SyncState();
+        RefreshNames();
 
         _ = new LateTask(() =>
 
@@ -660,7 +658,7 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
         standReturnPos = null;
 
-        SyncState();
+        RefreshNames();
 
 
 
@@ -746,7 +744,6 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
             isRevealed = false;
 
-            SendRpc();
 
             return;
 
@@ -766,7 +763,6 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
         standSummoned = false;
 
-        SendRpc();
 
 
 
@@ -822,59 +818,6 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
 
 
-    void SendRpc()
-
-    {
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(standPlayerId);
-
-        sender.Writer.Write(standCreated);
-
-        sender.Writer.Write(standHadDied);
-
-        sender.Writer.Write(standSummoned);
-
-        sender.Writer.Write(isRevealed);
-
-        sender.Writer.Write(standReturnPos.HasValue);
-
-        if (standReturnPos.HasValue)
-
-        {
-
-            sender.Writer.Write(standReturnPos.Value.x);
-
-            sender.Writer.Write(standReturnPos.Value.y);
-
-        }
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-
-        standPlayerId = reader.ReadByte();
-
-        standCreated = reader.ReadBoolean();
-
-        standHadDied = reader.ReadBoolean();
-
-        standSummoned = reader.ReadBoolean();
-
-        isRevealed = reader.ReadBoolean();
-
-        bool hasPos = reader.ReadBoolean();
-
-        standReturnPos = hasPos ? new Vector2(reader.ReadSingle(), reader.ReadSingle()) : null;
-
-    }
-
 }
 
 
@@ -923,7 +866,7 @@ public sealed class Stand : RoleBase, ILNKiller
 
 
 
-    public void SetOwner(byte ownerId) { OwnerId = ownerId; SendRPC(); }
+    public void SetOwner(byte ownerId) { OwnerId = ownerId; }
 
 
 
@@ -989,7 +932,7 @@ public sealed class Stand : RoleBase, ILNKiller
 
 
 
-        if (!sm.isRevealed) { sm.isRevealed = true; sm.SyncState(); }
+        if (!sm.isRevealed) { sm.isRevealed = true; sm.RefreshNames(); }
 
         return true;
 
@@ -1019,7 +962,7 @@ public sealed class Stand : RoleBase, ILNKiller
 
         IsTie = false;
 
-        if (!sm.isRevealed) { sm.isRevealed = true; sm.SyncState(); }
+        if (!sm.isRevealed) { sm.isRevealed = true; sm.RefreshNames(); }
 
         return true;
 
@@ -1150,26 +1093,6 @@ public sealed class Stand : RoleBase, ILNKiller
     }
 
 
-
-    void SendRPC()
-
-    {
-
-        if (!AmongUsClient.Instance.AmHost) return;
-
-        using var sender = CreateSender(CustomRPC.CustomRoleSync);
-
-        sender.Writer.Write(OwnerId);
-
-    }
-
-
-
-    public override void ReceiveRPC(MessageReader reader, CustomRPC rpcType)
-    {
-        if (rpcType != CustomRPC.CustomRoleSync) return;
-        OwnerId = reader.ReadByte();
-    }
 
 }
 

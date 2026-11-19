@@ -176,8 +176,6 @@ public sealed class HadouHoBeam
         // ため中は動けないが、撃ち終わった後の最初の動きを古い位置から測らないよう測り直す
         tracking = false;
         if (owner == null) return;
-        // 全員が自前の演出で描くなら、CNO は要らない
-        if (drawnByClientEffects && ClientEffects.SkipBeamDummies) return;
         this.warningSize = warningSize;
         warned = false;
         chargeStartedAt = Time.realtimeSinceStartup;
