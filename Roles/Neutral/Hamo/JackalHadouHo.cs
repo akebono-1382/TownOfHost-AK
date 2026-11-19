@@ -1696,7 +1696,9 @@ public sealed class Tama : RoleBase, IKiller
 
     bool isLoading;
 
-    int snapFrame = 0;
+    const float FollowInterval = 0.2f, FollowMinMove = 0.3f;
+    float nextFollowAt;
+    Vector2 lastFollowPos = new(float.MaxValue, float.MaxValue);
 
 
 
@@ -1790,6 +1792,7 @@ public sealed class Tama : RoleBase, IKiller
         isLoading = true;
 
         hasLoaded = true;
+        lastFollowPos = new(float.MaxValue, float.MaxValue);
 
 
 
@@ -1915,32 +1918,12 @@ public sealed class Tama : RoleBase, IKiller
 
 
 
-        snapFrame++;
-
-        if (snapFrame % 3 == 0)
-
-        {
-
-            var targetPos = owner.transform.position;
-
-            player.NetTransform.SnapTo(targetPos);
-
-
-
-            ushort sid = (ushort)(player.NetTransform.lastSequenceId + 2U);
-
-            var writer = AmongUsClient.Instance.StartRpcImmediately(
-
-                player.NetTransform.NetId, (byte)RpcCalls.SnapTo, SendOption.None);
-
-            NetHelpers.WriteVector2(targetPos, writer);
-
-            writer.Write(sid);
-
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
-
-        }
-
+        // 玉は持ち主に付いて回る。0.2 秒以上あけ、前に送った位置から 0.3 以上動いた時だけ送る (止まっている間も送ると SnapTo の予算が尽きる)
+        var targetPos = (Vector2)owner.transform.position;
+        if (Time.time < nextFollowAt || Vector2.Distance(targetPos, lastFollowPos) < FollowMinMove) return;
+        if (!player.RpcSnapTo(targetPos)) return;
+        nextFollowAt = Time.time + FollowInterval;
+        lastFollowPos = targetPos;
     }
 
 

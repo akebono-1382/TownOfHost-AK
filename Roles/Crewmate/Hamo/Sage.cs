@@ -312,28 +312,14 @@ public sealed class Sage : RoleBase
 
 
 
-    private void SnapPlayerToSaved()
+    // 障壁の間はその場に留める。ずれを直す TP は 0.2 秒以上あけ、0.3 以上ずれた時だけ送る (毎フレーム送ると SnapTo の予算が尽きる)
+    const float ResnapInterval = 0.2f, ResnapMinDrift = 0.3f;
+    float nextResnapAt;
 
+    private void SnapPlayerToSaved(bool force = false)
     {
-
         if (Player == null) return;
-
-        try { Player.NetTransform.SnapTo(savedPosition); } catch { }
-
-
-
-        ushort sid = (ushort)(Player.NetTransform.lastSequenceId + 2U);
-
-        var writer = AmongUsClient.Instance.StartRpcImmediately(
-
-            Player.NetTransform.NetId, (byte)RpcCalls.SnapTo, SendOption.Reliable);
-
-        NetHelpers.WriteVector2(savedPosition, writer);
-
-        writer.Write(sid);
-
-        AmongUsClient.Instance.FinishRpcImmediately(writer);
-
+        if (Player.RpcSnapTo(savedPosition, force)) nextResnapAt = Time.time + ResnapInterval;
     }
 
 
@@ -368,7 +354,7 @@ public sealed class Sage : RoleBase
 
         var currentPos = Player.transform.position;
 
-        if (Vector2.Distance(currentPos, savedPosition) > 0.02f)
+        if (Time.time >= nextResnapAt && Vector2.Distance(currentPos, savedPosition) > ResnapMinDrift)
 
             SnapPlayerToSaved();
 
