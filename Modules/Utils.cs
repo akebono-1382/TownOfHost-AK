@@ -265,8 +265,11 @@ public static partial class Utils
     }
     public static string GetRoleName(CustomRoles role)
     {
-        return GetRoleString(Enum.GetName(typeof(CustomRoles), role));
+        // 名前の組み立てから見る人 × 見られる人のぶん呼ばれる。列挙の名前 (リフレクション) は役職ごとに 1 回だけ引く
+        if (!roleKeys.TryGetValue(role, out var key)) roleKeys[role] = key = Enum.GetName(typeof(CustomRoles), role);
+        return GetRoleString(key);
     }
+    static readonly Dictionary<CustomRoles, string> roleKeys = new();
     public static string GetAddonAbilityInfo(CustomRoles role)
     {
         var text = role.ToString();
