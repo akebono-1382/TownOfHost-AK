@@ -42,7 +42,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         IsFiring = false;
         _prevCharging = false;
         _prevBeamMark = false;
-        Charging = false;
         CustomRoleManager.LowerOthers.Add(GetLowerTextOthers);
     }
 
@@ -57,7 +56,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
     bool _prevCharging;
     bool _prevBeamMark;
     HadouHoBeam beam;
-    public static bool Charging;
     static OptionItem OptionCoolDown;
     static float Cooldown;
     public static float CooldownValue => Cooldown;
@@ -108,7 +106,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
                 Player.SyncSettings();
             }
             IsCharging = false;
-            Charging = false;
             ShowBeamMark = false;
             IsFiring = false;
             beam?.End();
@@ -146,7 +143,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         if (!Player.IsAlive() || MeetingHud.Instance != null) return;
         IsFiring = true;
         IsCharging = true;
-        Charging = true;
         chargeTimer = 0f;
         TownOfHostL.Modules.ClientEffects.Charge(Player, ChargeTime, new Color(1f, 0.55f, 0.2f));
         beam?.BeginCharge(OptionBeamWarning.GetBool() ? HadouHoBeam.SmallWarningSize : 0);
@@ -172,7 +168,6 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
         TownOfHostL.Modules.ClientEffects.ChargeStop(Player);
         IsCharging = false;
         ShowBeamMark = false;
-        Charging = false;
         IsFiring = false;
         chargeTimer = 0f;
         HasHit = false;
@@ -252,14 +247,12 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
             if (generation != fireGeneration) return;
             if (IsDead || !Player.IsAlive())
             {
-                Charging = false;
                 ShowBeamMark = false; _prevBeamMark = false;
                 beam?.End(); IsFiring = false;
                 TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(HadouHo));
                 Player.MarkDirtySettings();
                 Utils.NotifyRoles(); return;
             }
-            Charging = false;
 
             ShowBeamMark = false; _prevBeamMark = false;
             beam?.End();
@@ -357,14 +350,12 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
     {
         if (IsDead || !Player.IsAlive())
         {
-            Charging = false;
             ShowBeamMark = false; _prevBeamMark = false;
             beam?.End(); IsFiring = false;
             TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(HadouHo));
             Player.MarkDirtySettings();
             Utils.NotifyRoles(); return;
         }
-        Charging = false;
         IsCharging = false;
         _prevCharging = false;
         _prevBeamMark = false;
@@ -382,16 +373,8 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
     [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.ClimbLadder))]
     class LadderPatch
     {
-        public static Dictionary<byte, Vector2> Ladder = new();
         public static void Postfix(PlayerPhysics __instance, Ladder source, byte climbLadderSid)
         {
-            var sourcePos = source.transform.position;
-            var targetPos = source.Destination.transform.position;
-            if (sourcePos.y > targetPos.y)
-                Ladder[__instance.myPlayer.PlayerId] = targetPos;
-            else
-                Ladder[__instance.myPlayer.PlayerId] = sourcePos;
-
             if (__instance.myPlayer.GetRoleClass() is HadouHo { ShowBeamMark: true } hadouho)
             {
                 hadouho.cancelbeam();
