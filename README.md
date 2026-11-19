@@ -124,6 +124,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
   - 設定を名前で変えるコマンド・ロビーの投票コマンド
   - 決めた時間だけ客のチャットを止めるミュート
   - 追放の画面の間の書き込みを、試合に戻ってから押し出す処理
+  - 会議中の陣営チャット (インポスター・恋人)
 - [More Roles Plus](https://github.com/haru03741-glitch/More-Roles-Plus)
   - ロビーで本編のモード (通常 / かくれんぼ) を、GameManager を出し直して切り替える手順
   - 設定画面の検索欄と検索の結果のタブ、左の列の区分の字の作り
@@ -131,6 +132,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
   - 名前を付けた設定の保存と設定のコード (プリセットの頁・プリセットのファイル・受け渡しのフォルダ)
   - チャットの入力欄の拡張 (全部の文字・補完・貼り付け・前の文の呼び戻し)・耳打ち・チャットの荒らし対策
   - 自分の画面だけに出す返事を、チャット欄が出るまで溜めてから足す処理
+  - 会議中の陣営チャット
   - 起動直後のメニューでアカウント表示を止める処理と、ログインの途中でメニューを離れた時の続き
   - 「ゲームを探す」画面で Mod GUID を付ける処理と、中身の無い mod の検索条件を外す処理 (SuperNewRoles の Mod GUID の登録を More Roles Plus が広げた物)
 - [Town of Host: Enhanced](https://github.com/EnhancedNetwork/TownofHost-Enhanced)

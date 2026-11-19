@@ -847,6 +847,7 @@ public static partial class Options
         Modules.VentLimit.SetupCustomOption();
         // 耳打ち・荒らしの書き込みのキック
         Modules.Whisper.SetupCustomOption();
+        Modules.TeamChat.SetupCustomOption();
         Modules.ChatGuard.SetupCustomOption();
         // 他の人のコマンドを個別に止める
         ChatCommandTable.SetupCustomOption();

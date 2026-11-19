@@ -292,6 +292,20 @@ public static class ChatCommandTable
             Host = Modules.Whisper.Command,
             Remote = Modules.Whisper.Command,
         },
+        new("/tc", "/teamchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.ImpostorCommand,
+            Remote = Modules.TeamChat.ImpostorCommand,
+        },
+        new("/lc", "/loverschat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.LoversCommand,
+            Remote = Modules.TeamChat.LoversCommand,
+        },
         new("/brackout", "/bo")
         {
             Host = _ => { if (GameStates.InGame) Main.AllPlayerControls.Do(pc => pc.KillFlash()); },
