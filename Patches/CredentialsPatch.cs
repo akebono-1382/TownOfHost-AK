@@ -37,8 +37,10 @@ namespace TownOfHostL
 
                 sb.Append("\r\n").Append(Main.credentialsText);
 
-                if (Options.NoGameEnd.GetBool()) sb.Append($"\r\n").Append(Utils.ColorString(Color.red, GetString("NoGameEnd")));
-                if (ModeCatalog.Current.Label is { } label) sb.Append($"\r\n").Append(Utils.ColorString(label.Color, GetString(label.Key)));
+                // 客の間は自分の設定が部屋に効かないので、設定から出す表示は出さない
+                bool asClient = TownOfHostL.Core.VanillaHideAndSeek.IsClientMode;
+                if (!asClient && Options.NoGameEnd.GetBool()) sb.Append($"\r\n").Append(Utils.ColorString(Color.red, GetString("NoGameEnd")));
+                if (!asClient && ModeCatalog.Current.Label is { } label) sb.Append($"\r\n").Append(Utils.ColorString(label.Color, GetString(label.Key)));
                 //if (Options.IsONMode) sb.Append($"\r\n").Append(Utils.ColorString(Utils.GetRoleColor(CustomRoles.ONVillager), GetString("OneNight")));
                 // 自分がホストなら MOD は入っている (本編のかくれんぼで立てた部屋では版の登録が走らないので、登録は見ない)
                 if (!GameStates.IsModHost && !(AmongUsClient.Instance && AmongUsClient.Instance.AmHost)) sb.Append($"\r\n").Append(Utils.ColorString(Color.red, GetString("Warning.NoModHost")));
@@ -47,7 +49,7 @@ namespace TownOfHostL
                 // 位置調整
                 __instance.GetComponent<AspectPosition>().DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
 
-                if (GameStates.IsLobby)
+                if (GameStates.IsLobby && !asClient)
                 {
                     // 役職が宣言したロビーの警告 (SimpleRoleInfo.LobbyWarning)
                     rolesWithLobbyWarning ??= CustomRoleManager.AllRolesInfo.Values.Where(info => info.LobbyWarning != null).ToArray();

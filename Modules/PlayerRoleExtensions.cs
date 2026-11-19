@@ -241,11 +241,12 @@ public static class PlayerRoleExtensions
     }
 
     // ===== 会議中キル =====
-    public static void RpcMeetingKill(this PlayerControl killer, PlayerControl target = null, bool SendtoClient = false)
+    public static void RpcMeetingKill(this PlayerControl killer, PlayerControl target = null)
     {
         if (!GameStates.InGame) return;
         if (target == null) target = killer;
-        if (target.IsModClient() && !SendtoClient) return;
+        // ホスト自身の画面は送らずに済む。TOHL を入れた客も客の間は本編のまま動くので、本編の客と同じく送る
+        if (target.AmOwner) return;
         var messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.None, target.GetClientId());
         messageWriter.WriteNetObject(target);
         messageWriter.Write((int)MurderResultFlags.Succeeded);

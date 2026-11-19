@@ -53,8 +53,9 @@ public static class ClientEffects
 
     static bool CanSend => AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost && PlayerControl.LocalPlayer != null;
 
-    static bool IsModPlayer(PlayerControl pc)
-        => pc != null && !pc.AmOwner && pc.IsModClient();
+    // 客の TOHL は客の間ホストの処理と電文の受け口を外しているので、この演出は届かない。
+    // ほかの人はみな本編の客として扱い、ダミーやサボタージュで見せる
+    static bool IsModPlayer(PlayerControl pc) => false;
 
     public static bool EveryoneHasMod()
     {

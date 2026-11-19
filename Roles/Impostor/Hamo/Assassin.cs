@@ -289,12 +289,12 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
                     GameDataSerializePatch.SerializeMessageCount--;
                     _ = new LateTask(() =>
                     {
-                        Main.AllPlayerControls.DoIf(pc => !pc.IsModClient() && pc.PlayerId != Player.PlayerId,
+                        Main.AllPlayerControls.DoIf(pc => !pc.AmOwner && pc.PlayerId != Player.PlayerId,
                         pc => Utils.GetPlayerById(0).RpcSetRoleDesync(RoleTypes.Crewmate, pc.GetClientId()));
                     }, 2.5f, "");
                     _ = new LateTask(() =>
                     {//ホストだけSetRoleして復活させる。
-                        Main.AllPlayerControls.DoIf(pc => !pc.IsModClient() && pc.PlayerId != Player.PlayerId,
+                        Main.AllPlayerControls.DoIf(pc => !pc.AmOwner && pc.PlayerId != Player.PlayerId,
                         pc => Utils.GetPlayerById(0).RpcSetRoleDesync(RoleTypes.Crewmate, pc.GetClientId()));
                         ReportDeadBodyPatch.ExReportDeadBody(Player, null, false, "AssassinMeeting", "#ff1919");
                     }, 3, "");

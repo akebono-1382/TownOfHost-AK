@@ -135,20 +135,7 @@ namespace TownOfHostL
                     string warningMessage = "";
                     if (AmongUsClient.Instance.AmHost)
                     {
-                        bool canStartGame = true;
-                        List<string> mismatchedPlayerNameList = new();
-                        foreach (var client in AmongUsClient.Instance.allClients.ToArray())
-                        {
-                            if (client.Character == null) continue;
-                            var dummyComponent = client.Character.GetComponent<DummyBehaviour>();
-                            if (dummyComponent != null && dummyComponent.enabled)
-                                continue;
-                            if (!MatchVersions(client.Character.PlayerId, true))
-                            {
-                                canStartGame = false;
-                                mismatchedPlayerNameList.Add(Utils.ColorString(Palette.PlayerColors[client.ColorId], client.Character.Data.PlayerName));
-                            }
-                        }
+                        // 客の TOHL は客の間ホストの処理を外して本編の客のまま動くので、版が違っても開始を止めない
                         string[] kickName =
                         {
                             "mod",
@@ -170,23 +157,7 @@ namespace TownOfHostL
                                 warningMessage = Utils.ColorString(Color.red, "MOD内でエラーが発生しています。\nTOH_LのDiscordまでご連絡ください。");
                             }
                         }
-                        if (!canStartGame)
-                        {
-                            __instance.StartButton.gameObject.SetActive(false);
-                            warningMessage = Utils.ColorString(Color.red, string.Format(GetString("Warning.MismatchedVersion"), String.Join(" ", mismatchedPlayerNameList), $"<color={Main.ModColor}>{Main.ModName}</color>"));
-                        }
                         if (cancelButton != null) cancelButton.gameObject.SetActive(__instance.startState == GameStartManager.StartingStates.Countdown);
-                    }
-                    else
-                    {
-                        if (!MatchVersions(0))
-                        {
-                            ErrorText.Instance.NotHostFlag = true;
-                            ErrorText.Instance.AddError(ErrorCode.NotHostUnload);
-                            TownOfHostL.Core.VanillaHideAndSeek.UnpatchForUnload();
-                            TownOfHostL.Modules.Streaming.StreamHub.ShutdownForUnload();
-                            Main.Instance?.Unload();
-                        }
                     }
                     if (warningMessage == "")
                     {
@@ -221,20 +192,6 @@ namespace TownOfHostL
                 {
                     Logger.Error($"GameStartManagerUpdatePatch.Postfix で例外: {ex.Message}", "GameStartManagerUpdatePatch");
                     Logger.Exception(ex, "GameStartManagerUpdatePatch");
-                }
-            }
-            public static bool MatchVersions(byte playerId, bool acceptVanilla = false)
-            {
-                try
-                {
-                    if (!Main.playerVersion.TryGetValue(playerId, out var version)) return acceptVanilla;
-                    return Main.ForkId == version.forkId
-                        && Main.version.CompareTo(version.version) == 0
-                        && version.tag == $"{ThisAssembly.Git.Commit}({ThisAssembly.Git.Branch})";
-                }
-                catch
-                {
-                    return acceptVanilla;
                 }
             }
         }

@@ -19,7 +19,8 @@ namespace TownOfHostL.Core;
 /// </summary>
 public static class VanillaHideAndSeek
 {
-    private enum State { Live, Suspended, Unloaded }
+    // Client: ほかの人の部屋に客として入っている間。ホストの処理 (Standard) を外し、本編の客のまま遊ぶ
+    private enum State { Live, Suspended, Client, Unloaded }
 
     private static State state = State.Live;
     private static Harmony resident;
@@ -39,6 +40,11 @@ public static class VanillaHideAndSeek
     private const float SpawnDelay = 0.5f;
 
     public static bool IsSuspended => state == State.Suspended;
+    /// <summary>客として部屋にいて、TOHL のホストの処理を外している間</summary>
+    public static bool IsClientMode => state == State.Client;
+
+    /// <summary>客の間に当てておく束。画面の表示と、部屋の作り・探しにしか効かず、電文を送らない物だけ</summary>
+    private const Modes.PatchBundles ClientBundles = Modes.PatchBundles.Core;
 
     /// <summary>TOHL の PatchAll より前に 1 回だけ呼ぶ。</summary>
     public static void Init(Main plugin)
@@ -104,6 +110,7 @@ public static class VanillaHideAndSeek
                 requested = null;
                 if (CanSwitchNow(target)) StartSwitch(target);
             }
+            if (FollowClient()) return;
             if (spawnAt >= 0f && Time.realtimeSinceStartup >= spawnAt) SpawnStep();
             if (resumeAfterSpawn && GameManager.Instance && GameManager.Instance.TryCast<NormalGameManager>() != null)
             {
@@ -286,6 +293,52 @@ public static class VanillaHideAndSeek
         if (now - normalSince < ResumeSettle) return;
         normalSince = -1f;
         Resume();
+    }
+
+    // 客として部屋に入ったら Standard を外し、部屋を出た時か、ロビーでホストを引き継いだ時に戻す。
+    // 試合の途中でホストを引き継いでも TOHL の試合の状態が無いので、ロビーに戻るまで客のままにする。
+    // 客の間は true を返す (かくれんぼの見張りは動かさない)
+    private static bool FollowClient()
+    {
+        var client = AmongUsClient.Instance;
+        if (state != State.Client)
+        {
+            bool joined = client != null && client.GameState is InnerNetClient.GameStates.Joined or InnerNetClient.GameStates.Started;
+            if (!joined || client.AmHost) return false;
+            EnterClient();
+            return true;
+        }
+        bool inRoom = client != null && (client.GameState != InnerNetClient.GameStates.NotJoined || client.connection != null);
+        if (!inRoom || (client.AmHost && LobbyBehaviour.Instance))
+        {
+            LeaveClient();
+            return false;
+        }
+        return true;
+    }
+
+    private static void EnterClient()
+    {
+        requested = null;
+        spawnAt = -1f;
+        resumeAfterSpawn = false;
+        normalSince = -1f;
+        // 溜まっているのは部屋に入った時の TOHL の処理なので、束を外した後には走らせない
+        if (LateTask.Tasks.Count > 0) Logger.Info($"客になる前に LateTask を {LateTask.Tasks.Count} 件捨てます", "ClientMode");
+        LateTask.Tasks.Clear();
+        Modes.PatchBundleSet.Apply(ClientBundles);
+        state = State.Client;
+        Logger.Info("客として部屋に入ったので、TOHL のホストの処理を外して本編の客のまま遊びます", "ClientMode");
+        // 版だけはホストと知らせ合う (ホストの一覧と、ホストが TOHL かどうかの表示に使う)
+        try { Modules.Net.ClientModeVersion.Exchange(); } catch (Exception ex) { Logger.Warn($"版を送れませんでした: {ex.Message}", "ClientMode"); }
+    }
+
+    private static void LeaveClient()
+    {
+        state = State.Live;
+        Modes.PatchBundleSet.Apply(Modes.ModeCatalog.Standard.LiveBundles);
+        Logger.Info("客の間に外していた TOHL の処理を戻しました", "ClientMode");
+        if (LobbyBehaviour.Instance) ResumeLobby();
     }
 
     // 休んでいる間は TOHL のチャットの処理が無いので、/mode だけをここで拾う
