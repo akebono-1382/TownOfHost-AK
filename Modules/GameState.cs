@@ -118,6 +118,7 @@ public partial class PlayerState
             if (host != null && host.PlayerId == PlayerId) CompleteHostTasksOnDeath(host);
             // 死に方によらない「誰かが死んだ」の知らせ。同じ人に 2 度呼ばれても 1 度だけ
             if (!wasDead) CustomRoleManager.NotifyPlayerDead(PlayerId, DeathReason);
+            if (!wasDead) TownOfHostL.Modules.DeathBurst.OnDead(PlayerId);
         }
     }
     /// <summary>

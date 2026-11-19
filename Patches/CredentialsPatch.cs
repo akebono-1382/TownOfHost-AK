@@ -225,6 +225,8 @@ namespace TownOfHostL
                 catch (System.Exception ex) { Logger.Exception(ex, "ModManagerLateUpdate"); }
                 try { Modules.Net.OutfitSync.Tick(); }
                 catch (System.Exception ex) { Logger.Exception(ex, "ModManagerLateUpdate"); }
+                try { Modules.DeathBurst.Tick(); }
+                catch (System.Exception ex) { Logger.Exception(ex, "ModManagerLateUpdate"); }
                 try { OptionSaver.Tick(); }
                 catch (System.Exception ex) { Logger.Exception(ex, "ModManagerLateUpdate"); }
             }
