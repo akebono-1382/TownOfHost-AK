@@ -1,5 +1,6 @@
 // The blank push-out is based on ChatManager.ClearChat / SendPreviousMessagesToAll of https://github.com/waffle-ful/Aeterna-End-K-not
-// and https://github.com/Gurge44/EndlessHostRoles Patches/ChatControlPatch.cs (base from https://github.com/Rabek009/MoreGamemodes Modules/Utils.cs) (GPL-3.0)
+// and https://github.com/Gurge44/EndlessHostRoles Patches/ChatControlPatch.cs (base from https://github.com/Rabek009/MoreGamemodes Modules/Utils.cs) (GPL-3.0).
+// The push-out after the ejection screen is based on HasMessageDuringEjectionScreen of https://github.com/Gurge44/EndlessHostRoles Patches/ExilePatch.cs (GPL-3.0)
 using System.Collections.Generic;
 using System.Text;
 using TownOfHostL.Attributes;
