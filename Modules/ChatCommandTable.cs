@@ -136,7 +136,7 @@ public static class ChatCommandTable
         new("/id", "/ids")
         {
             Restrictable = true,
-            Host = _ => HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, PlayerIdList()),
+            Host = _ => Modules.HostNote.Post(PlayerIdList()),
             Remote = c => Utils.SendMessageAutoSplit(PlayerIdList(), true, sendTo: c.Player.PlayerId),
         },
         new("/start") { Usage = "CommandUsage.Start", ForModerator = true, Host = StartCommand },
@@ -230,7 +230,7 @@ public static class ChatCommandTable
             Host = c =>
             {
                 if (c.Args.Length > 1) TemplateManager.SendTemplate(c.Args[1]);
-                else HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, $"{GetString("ForExample")}:\n{c.Args[0]} test");
+                else Modules.HostNote.Post($"{GetString("ForExample")}:\n{c.Args[0]} test");
             },
             Remote = c =>
             {
@@ -301,7 +301,7 @@ public static class ChatCommandTable
         string versionText = "";
         foreach (var kvp in Main.playerVersion.OrderBy(pair => pair.Key))
             versionText += $"{kvp.Key}:{Utils.GetPlayerById(kvp.Key)?.Data?.PlayerName}:{kvp.Value.forkId}/{kvp.Value.version}({kvp.Value.tag})\n";
-        if (versionText != "") HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, versionText);
+        if (versionText != "") Modules.HostNote.Post(versionText);
     }
 
     /// <summary>「ID: 名前」を ID の順に並べた一覧。/sr /kick /ws などで相手を ID で指すため</summary>
@@ -461,7 +461,7 @@ public static class ChatCommandTable
                 GameEndChecker.StartEndGame(GameOverReason.ImpostorsByKill);
                 break;
             default:
-                c.Chat.AddChat(PlayerControl.LocalPlayer, "crewmate | impostor | jackal | none");
+                Modules.HostNote.Post("crewmate | impostor | jackal | none");
                 c.CancelText = "/w";
                 break;
         }
@@ -481,7 +481,7 @@ public static class ChatCommandTable
                 GameManager.Instance.RpcEndGame(GameOverReason.ImpostorDisconnect, false);
                 break;
             default:
-                c.Chat.AddChat(PlayerControl.LocalPlayer, "crewmate | impostor");
+                Modules.HostNote.Post("crewmate | impostor");
                 c.CancelText = "/dis";
                 break;
         }

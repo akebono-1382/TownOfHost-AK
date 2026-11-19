@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
@@ -1636,7 +1636,7 @@ public static partial class Utils
         var filename = CopyLog(logs.FullName);
         OpenDirectory(filename);
         if (PlayerControl.LocalPlayer != null && HudManager.InstanceExists)
-            HudManager.Instance.Chat?.AddChat(PlayerControl.LocalPlayer, Translator.GetString("Message.LogsSavedInLogsFolder"));
+            TownOfHostL.Modules.HostNote.Post(Translator.GetString("Message.LogsSavedInLogsFolder"));
     }
     public static void SaveNowLog()
     {

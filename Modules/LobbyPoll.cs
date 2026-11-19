@@ -157,7 +157,7 @@ public static class LobbyPoll
 
     static void Reply(PlayerControl by, string text)
     {
-        if (by == null || by.AmOwner) HudManager.Instance?.Chat?.AddChat(PlayerControl.LocalPlayer, text);
+        if (by == null || by.AmOwner) TownOfHostL.Modules.HostNote.Post(text);
         else Utils.SendMessageAutoSplit(text, true, sendTo: by.PlayerId);
     }
 

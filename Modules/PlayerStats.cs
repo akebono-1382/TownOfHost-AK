@@ -141,7 +141,7 @@ public static class PlayerStats
     public static void Command(ChatCommandContext c)
     {
         var text = Describe(c.Player, detail: true) ?? GetString("PlayerStats.None");
-        if (c.Player == null || c.Player.AmOwner) HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, text);
+        if (c.Player == null || c.Player.AmOwner) HostNote.Post(text);
         else Utils.SendMessageAutoSplit(text, true, GetString("PlayerStats.Title"), sendTo: c.Player.PlayerId);
     }
 

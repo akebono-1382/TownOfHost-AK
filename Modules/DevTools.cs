@@ -106,7 +106,7 @@ public static class DevCommands
 {
     private static void Reply(ChatCommandContext c, string text)
     {
-        if (c.Chat != null) c.Chat.AddChat(PlayerControl.LocalPlayer, text);
+        if (c.Chat != null) HostNote.Post(text);
     }
 
     private static bool RequireDeveloper(ChatCommandContext c)

@@ -363,7 +363,7 @@ public static class VanillaHideAndSeek
         try
         {
             if (HudManager.InstanceExists && PlayerControl.LocalPlayer)
-                HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, text);
+                TownOfHostL.Modules.HostNote.Post(text);
         }
         catch { }
         Logger.Info(text, "VanillaHideAndSeek");

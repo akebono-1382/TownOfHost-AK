@@ -250,7 +250,7 @@ namespace TownOfHostL
         /// </summary>
         internal static void SelectRolesCommand(string[] args)
         {
-            static void Reply(string text) => HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, text);
+            static void Reply(string text) => HostNote.Post(text);
 
             if (!GameStates.IsLobby)
             {
@@ -343,7 +343,7 @@ namespace TownOfHostL
             // モデレーターが打った時は本人にも返す
             void Reply(string text)
             {
-                HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, text);
+                HostNote.Post(text);
                 if (by != null && !by.AmOwner) Utils.SendMessageAutoSplit(text, true, sendTo: by.PlayerId);
             }
             if (args.Length < 2)

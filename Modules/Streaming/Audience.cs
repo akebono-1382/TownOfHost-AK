@@ -442,7 +442,7 @@ public static class Audience
         Reply(string.Format(GetString("Audience.Status"), GetString(Enabled.GetBool() ? "ColoredOn" : "ColoredOff"), queue.Count) + "\n" + YouTubeStatus());
     }
 
-    static void Reply(string text) => HudManager.Instance?.Chat?.AddChat(PlayerControl.LocalPlayer, text);
+    static void Reply(string text) => TownOfHostL.Modules.HostNote.Post(text);
 
     // ===== 視聴者のポイント =====
 

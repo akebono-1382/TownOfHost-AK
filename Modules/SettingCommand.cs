@@ -24,7 +24,7 @@ public static class SettingCommand
         var by = c.Player;
         void Reply(string text)
         {
-            if (by == null || by.AmOwner) HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, text);
+            if (by == null || by.AmOwner) HostNote.Post(text);
             else Utils.SendMessageAutoSplit(text, true, sendTo: by.PlayerId);
         }
 

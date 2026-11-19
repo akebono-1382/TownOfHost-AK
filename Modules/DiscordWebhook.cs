@@ -40,7 +40,7 @@ public static class DiscordWebhook
     /// <summary>/webhook URL・/webhook on|off|test・/webhook (今の状態)</summary>
     public static void Command(ChatCommandContext c)
     {
-        void Reply(string text) => HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, text);
+        void Reply(string text) => HostNote.Post(text);
         var arg = c.Arg(1).Trim();
         switch (arg.ToLowerInvariant())
         {

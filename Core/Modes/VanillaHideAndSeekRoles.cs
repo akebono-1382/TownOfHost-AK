@@ -201,7 +201,7 @@ public static class VanillaHideAndSeekRoles
         _ = new LateTask(() =>
         {
             if (HudManager.InstanceExists && PlayerControl.LocalPlayer)
-                HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer, hostText);
+                TownOfHostL.Modules.HostNote.Post(hostText);
         }, AnnounceDelay, "VanillaHideAndSeekRoles.AnnounceHost", outlivesSession: true);
     }
 

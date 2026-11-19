@@ -97,7 +97,7 @@ public static class Moderators
             return;
         }
         var now = Main.AllPlayerControls.Where(Is).Select(pc => pc.Data?.PlayerName).ToArray();
-        HudManager.Instance.Chat.AddChat(PlayerControl.LocalPlayer,
+        HostNote.Post(
             GetString("Moderator.Usage") + "\n" + (now.Length > 0 ? string.Join(", ", now) : GetString("Moderator.None")));
     }
 }

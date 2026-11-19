@@ -96,7 +96,7 @@ public static class VanillaHnsCommands
             var answer = Answer(field.textArea.text ?? "");
             if (answer == null) return true;
             field.textArea.Clear();
-            __instance.AddChat(PlayerControl.LocalPlayer, answer);
+            TownOfHostL.Modules.HostNote.Post(answer);
             return false;
         }
     }
