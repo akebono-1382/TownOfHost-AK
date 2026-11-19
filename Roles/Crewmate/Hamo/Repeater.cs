@@ -112,7 +112,7 @@ public sealed class Repeater : RoleBase, ISelfVoter
                 }
 
                 Utils.AddGameLog("Repeater",
-                    $"{Player.ColoredName()}が能力を発動した");
+                    string.Format(GetString("RepeaterActivateLog"), Player.ColoredName()));
 
                 SetMode(Player, false);
                 return false;
@@ -157,7 +157,7 @@ public sealed class Repeater : RoleBase, ISelfVoter
         Utils.SendMessage(GetString("Repeater.ForceSkip"));
 
         Utils.AddGameLog("Repeater",
-            $"{Player.ColoredName()}の能力により投票結果が強制スキップになった");
+            string.Format(GetString("RepeaterForceSkipLog"), Player.ColoredName()));
 
         // 会議が終わった直後、設定秒数を挟んでもう一度緊急会議を開く(リピーターが押したものとして扱う)。
         // 自然にもう一度会議が始まる演出のため、自身の残りボタン数は消費しない。
@@ -188,13 +188,13 @@ public sealed class Repeater : RoleBase, ISelfVoter
         var c = RoleInfo.RoleColorCode;
 
         if (!CanUseAbility() && remainingUses <= 0)
-            return $"{prefix}<color={c}>能力: 使用回数なし</color>";
+            return $"{prefix}<color={c}>{GetString("RepeaterLowerNoUses")}</color>";
 
         if (taskCountToUnlock > 0 && MyTaskState.CompletedTasksCount < taskCountToUnlock)
-            return $"{prefix}<color={c}>タスクを進めると能力が解放されます</color>";
+            return $"{prefix}<color={c}>{GetString("RepeaterLowerLocked")}</color>";
 
-        var stateText = isArmedThisMeeting ? "発動済み(この会議)" : "会議自投票→発動";
-        return $"{prefix}<color={c}>{stateText}(残り{remainingUses}回)</color>";
+        var stateText = GetString(isArmedThisMeeting ? "RepeaterLowerArmed" : "RepeaterLowerSelfVote");
+        return $"{prefix}<color={c}>{string.Format(GetString("RepeaterLowerUses"), stateText, remainingUses)}</color>";
     }
 
 }

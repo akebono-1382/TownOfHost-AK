@@ -272,7 +272,7 @@ public sealed class MeetingSheriff : RoleBase, ISelfVoter
 
                 Utils.SendMessage(
 
-                    "<color=#8B4513>残念だったな！スタンドは撃ち抜けないんだぜ！</color>",
+                    "<color=#8B4513>" + GetString("MeetingSheriffStandImmune") + "</color>",
 
                     Player.PlayerId);
 

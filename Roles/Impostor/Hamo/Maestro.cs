@@ -85,7 +85,7 @@ public sealed class Maestro : RoleBase, IImpostor
         Utils.SendMessage(string.Format(GetString("Maestro.CooldownReduced"), currentKillCooldown), Player.PlayerId);
 
         Utils.AddGameLog("Maestro",
-            $"{Player.ColoredName()}がセルフ通報によりキルクールを{currentKillCooldown}秒に短縮した");
+            string.Format(GetString("MaestroCooldownReducedLog"), Player.ColoredName(), currentKillCooldown));
     }
 
     // IKiller.CalculateKillCooldown()のデフォルト実装(Options.DefaultKillCooldownを返すだけ)
@@ -108,7 +108,7 @@ public sealed class Maestro : RoleBase, IImpostor
 
         var prefix = isForHud ? "" : "<size=60%>";
         var c = RoleInfo.RoleColorCode;
-        return $"{prefix}<color={c}>現在のキルクール: {currentKillCooldown:F1}秒</color>";
+        return $"{prefix}<color={c}>{string.Format(GetString("MaestroLowerCooldown"), currentKillCooldown)}</color>";
     }
 
 }

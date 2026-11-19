@@ -467,7 +467,7 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
                     Utils.AddGameLog("EvilLinker",
 
-                        $"{pc.ColoredName()} がポータルA→Bへワープ");
+                        string.Format(Translator.GetString("EvilLinkerWarpAtoBLog"), pc.ColoredName()));
 
                 }
 
@@ -483,7 +483,7 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
                     Utils.AddGameLog("EvilLinker",
 
-                        $"{pc.ColoredName()} がポータルB→Aへワープ");
+                        string.Format(Translator.GetString("EvilLinkerWarpBtoALog"), pc.ColoredName()));
 
                 }
 
@@ -622,7 +622,7 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
         string pend = pendingDummy != null ? " <color=#ffff00>1/2</color>" : "";
 
-        return $"<color={RoleInfo.RoleColorCode}>({placedCount}/{MaxPairs}組){pend}</color>";
+        return $"<color={RoleInfo.RoleColorCode}>{string.Format(Translator.GetString("EvilLinkerPairsProgress"), placedCount, MaxPairs)}{pend}</color>";
 
     }
 

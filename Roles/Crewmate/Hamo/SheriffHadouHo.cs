@@ -364,7 +364,7 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
                 Player.RpcMurderPlayerV2(Player);
                 IsFiring = false;
                 Utils.AddGameLog("SheriffHadouHo",
-                    $"{Player.ColoredName()} はビームで誰も倒せず自爆した");
+                    string.Format(Translator.GetString("SheriffHadouHoMissLog"), Player.ColoredName()));
                 return;
             }
 
@@ -439,32 +439,32 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         string size = isForHud ? "" : "<size=60%>";
 
         if (ShotLimit <= 0)
-            return $"{size}<color=#888888>弾切れ</color>";
+            return $"{size}<color=#888888>{Translator.GetString("SheriffHadouHoOutOfAmmo")}</color>";
 
         if (!IsBeamUnlocked)
         {
             int done = MyTaskState?.CompletedTasksCount ?? 0;
             int remaining = BeamUnlockTaskCount - done;
-            return $"{size}<color=#888888>波動砲ロック中 (あと {remaining} タスク)</color>";
+            return $"{size}<color=#888888>{string.Format(Translator.GetString("SheriffHadouHoLocked"), remaining)}</color>";
         }
 
         if (!beamMode)
         {
             string cdText = LastCooltime > 0
                 ? $" (CD: {LastCooltime}s)"
-                : " <color=#00ff88>(準備完了)</color>";
-            return $"{size}<color=#f8cd46>ペット → 波動砲モードへ{cdText}</color>";
+                : " <color=#00ff88>" + Translator.GetString("SheriffHadouHoReadyMark") + "</color>";
+            return $"{size}<color=#f8cd46>{string.Format(Translator.GetString("SheriffHadouHoPetToBeamMode"), cdText)}</color>";
         }
 
         if (beam?.Pending == true)
-            return $"{size}<color=#ff0000>向きを決めています。撃ちたい向きへ動いてください</color>";
+            return $"{size}<color=#ff0000>{Translator.GetString("SheriffHadouHoAiming")}</color>";
         if (IsCharging)
-            return $"{size}<color=#ff0000>チャージ中... {Mathf.Max(0f, ChargeTime - chargeTimer):F1}s</color>";
+            return $"{size}<color=#ff0000>{string.Format(Translator.GetString("SheriffHadouHoCharging"), Mathf.Max(0f, ChargeTime - chargeTimer))}</color>";
 
         string ready = nowcool <= 0f
-            ? " <color=#00ff88>(発射可能)</color>"
+            ? " <color=#00ff88>" + Translator.GetString("SheriffHadouHoCanFireMark") + "</color>"
             : $" (CD: {LastCooltime}s)";
-        return $"{size}<color=#ff0000>ファントムボタン → チャージ発射{ready}</color>";
+        return $"{size}<color=#ff0000>{string.Format(Translator.GetString("SheriffHadouHoPhantomToFire"), ready)}</color>";
     }
 
     public string GetLowerTextOthers(PlayerControl seer, PlayerControl seen = null,
@@ -473,9 +473,9 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         seen ??= seer;
         if (seen != seer || isForMeeting || !Player.IsAlive()) return "";
         if (IsCharging && seer.PlayerId != Player.PlayerId)
-            return $"\n<color=#ff0000>チャージ中... {(int)Mathf.Max(0f, ChargeTime - chargeTimer)}s</color>";
+            return $"\n<color=#ff0000>{string.Format(Translator.GetString("SheriffHadouHoChargingOthers"), (int)Mathf.Max(0f, ChargeTime - chargeTimer))}</color>";
         if (ShowBeamMark && seer.PlayerId != Player.PlayerId)
-            return "\n<color=#ff0000>ビーム中</color>";
+            return "\n<color=#ff0000>" + Translator.GetString("SheriffHadouHoBeamActive") + "</color>";
         return "";
     }
 
@@ -489,13 +489,13 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         }
         string shots = Utils.ColorString(ShotLimit > 0 ? Color.yellow : Color.gray, $"({ShotLimit})");
         string mode = beamMode
-            ? "<color=#ff4444>[波動砲]</color>"
-            : "<color=#f8cd46>[タスク]</color>";
+            ? "<color=#ff4444>" + Translator.GetString("SheriffHadouHoModeBeam") + "</color>"
+            : "<color=#f8cd46>" + Translator.GetString("SheriffHadouHoModeTask") + "</color>";
         string cd = $"<color=#ffffff>({LastCooltime})</color>";
         return $"{shots}{mode}{cd}";
     }
 
-    public override string GetAbilityButtonText() => "発射";
+    public override string GetAbilityButtonText() => Translator.GetString("SheriffHadouHoAbilityButtonText");
 
 
     void SendRpc()

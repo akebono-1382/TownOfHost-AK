@@ -224,11 +224,11 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
                 SendMessage(
 
-                    "<color=#f5a623>任命候補選択モード！</color>\n" +
+                    GetString("VillageChiefSelectModeMessage"),
 
-                    "誰かに投票 → <color=#f5a623>近接任命の候補に設定</color>\n" +
+                    
 
-                    "スキップ → <color=#f5a623>キャンセル</color>",
+                    
 
                     Player.PlayerId);
 
@@ -246,7 +246,7 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
                 {
 
-                    SendMessage("<color=#f5a623>その相手は選択できません。</color>", Player.PlayerId);
+                    SendMessage("<color=#f5a623>" + GetString("VillageChiefInvalidTarget") + "</color>", Player.PlayerId);
 
                     SetMode(Player, false);
 
@@ -258,11 +258,11 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
                 SendMessage(
 
-                    "<color=#f5a623>任命候補を設定しました！</color>\n" +
+                    GetString("VillageChiefCandidateSetMessage"),
 
-                    "次のターン、候補に1.5秒近づくと自動任命します。\n" +
+                    
 
-                    "（ペットでモード切替 → キルボタンでも任命できます）",
+                    
 
                     Player.PlayerId);
 
@@ -278,7 +278,7 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
                 NextAppointCandidate = byte.MaxValue;
 
-                SendMessage("<color=#f5a623>近接任命をキャンセルしました。</color>", Player.PlayerId);
+                SendMessage("<color=#f5a623>" + GetString("VillageChiefAppointCancelled") + "</color>", Player.PlayerId);
 
                 SetMode(Player, false);
 
@@ -590,9 +590,9 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
             "VillageChief",
 
-            $"{Player.ColoredName()}が" +
+            string.Format(GetString("VillageChiefAppointLog"),
 
-            $"{target.ColoredName()}({Utils.GetRoleName(previousRole)})をシェリフに任命した"
+            Player.ColoredName(), target.ColoredName(), Utils.GetRoleName(previousRole))
 
         );
 
@@ -745,13 +745,13 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
     {
 
-        if (hasAppointed) return "<color=#f5a623>(任命済)</color>";
+        if (hasAppointed) return "<color=#f5a623>" + GetString("VillageChiefAppointedProgress") + "</color>";
 
         if (!GameStates.CalledMeeting)
 
-            return ColorString(Color.yellow, appointMode ? " [任命]" : " [タスク]");
+            return ColorString(Color.yellow, " " + GetString(appointMode ? "VillageChiefModeAppoint" : "VillageChiefModeTask"));
 
-        return "<color=#808080>(未任命)</color>";
+        return "<color=#808080>" + GetString("VillageChiefNotAppointedProgress") + "</color>";
 
     }
 
@@ -779,7 +779,7 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
         if (appointMode)
 
-            return $"{prefix}<color={c}>【任命モード】キルボタンで対象を任命</color>";
+            return $"{prefix}<color={c}>{GetString("VillageChiefLowerAppointMode")}</color>";
 
 
 
@@ -793,19 +793,19 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
             if (!CanApproach)
 
-                return $"{prefix}<color={c}>候補: {name} (待機中...)</color>";
+                return $"{prefix}<color={c}>{string.Format(GetString("VillageChiefLowerCandidateWaiting"), name)}</color>";
 
             if (nowcool > 0f)
 
-                return $"{prefix}<color={c}>候補: {name} (CD: {Mathf.CeilToInt(nowcool)}s)</color>";
+                return $"{prefix}<color={c}>{string.Format(GetString("VillageChiefLowerCandidateCooldown"), name, Mathf.CeilToInt(nowcool))}</color>";
 
-            return $"{prefix}<color={c}>候補: {name} に1.5秒近づいて任命！</color>";
+            return $"{prefix}<color={c}>{string.Format(GetString("VillageChiefLowerCandidateApproach"), name)}</color>";
 
         }
 
 
 
-        return $"{prefix}<color={c}>ペット→任命モード / 会議自投票→近接任命候補を設定</color>";
+        return $"{prefix}<color={c}>{GetString("VillageChiefLowerIdle")}</color>";
 
     }
 

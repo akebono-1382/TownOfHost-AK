@@ -184,7 +184,7 @@ public sealed class Samurai : RoleBase, IImpostor, IUsePhantomButton
         return $"<size=50%>{GetString("SamuraiLowerText")}</size>";
     }
 
-    public override string GetAbilityButtonText() => "必殺技";
+    public override string GetAbilityButtonText() => GetString("SamuraiAbilityButtonText");
 
     public void OnCheckMurderAsKiller(MurderInfo info)
     {

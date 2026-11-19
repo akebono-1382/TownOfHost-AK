@@ -436,7 +436,7 @@ public sealed class Sage : RoleBase
 
             Utils.AddGameLog("Sage",
 
-                $"{Player.ColoredName()}のバリアが{killer.ColoredName()}のキルを反射した");
+                string.Format(Translator.GetString("SageBarrierReflectLog"), Player.ColoredName(), killer.ColoredName()));
 
         }, 0.1f, "Sage.ReflectKill");
 
@@ -510,13 +510,13 @@ public sealed class Sage : RoleBase
 
             float remaining = Mathf.Max(0f, BarrierDuration - barrierTimer);
 
-            return $"{size}<color={color}>【バリア発動中】{remaining:F1}s | 動けません</color>";
+            return $"{size}<color={color}>{string.Format(Translator.GetString("SageBarrierActive"), remaining)}</color>";
 
         }
 
 
 
-        return $"{size}<color={color}>ペットなで → 聖なるバリア発動</color>";
+        return $"{size}<color={color}>{Translator.GetString("SageBarrierHint")}</color>";
 
     }
 

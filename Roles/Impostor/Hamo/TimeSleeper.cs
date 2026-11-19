@@ -283,11 +283,11 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
         if (isRecording)
         {
             var remaining = RecordDuration - recordTimer;
-            return $"{(isForHud ? "" : "<size=60%>")}<color=#a0c4ff>記録中... {remaining:F1}s</color>";
+            return $"{(isForHud ? "" : "<size=60%>")}<color=#a0c4ff>{string.Format(Translator.GetString("TimeSleeperRecording"), remaining)}</color>";
         }
         if (isRewinding)
-            return $"{(isForHud ? "" : "<size=60%>")}<color=#a0c4ff>巻き戻し中...</color>";
-        return $"{(isForHud ? "" : "<size=60%>")}<color=#a0c4ff>ファントムボタン → タイムスリープ</color>";
+            return $"{(isForHud ? "" : "<size=60%>")}<color=#a0c4ff>{Translator.GetString("TimeSleeperRewinding")}</color>";
+        return $"{(isForHud ? "" : "<size=60%>")}<color=#a0c4ff>{Translator.GetString("TimeSleeperPhantomHint")}</color>";
     }
 
     public override string GetProgressText(bool comms = false)
@@ -297,5 +297,5 @@ public sealed class TimeSleeper : RoleBase, IImpostor, IUsePhantomButton
         return "";
     }
 
-    public override string GetAbilityButtonText() => "タイムスリープ";
+    public override string GetAbilityButtonText() => Translator.GetString("TimeSleeperAbilityButtonText");
 }
