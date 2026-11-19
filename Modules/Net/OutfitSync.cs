@@ -181,15 +181,6 @@ public static class OutfitSync
             data.Serialize(writer, false);
             writer.EndMessage();
 
-            if (refresh)
-            {
-                writer.StartMessage(2);
-                writer.WritePacked(target.NetId);
-                writer.Write((byte)RpcCalls.Shapeshift);
-                writer.WriteNetObject(target);
-                writer.Write(false);
-                writer.EndMessage();
-            }
             if (copiers != null)
             {
                 foreach (var copier in copiers)
@@ -201,6 +192,17 @@ public static class OutfitSync
                     writer.Write(false);
                     writer.EndMessage();
                 }
+            }
+            // 本人への Shapeshift は束の最後に置く。本編は自分への Shapeshift で能力ボタンを組み直し、
+            // 変身の能力を持たない人 (ロビーの全員・クルー系) の画面ではそこで例外になって、同じ束の後ろが捨てられる
+            if (refresh)
+            {
+                writer.StartMessage(2);
+                writer.WritePacked(target.NetId);
+                writer.Write((byte)RpcCalls.Shapeshift);
+                writer.WriteNetObject(target);
+                writer.Write(false);
+                writer.EndMessage();
             }
 
             writer.EndMessage();
