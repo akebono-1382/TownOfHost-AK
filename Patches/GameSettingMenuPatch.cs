@@ -71,9 +71,10 @@ public class GameSettingMenuPatch
     const int CatFitCount = 7;
     // 区分の絵: ボタンの高さに対する絵の高さ・選んだ時の大きさ
     const float CatArtHeight = 1.05f, CatArtPicked = 1.15f;
-    // 検索欄は板の上の縁より上・右上の本編のボタンの列に掛からない所
-    static readonly Vector2 SearchBoxPosition = new(-1.65f, 2.6f);
-    const float SearchBoxWidth = 3.4f;
+    // 検索欄は板の上の縁より上・右上の本編のボタンの列に掛からない所。右に「項目へ移動」のボタンを並べる
+    static readonly Vector2 SearchBoxPosition = new(-2.3f, 2.6f);
+    const float SearchBoxWidth = 2.1f;
+    static readonly Vector2 JumpButtonPosition = new(-0.47f, 2.6f);
     const float SearchBoxHeight = 0.42f;
 
     // 左の列のボタン (押すと出すタブの番号)
@@ -404,6 +405,7 @@ public class GameSettingMenuPatch
         var searchPos = new Vector3(SearchBoxPosition.x, SearchBoxPosition.y, __instance.GameSettingsButton.transform.localPosition.z);
         SearchBox = SettingsSearchBox.Create(buttonParent, searchPos, SearchBoxWidth, SearchBoxHeight,
             Translator.GetString("MenuSearch.Hint"), OnSearchChanged);
+        SettingsUI.JumpMenu.Create(buttonParent, new Vector3(JumpButtonPosition.x, JumpButtonPosition.y, searchPos.z), __instance.gameObject.layer);
 
         // 左の列: ゲームと、全般・役職の区分。本編のかくれんぼでは、出す設定が 1 つも無い区分は出さない
         // (ModMainSettings の設定は、全般の頁に置く節の物だけを数える。残りはゲームの頁に出る)

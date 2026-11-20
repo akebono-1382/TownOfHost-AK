@@ -36,6 +36,7 @@ internal static class SettingsPages
         Tooltip.Hide();
         OptHistory.Clear();
         SettingsCover.Reset();
+        JumpMenu.Forget();
     }
 
     public static void RefreshMarks()
@@ -244,5 +245,6 @@ internal static class SettingsPagesTick
         TextField.Tick();
         RolePage.Tick();
         SettingsCover.Tick();
+        JumpMenu.Tick();
     }
 }

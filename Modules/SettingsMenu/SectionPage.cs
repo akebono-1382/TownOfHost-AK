@@ -29,13 +29,6 @@ internal sealed class SectionPage
     private static readonly Color HeadFill = new(0.13f, 0.17f, 0.24f, 1f);
     private static readonly Color HeadText = new(0.9f, 0.95f, 1f, 1f);
     // 節へ飛ぶボタン
-    // 2 列にして、字が 1 行で読める幅を取る。縁は目立たない灰色・中は少し明るい黒 (見出しや値の行より目立たせない)
-    private const int JumpCols = 2;
-    private const float JumpH = 0.36f, JumpGap = 0.06f, JumpFont = 1.25f;
-    private static readonly Color JumpLine = new(0.36f, 0.38f, 0.42f, 1f);
-    private static readonly Color JumpFill = new(0.12f, 0.13f, 0.15f, 1f);
-    private static readonly Color JumpInk = new(0.88f, 0.9f, 0.94f, 1f);
-    private float _jumpTextW;
     private static readonly Color SubText = new(0.72f, 0.75f, 0.8f, 1f);
 
     private readonly string _tag;
@@ -54,44 +47,7 @@ internal sealed class SectionPage
         public Group Group;
         public Box Head;
         public Label TocLabel;
-        public Label JumpLabel;
         public bool Changed;
-    }
-
-    // 上に並べる、節へ飛ぶボタン。押した時に _entries の n 番目へ飛ぶ (見出しは後で作るので、番号で覚える)
-    private readonly List<Label> _jumpLabels = new();
-
-    private Widget JumpGrid(List<(Group g, List<MenuOpt> shown, int values)> visible, float rowW)
-    {
-        _jumpLabels.Clear();
-        float bw = (rowW - JumpGap * (JumpCols - 1)) / JumpCols;
-        var grid = new Stack(false) { Gap = JumpGap, Width = rowW };
-        grid.Add(new Label(Translator.GetString("SettingsUI.Jump"), 1.15f) { Color = SubText, Width = rowW, Align = Align.Start });
-        Stack line = null;
-        for (int i = 0; i < visible.Count; i++)
-        {
-            if (i % JumpCols == 0)
-            {
-                line = new Stack(true) { Gap = JumpGap, Width = rowW, Align = Align.Start };
-                grid.Add(line);
-            }
-            int n = i;
-            var g = visible[i].g;
-            _jumpTextW = bw - 0.24f;
-            var label = new Label(JumpText(g.Title, AnyChanged(g), _jumpTextW), JumpFont)
-            {
-                Bold = true, Width = _jumpTextW, NoWrap = true, TextAlign = TextAlignmentOptions.Center, Color = JumpInk,
-            };
-            _jumpLabels.Add(label);
-            line.Add(new Button(label, () => Jump(n))
-            {
-                Size = new Vector2(bw, JumpH),
-                Padding = new Vector2(0.12f, 0.02f),
-                Color = JumpLine,
-                Fill = JumpFill,
-            });
-        }
-        return grid;
     }
 
     private readonly List<Entry> _entries = new();
@@ -195,17 +151,11 @@ internal sealed class SectionPage
             _shownOpts.AddRange(shown);
             if (values > 0) visible.Add((g, shown, values));
         }
-        // 節へ飛ぶボタン: マップの段のように、節の名前の札を 3 つずつ並べる。押すとその節の見出しへ
-        if (visible.Count > 1)
-        {
-            if (top != null) rows.Add(new Spacer(rowW, 0.08f));
-            rows.Add(JumpGrid(visible, rowW));
-        }
         foreach (var (g, shown, values) in visible)
         {
             var e = new Entry { Group = g, Changed = AnyChanged(g) };
             // 見出し: 節ごとに色を変えると見にくいので、どの節も同じ落ち着いた帯にする。前は広めに間を空ける
-            if (_entries.Count > 0 || top != null || visible.Count > 1) rows.Add(new Spacer(rowW, 0.16f));
+            if (_entries.Count > 0 || top != null) rows.Add(new Spacer(rowW, 0.16f));
             string title = $"{g.Title}  <size=70%><color=#B8C0CC>{string.Format(Translator.GetString("SettingsUI.Count"), values)}</color></size>";
             e.Head = new Box(new Label(title, 1.65f) { Bold = true, Color = HeadText, Width = rowW - 0.3f, MinFontSize = 1.1f })
             {
@@ -230,7 +180,6 @@ internal sealed class SectionPage
                 else r = _editor.NarrowRow(opt, edit, rowW - RowPad * 2f, opt.Depth * 0.2f);
                 rows.Add(OptEditor.Plated(r, rowW, k++));
             }
-            if (_entries.Count < _jumpLabels.Count) e.JumpLabel = _jumpLabels[_entries.Count];
             _entries.Add(e);
         }
         _editor.Refresh();
@@ -285,17 +234,32 @@ internal sealed class SectionPage
     private static string TocText(Entry e) => e.Changed ? e.Group.Title + OptEditor.ChangedMark : e.Group.Title;
 
     // 飛ぶボタンの字: 幅に入らない名前は後ろを「…」にする (字を小さくしすぎて読めなくしない)
-    private static string JumpText(string title, bool changed, float width)
+    internal static string JumpText(string title, bool changed, float width, float font)
     {
         string mark = changed ? OptEditor.ChangedMark : "";
-        if (width <= 0f || Label.Measure(title + mark, JumpFont, true) <= width) return title + mark;
+        if (width <= 0f || Label.Measure(title + mark, font, true) <= width) return title + mark;
         for (int len = title.Length - 1; len > 1; len--)
         {
             string s = title[..len] + "…" + mark;
-            if (Label.Measure(s, JumpFont, true) <= width) return s;
+            if (Label.Measure(s, font, true) <= width) return s;
         }
         return title[..1] + "…" + mark;
     }
+
+    // 画面の上の「項目へ移動」から使う: 頁が今見えているか・節の名前と変えた印・その節へ飛ぶ
+    public bool Visible => Built && _screen.Root.gameObject.activeInHierarchy;
+
+    public List<(string title, bool changed)> Sections()
+    {
+        var list = new List<(string, bool)>(_entries.Count);
+        foreach (var e in _entries) list.Add((e.Group.Title, AnyChanged(e.Group)));
+        return list;
+    }
+
+    public void JumpTo(int n) => Jump(n);
+
+    // 頁の置き場の奥行き (上に重ねる一覧を、頁より手前に置いて先に押されるようにする)
+    public float RootZ => _screen.Root.position.z;
 
     private static bool AnyChanged(Group g)
     {
@@ -378,14 +342,10 @@ internal sealed class SectionPage
         foreach (var e in _entries)
         {
             e.Changed = AnyChanged(e.Group);
-            string toc = TocText(e);
-            string jump = JumpText(e.Group.Title, e.Changed, _jumpTextW);
-            foreach (var (l, s) in new[] { (e.TocLabel, toc), (e.JumpLabel, jump) })
-            {
-                var t = l?.Built;
-                if (!t) continue;
-                if (s != l.Content) { l.Content = s; t.text = s; }
-            }
+            string s = TocText(e);
+            var l = e.TocLabel;
+            var t = l?.Built;
+            if (t && s != l.Content) { l.Content = s; t.text = s; }
         }
         _resetBtn?.SetColor(ResetColor());
         _undoBtn?.SetColor(UndoColor);
