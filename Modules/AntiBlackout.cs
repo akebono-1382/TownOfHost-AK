@@ -281,8 +281,39 @@ public static partial class AntiBlackout
         return true;
     }
 
+    // 戻しの後まで待たせた処理 (会議明けの道連れなどの死)
+    private static readonly List<Action> afterRevert = new();
+
+    /// <summary>
+    /// 身代わりを戻すまでの間なら、action を戻しの後まで待たせる。そうでなければすぐ走らせる。
+    /// 客の追放の演出の締め (生存インポスターと生存クルーの数での判定) より前に死を送ると、客の画面で頭数が減って暗転しうる
+    /// </summary>
+    public static void RunAfterRevert(Action action)
+    {
+        if (revertPending) afterRevert.Add(action);
+        else action();
+    }
+
     // 追放の演出の締めで各クライアントが判定を終えた後に呼ぶ
     public static void RevertFilledCrew()
+    {
+        try { RevertFilledCrewCore(); }
+        finally
+        {
+            if (afterRevert.Count > 0)
+            {
+                var actions = afterRevert.ToArray();
+                afterRevert.Clear();
+                foreach (var action in actions)
+                {
+                    try { action(); }
+                    catch (Exception ex) { logger.Exception(ex); }
+                }
+            }
+        }
+    }
+
+    private static void RevertFilledCrewCore()
     {
         revertPending = false;
         RevertDesyncDummies();
@@ -411,6 +442,7 @@ public static partial class AntiBlackout
         filledCrew.Clear();
         deferredDead.Clear();
         desyncDummies.Clear();
+        afterRevert.Clear();
         revertPending = false;
     }
 }

@@ -154,7 +154,9 @@ namespace TownOfHostL
                     }
                 }, 0.5f, "Restore IsDead Task");
 
-                _ = new LateTask(() =>
+                // 客の追放の演出の締めより前に死を送ると、客の画面で生存クルーが減って試合が終わったとみなし暗転しうるので、
+                // 暗転対策の身代わりを戻すまでの間は、その後まで待たせる
+                _ = new LateTask(() => AntiBlackout.RunAfterRevert(() =>
                 {
                     Main.AfterMeetingDeathPlayers.Do(x =>
                     {
@@ -175,7 +177,7 @@ namespace TownOfHostL
                         player?.GetRoleClass()?.OnAfterMeetingDeath(reason);
                     });
                     Main.AfterMeetingDeathPlayers.Clear();
-                }, 0.6f, "AfterMeetingDeathPlayers Task");
+                }), 0.6f, "AfterMeetingDeathPlayers Task");
                                
 
                 _ = new LateTask(() =>
