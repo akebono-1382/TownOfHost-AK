@@ -41,7 +41,7 @@ internal sealed class SectionPage
     public bool HasPreview;                     // 右の欄に本編の設定の動く図を置く (ゲームの頁)
 
     private GamePreview _preview;
-    private const float PreviewH = 1.3f;
+    private const float PreviewH = 1.24f;   // 映像 (16:9) が欄の幅いっぱいに入る高さ
     // 図のある行と、その地 (カーソルが乗った行を測る)
     private readonly List<(MenuOpt opt, Plate plate)> _hits = new();
     private Vector3 _lastMouse = new(float.NaN, 0f, 0f);

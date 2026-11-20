@@ -5,7 +5,8 @@ using UnityEngine;
 namespace TownOfHostL.SettingsUI;
 
 // ゲームの頁の右の欄に出す、本編の設定の意味を見せる動く図。字は使わない。
-// 移動速度 = 基準 (1 倍・灰) と今の速さのクルーが並んで走る / 視界 = 暗い中のクルーとインポスターの明かりの大きさ (半径は値の平方根) /
+// 移動速度 = 本編で撮った 1 倍の歩きの映像を、値の倍率で再生する / 視界 = 本編で撮った値ごとの止め絵 (いちばん近い値) /
+// 映像が読めない時は自前の図: 移動速度 = 基準 (1 倍・灰) と今の速さのクルーが並んで走る / 視界 = 暗い中のクルーとインポスターの明かりの大きさ (半径は値の平方根) /
 // キルのクールダウン = インポスターの周りの目盛りが埋まる速さ (10 秒で 1 周を 1 秒に縮めて見せる)。
 // どの図を出すかは、最後に当てた・変えた本編の設定で決める (かくれんぼの設定など図の無い項目では変えない)。
 // 図はすべて作った時に用意しておき、出し入れだけをする (後から作ると描く順が付かないため)。
@@ -36,6 +37,11 @@ internal sealed class GamePreview : Widget
     private readonly List<(SpriteRenderer r, int order, float alpha)> _parts = new();
     private int _appliedBase = int.MinValue;
     private GameObject _speedRoot, _visionRoot, _killRoot;
+    private GameObject _speedDrawn, _visionDrawn;
+    private SpriteRenderer _speedFoot, _visionFoot;
+    private float _speedT;
+    private int _speedFrame = -1;
+    private float _crewValue = 1f, _impValue = 1.5f;
 
     private Transform _refCrew, _curCrew;
     private SpriteRenderer _crewGlow, _crewLight, _crewBody, _impGlow, _impLight, _impBody;
@@ -100,10 +106,50 @@ internal sealed class GamePreview : Widget
         var imp = Find(StringNames.GameImpostorLight);
         // 明かりの半径は値の平方根に比べる (最大でも欄に入り、小さい値でもクルーより大きく見えるように。段ごとの差は残る)
         _lightMax = Math.Max(Math.Max(Max(crew, 5f), Max(imp, 5f)), 0.01f);
-        _crewTarget = LightRadius(Value(crew, 1f));
-        _impTarget = LightRadius(Value(imp, 1.5f));
+        _crewValue = Value(crew, 1f);
+        _impValue = Value(imp, 1.5f);
+        _crewTarget = LightRadius(_crewValue);
+        _impTarget = LightRadius(_impValue);
         _cooldown = Value(Find(StringNames.GameKillCooldown), 25f);
         ApplyFocusAlpha();
+        ShowVisionStill();
+    }
+
+    // ---- 映像 ----
+
+    // 映像の欄 (幅いっぱい・縦横比は映像のまま)。映像の無い時は隠す
+    private SpriteRenderer FootagePart(Transform parent)
+    {
+        var sr = Part(parent, "Footage", null, Color.white, 1);
+        float w = Width - 0.08f;
+        sr.transform.localScale = new Vector3(w, w, 1f);
+        sr.gameObject.SetActive(false);
+        return sr;
+    }
+
+    // 今の図に映像があれば出し、自前の図を隠す
+    private void UseFootage()
+    {
+        var speed = _scene == Scene.Speed ? Footage.Get("speed") : null;
+        bool hasSpeed = speed != null && _speedFoot;
+        if (_speedFoot) _speedFoot.gameObject.SetActive(hasSpeed);
+        if (_speedDrawn) _speedDrawn.SetActive(!hasSpeed);
+        if (hasSpeed && _speedFrame < 0) { _speedFrame = 0; _speedFoot.sprite = speed.Frame(0); }
+
+        var vision = _scene == Scene.Vision ? Footage.Get("vision") : null;
+        bool hasVision = vision != null && _visionFoot;
+        if (_visionFoot) _visionFoot.gameObject.SetActive(hasVision);
+        if (_visionDrawn) _visionDrawn.SetActive(!hasVision);
+        ShowVisionStill();
+    }
+
+    // 視界の止め絵 = 当てた方 (クルーかインポスター) の値にいちばん近い値の絵
+    private void ShowVisionStill()
+    {
+        if (_scene != Scene.Vision || !_visionFoot) return;
+        var vision = Footage.Get("vision");
+        if (vision == null) return;
+        _visionFoot.sprite = vision.Frame(vision.Nearest(_focusImpostor ? _impValue : _crewValue));
     }
 
     // ---- 組み立て ----
@@ -127,22 +173,26 @@ internal sealed class GamePreview : Widget
 
         // 移動速度: 上の段 = 1 倍 (灰)・下の段 = 今の速さ
         _speedRoot = Node("Speed", go.transform, layer);
+        _speedFoot = FootagePart(_speedRoot.transform);
+        _speedDrawn = Node("Drawn", _speedRoot.transform, layer);
         float laneY = Height * 0.22f;
         foreach (float y in new[] { laneY, -laneY })
         {
-            var line = Part(_speedRoot.transform, "Lane", MenuArt.Round(0.015f), Lane, 1);
+            var line = Part(_speedDrawn.transform, "Lane", MenuArt.Round(0.015f), Lane, 1);
             line.drawMode = SpriteDrawMode.Sliced;
             line.size = new Vector2(Width - 0.2f, 0.03f);
             line.transform.localPosition = new Vector3(0f, y - CrewH / 2f, 0f);
         }
-        _refCrew = Figure(_speedRoot.transform, crew, RefCrew, laneY, 3).transform;
-        _curCrew = Figure(_speedRoot.transform, crew, CrewColor, -laneY, 3).transform;
+        _refCrew = Figure(_speedDrawn.transform, crew, RefCrew, laneY, 3).transform;
+        _curCrew = Figure(_speedDrawn.transform, crew, CrewColor, -laneY, 3).transform;
 
         // 視界: 左 = クルー・右 = インポスター
         _visionRoot = Node("Vision", go.transform, layer);
+        _visionFoot = FootagePart(_visionRoot.transform);
+        _visionDrawn = Node("Drawn", _visionRoot.transform, layer);
         float side = Width * 0.25f;
-        (_crewGlow, _crewLight, _crewBody) = Lit(_visionRoot.transform, crew, circle, CrewColor, -side);
-        (_impGlow, _impLight, _impBody) = Lit(_visionRoot.transform, crew, circle, ImpColor, side);
+        (_crewGlow, _crewLight, _crewBody) = Lit(_visionDrawn.transform, crew, circle, CrewColor, -side);
+        (_impGlow, _impLight, _impBody) = Lit(_visionDrawn.transform, crew, circle, ImpColor, side);
 
         // キルのクールダウン: インポスターの周りの目盛り・右に狙われるクルー
         _killRoot = Node("Kill", go.transform, layer);
@@ -203,6 +253,7 @@ internal sealed class GamePreview : Widget
         if (_speedRoot) _speedRoot.SetActive(_scene == Scene.Speed);
         if (_visionRoot) _visionRoot.SetActive(_scene == Scene.Vision);
         if (_killRoot) _killRoot.SetActive(_scene == Scene.KillCooldown);
+        UseFootage();
     }
 
     // 視界の図: 当てた方を明るく、もう片方を暗く
@@ -243,14 +294,25 @@ internal sealed class GamePreview : Widget
         _last = now;
         switch (_scene)
         {
-            case Scene.Speed: TickSpeed(now); break;
+            case Scene.Speed: TickSpeed(now, dt); break;
             case Scene.Vision: TickVision(dt); break;
             case Scene.KillCooldown: TickKill(now); break;
         }
     }
 
-    private void TickSpeed(float now)
+    private void TickSpeed(float now, float dt)
     {
+        // 映像: 1 倍で撮った歩きを値の倍率で進める (歩幅と足の運びが速さに比べて変わるのは本編の速さと同じ)
+        if (_speedFoot && _speedFoot.gameObject.activeSelf)
+        {
+            var f = Footage.Get("speed");
+            if (f == null) return;
+            _speedT += dt * _speed * f.Fps;
+            if (_speedT >= f.Count) _speedT -= f.Count * MathF.Floor(_speedT / f.Count);
+            int i = (int)_speedT;
+            if (i != _speedFrame) { _speedFrame = i; _speedFoot.sprite = f.Frame(i); }
+            return;
+        }
         float margin = 0.2f, span = Width - margin * 2f;
         Run(_refCrew, now, 1f, margin, span, Height * 0.22f);
         Run(_curCrew, now, _speed, margin, span, -Height * 0.22f);

@@ -33,6 +33,7 @@ internal static class SettingsPages
         Game.Forget();
         RolePage.Forget();
         PresetPage.Forget();
+        Footage.ReleaseAll();
         Tooltip.Hide();
         OptHistory.Clear();
         SettingsCover.Reset();
