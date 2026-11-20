@@ -202,6 +202,12 @@ public class RoleDictionary : MonoBehaviour
             }
         }
         catch { }
+        try
+        {
+            var win = PlayerStats.RoleWinLine(role);
+            if (win != null) sb.Append($"<color=#9fd7ff>{GetString("RoleDictionary.WinRate")}</color> ").Append(Rich(win)).Append('\n');
+        }
+        catch { }
         sb.Append('\n');
         // 短い説明
         if (Translator.HasString(role + "Info")) sb.Append("<b>").Append(Rich(GetString(role + "Info"))).Append("</b>\n\n");

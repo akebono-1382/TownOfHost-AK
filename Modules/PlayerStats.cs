@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -143,6 +143,70 @@ public static class PlayerStats
         var text = Describe(c.Player, detail: true) ?? GetString("PlayerStats.None");
         if (c.Player == null || c.Player.AmOwner) HostNote.Post(text);
         else Utils.SendMessageAutoSplit(text, true, GetString("PlayerStats.Title"), sendTo: c.Player.PlayerId);
+    }
+
+    // ===== 役職ごとの勝率 (全員の記録を役職で足し合わせる) =====
+    // TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/RoleWinStats.cs) を元に、記録は上の戦績から数える
+
+    const int MinGamesForRanking = 3;
+    const int RankingCount = 5;
+
+    /// <summary>役職ごとの [試合数, 勝ち] を全員の記録から足す</summary>
+    static Dictionary<CustomRoles, int[]> RoleTotals()
+    {
+        var totals = new Dictionary<CustomRoles, int[]>();
+        foreach (var r in Data.Values)
+        {
+            if (r?.Roles == null) continue;
+            foreach (var (key, v) in r.Roles)
+            {
+                if (v is not { Length: 2 } || !Enum.TryParse<CustomRoles>(key, out var role)) continue;
+                if (!totals.TryGetValue(role, out var t)) totals[role] = t = new int[2];
+                t[0] += v[0];
+                t[1] += v[1];
+            }
+        }
+        return totals;
+    }
+
+    /// <summary>その役職の勝率の 1 行 (役職辞典にも出す)。記録が無ければ null</summary>
+    public static string RoleWinLine(CustomRoles role)
+    {
+        if (!RoleTotals().TryGetValue(role, out var t) || t[0] == 0) return null;
+        return string.Format(GetString("RoleWinStats.Line"), Utils.GetRoleName(role), t[1] * 100 / t[0], t[1], t[0]);
+    }
+
+    /// <summary>/rw: 役職の勝率。引数なしで高い順・低い順の上位、役職の名前を付けるとその役職だけ</summary>
+    public static void RoleWinCommand(ChatCommandContext c)
+    {
+        var query = string.Join(" ", c.Args.Skip(1)).Trim();
+        string text;
+        if (query.Length > 0)
+        {
+            var role = EnumHelper.GetAllValues<CustomRoles>().FirstOrDefault(r =>
+                r.ToString().Equals(query, StringComparison.OrdinalIgnoreCase) || Utils.GetRoleName(r).RemoveHtmlTags() == query);
+            text = role != default ? RoleWinLine(role) : null;
+            text ??= string.Format(GetString("RoleWinStats.NoRecord"), query);
+        }
+        else
+        {
+            var list = RoleTotals().Where(kv => kv.Value[0] >= MinGamesForRanking).ToList();
+            if (list.Count == 0) text = string.Format(GetString("RoleWinStats.TooFew"), MinGamesForRanking);
+            else
+            {
+                string Line(KeyValuePair<CustomRoles, int[]> kv) => string.Format(GetString("RoleWinStats.Line"), Utils.GetRoleName(kv.Key), kv.Value[1] * 100 / kv.Value[0], kv.Value[1], kv.Value[0]);
+                var sb = new StringBuilder(GetString("RoleWinStats.High"));
+                foreach (var kv in list.OrderByDescending(kv => (double)kv.Value[1] / kv.Value[0]).ThenByDescending(kv => kv.Value[0]).Take(RankingCount))
+                    sb.Append('\n').Append(Line(kv));
+                sb.Append("\n\n").Append(GetString("RoleWinStats.Low"));
+                foreach (var kv in list.OrderBy(kv => (double)kv.Value[1] / kv.Value[0]).ThenByDescending(kv => kv.Value[0]).Take(RankingCount))
+                    sb.Append('\n').Append(Line(kv));
+                sb.Append("\n\n").Append(string.Format(GetString("RoleWinStats.Hint"), MinGamesForRanking));
+                text = sb.ToString();
+            }
+        }
+        if (c.Player == null || c.Player.AmOwner) HostNote.Post(text);
+        else Utils.SendMessageAutoSplit(text, true, GetString("RoleWinStats.Title"), sendTo: c.Player.PlayerId);
     }
 
     /// <summary>部屋にいる全員の戦績を全員へ出す</summary>
