@@ -12,6 +12,7 @@ using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Unit;
 
 using TownOfHostL.Core.Modes;
+using TownOfHostL.Core.Win;
 
 namespace TownOfHostL;
 
@@ -60,6 +61,9 @@ public static partial class AntiBlackout
         StrayWolf,
         Jackal,
         Pirate,
+        // 上のどれも生きていない時の残りのキル陣営 (パブロフ・スタンド・イーターなど)。
+        // 本編の客の画面で生存インポスターが 0 人になると、追放の演出の締めでクルーの勝ちとみなして暗転する
+        OtherKiller,
     }
     private static bool IsRecognizeType(PlayerControl pc, RecognizeType type)
     {
@@ -74,6 +78,7 @@ public static partial class AntiBlackout
             RecognizeType.StrayWolf => countType == CountTypes.Impostor && customRole.IsLoneImpostor(),
             RecognizeType.Jackal => countType == CountTypes.Jackal,
             RecognizeType.Pirate => countType == CountTypes.Pirate,
+            RecognizeType.OtherKiller => GameEndCounts.IsKillerSide(countType),
             _ => false,
         };
     }
@@ -139,12 +144,18 @@ public static partial class AntiBlackout
             sender.StartMessage(clientId);
             var count = 0;
 
+            // 自分の画面で自分がキル役でない身代わり (犬のいるパブロフのオーナーなど) には、他に身代わりがいれば自分を送らない (キルのボタンが出る)
+            bool skipSelf = list.Count > 1 && list.Contains(pc) && !RoleView.IsKillerRole(RoleView.Living(pc, pc));
             foreach (var dummy in list)
             {
                 if (noDummies) break;
                 if (isKiller && dummy.PlayerId == pc.PlayerId) continue;
+                if (skipSelf && dummy.PlayerId == pc.PlayerId) continue;
+                // 本編の役職がキル役でない身代わりは、インポスターとして送る
+                var dummyRole = dummy.GetCustomRole().GetRoleTypes();
+                if (!RoleView.IsKillerRole(dummyRole)) dummyRole = RoleTypes.Impostor;
                 sender.StartRpc(dummy.NetId, RpcCalls.SetRole)
-                    .Write((ushort)dummy.GetCustomRole().GetRoleTypes())
+                    .Write((ushort)dummyRole)
                     .Write(true)
                     .EndRpc();
                 count++;
