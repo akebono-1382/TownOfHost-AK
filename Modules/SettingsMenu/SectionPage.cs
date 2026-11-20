@@ -45,6 +45,7 @@ internal sealed class SectionPage
     // 図のある行と、その地 (カーソルが乗った行を測る)
     private readonly List<(MenuOpt opt, Plate plate)> _hits = new();
     private Vector3 _lastMouse = new(float.NaN, 0f, 0f);
+    private Plate _marked;   // 図を出している行 (地を図の色に寄せて、どの行の図かを字を使わずに示す)
     private readonly OptEditor _editor;
 
     private sealed class Entry
@@ -205,6 +206,8 @@ internal sealed class SectionPage
         _editor.Refresh();
         _list = new ScrollView(new Vector2(ListW, H), rows) { Tag = _tag };
         _screen.Set(new Stack(true, _list, Side(edit)) { Gap = 0.15f, Align = Align.Start });
+        _marked = null;
+        MarkShown();
     }
 
     private Widget Side(bool edit)
@@ -354,6 +357,7 @@ internal sealed class SectionPage
     private void AfterEdit(MenuOpt opt)
     {
         _preview?.Focus(opt);
+        MarkShown();
         RefreshMarks();
         GameSettingMenuPatch.RefreshCategoryLabels();
     }
@@ -399,6 +403,18 @@ internal sealed class SectionPage
         RefreshMarks();
     }
 
+    private void MarkShown()
+    {
+        if (_preview == null) return;
+        Plate now = null;
+        foreach (var (opt, plate) in _hits)
+            if (GamePreview.Shows(opt)) { now = plate; break; }
+        if (now == _marked) return;
+        if (_marked?.BuiltBack) _marked.BuiltBack.color = _marked.Color;
+        _marked = now;
+        if (_marked?.BuiltBack) _marked.BuiltBack.color = Color.Lerp(_marked.Color, HeadLine, 0.45f);
+    }
+
     // 毎フレーム (頁が見えている間): カーソルが乗った図のある行の図に切り替え、図を動かす
     public void Tick()
     {
@@ -421,6 +437,7 @@ internal sealed class SectionPage
                         var bb = b.bounds;
                         if (p.x < bb.min.x || p.x > bb.max.x || p.y < bb.min.y || p.y > bb.max.y) continue;
                         _preview.Focus(opt);
+                        MarkShown();
                         break;
                     }
             }

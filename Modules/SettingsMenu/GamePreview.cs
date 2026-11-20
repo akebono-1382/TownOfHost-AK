@@ -30,6 +30,7 @@ internal sealed class GamePreview : Widget
 
     // 最後に選んだ図 (頁を作り直しても残す)
     private static Scene _scene = Scene.Speed;
+    private static string _focusKey;   // 図を出している設定 (null = まだ何も当てていない)
     private static bool _focusImpostor;
 
     public readonly float Width, Height;
@@ -55,6 +56,8 @@ internal sealed class GamePreview : Widget
     private float _killT;
     private static readonly int PercentId = Shader.PropertyToID("_Percent");
     private static Material _killMat;
+    private static readonly int DesatId = Shader.PropertyToID("_Desat");
+    private float _killPercent = -1f;
 
     private float _speed = 1f;
     private float _crewR, _impR, _crewTarget, _impTarget;
@@ -83,6 +86,9 @@ internal sealed class GamePreview : Widget
 
     public static bool Has(MenuOpt opt) => SceneOf(opt) != null;
 
+    // 今の図の元の設定か (まだ何も当てていなければ、最初に出す図の設定)
+    public static bool Shows(MenuOpt opt) => _focusKey != null ? opt.Key == _focusKey : SceneOf(opt) == _scene;
+
     private static VanillaMenuOpt Find(StringNames title)
     {
         foreach (var sec in VanillaGame.All)
@@ -101,6 +107,7 @@ internal sealed class GamePreview : Widget
         if (s == null) return;
         bool changed = s != _scene;
         _scene = s.Value;
+        _focusKey = opt.Key;
         if (opt is VanillaMenuOpt v) _focusImpostor = v.SettingTitle == StringNames.GameImpostorLight;
         Refresh();
         if (changed) ShowScene();
@@ -138,6 +145,9 @@ internal sealed class GamePreview : Widget
     // 今の図に映像があれば出し、自前の図を隠す
     private void UseFootage()
     {
+        Footage.KeepOnly(_scene switch { Scene.Speed => "speed", Scene.Vision => "vision", _ => "kill" });
+        // 捨てた映像のコマを握ったままにしない (次に出す時に今の映像のコマを入れ直す)
+        _speedFrame = _killFrame = -1;
         var speed = _scene == Scene.Speed ? Footage.Get("speed") : null;
         bool hasSpeed = speed != null && _speedFoot;
         if (_speedFoot) _speedFoot.gameObject.SetActive(hasSpeed);
@@ -145,7 +155,8 @@ internal sealed class GamePreview : Widget
         if (hasSpeed && _speedFrame < 0) { _speedFrame = 0; _speedFoot.sprite = speed.Frame(0); }
 
         var kill = _scene == Scene.KillCooldown ? Footage.Get("kill") : null;
-        bool hasKill = kill != null && _killFoot;
+        // 本編のキルボタンを借りられない時 (ロビーの外で頁を組んだ時など) は、待ち時間を見せられないので自前の図にする
+        bool hasKill = kill != null && _killFoot && _killBtn;
         if (_killFoot) _killFoot.gameObject.SetActive(hasKill);
         if (_killBtn) _killBtn.gameObject.SetActive(hasKill);
         if (_killNum?.Built) _killNum.Built.gameObject.SetActive(hasKill);
@@ -249,6 +260,9 @@ internal sealed class GamePreview : Widget
         {
             _killMat = new Material(g.sharedMaterial) { name = "TohlPreviewKillButton" };
             _killMat.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+            // 写した時のボタンの状態 (使えない時の灰色) を持ち込まない
+            _killMat.SetFloat(DesatId, 0f);
+            _killMat.SetFloat(PercentId, 0f);
         }
         if (_killMat) _killBtn.sharedMaterial = _killMat;
         var b = g.sprite.bounds.size;
@@ -405,7 +419,7 @@ internal sealed class GamePreview : Widget
             int frame = waiting ? 0 : Math.Min((int)((_killT - wait) * f.Fps), f.Count - 1);
             if (frame != _killFrame) { _killFrame = frame; _killFoot.sprite = f.Frame(frame); }
             float left = waiting ? (1f - _killT / wait) : 0f;
-            if (_killMat) _killMat.SetFloat(PercentId, left);
+            if (_killMat && left != _killPercent) { _killPercent = left; _killMat.SetFloat(PercentId, left); }
             // 秒の字は本編の秒で (縮めて見せるのは進む速さだけ)。変わった時だけ書く
             int secs = waiting ? (int)MathF.Ceiling(left * _cooldown) : -1;
             if (secs != _killShown && _killNum != null)

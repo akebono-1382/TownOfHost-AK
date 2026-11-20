@@ -29,6 +29,20 @@ internal sealed class Footage
         return f;
     }
 
+    // name 以外の映像を捨てる (図を切り替えた時。持つのは今の図の 1 本だけ)
+    public static void KeepOnly(string name)
+    {
+        List<string> drop = null;
+        foreach (var kv in Loaded)
+            if (kv.Key != name) (drop ??= new()).Add(kv.Key);
+        if (drop == null) return;
+        foreach (var k in drop)
+        {
+            Loaded[k]?.Release();
+            Loaded.Remove(k);
+        }
+    }
+
     public static void ReleaseAll()
     {
         foreach (var f in Loaded.Values) f?.Release();
