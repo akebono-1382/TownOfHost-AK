@@ -81,6 +81,9 @@ internal sealed class VanillaMenuOpt : MenuOpt
     private readonly int _count;
     private int _index;
 
+    /// <summary>本編の設定の名前 (インポスター数などを見分ける)</summary>
+    public StringNames SettingTitle => _setting != null ? _setting.Title : default;
+
     private VanillaMenuOpt(string label, BaseGameSetting s, FloatGameSetting f, IntGameSetting i, CheckboxGameSetting c, StringGameSetting str) : base(null)
     {
         _label = label;

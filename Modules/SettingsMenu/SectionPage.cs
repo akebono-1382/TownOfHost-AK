@@ -24,12 +24,15 @@ internal sealed class SectionPage
     private static readonly float ListW = (float)Math.Round(W * 0.65f, 2), SideW = W - ListW - 0.15f;
     internal static float RowW => ListW - 0.24f;
     private const float HeadH = 0.4f, BarH = 0.4f, RowPad = OptEditor.PlatePad;
-    // 色の決まっていない節の見出しの色 (順に回す)
-    private static readonly Color[] HeadPalette =
-    {
-        new(0.35f, 0.75f, 1f, 1f), new(1f, 0.72f, 0.3f, 1f), new(0.55f, 0.9f, 0.55f, 1f),
-        new(0.85f, 0.55f, 1f, 1f), new(1f, 0.5f, 0.55f, 1f), new(0.4f, 0.9f, 0.85f, 1f),
-    };
+    // 節の見出しの色 (どの節も同じ)
+    private static readonly Color HeadLine = new(0.45f, 0.62f, 0.8f, 1f);
+    private static readonly Color HeadFill = new(0.13f, 0.17f, 0.24f, 1f);
+    private static readonly Color HeadText = new(0.9f, 0.95f, 1f, 1f);
+    // 節へ飛ぶボタン
+    private const int JumpCols = 3;
+    private const float JumpH = 0.44f, JumpGap = 0.08f;
+    private static readonly Color JumpLine = new(0.5f, 0.85f, 0.75f, 1f);
+    private static readonly Color JumpFill = new(0.1f, 0.2f, 0.2f, 1f);
     private static readonly Color SubText = new(0.72f, 0.75f, 0.8f, 1f);
 
     private readonly string _tag;
@@ -48,7 +51,43 @@ internal sealed class SectionPage
         public Group Group;
         public Box Head;
         public Label TocLabel;
+        public Label JumpLabel;
         public bool Changed;
+    }
+
+    // 上に並べる、節へ飛ぶボタン。押した時に _entries の n 番目へ飛ぶ (見出しは後で作るので、番号で覚える)
+    private readonly List<Label> _jumpLabels = new();
+
+    private Widget JumpGrid(List<(Group g, List<MenuOpt> shown, int values)> visible, float rowW)
+    {
+        _jumpLabels.Clear();
+        float bw = (rowW - JumpGap * (JumpCols - 1)) / JumpCols;
+        var grid = new Stack(false) { Gap = JumpGap, Width = rowW };
+        grid.Add(new Label(Translator.GetString("SettingsUI.Jump"), 1.15f) { Color = SubText, Width = rowW, Align = Align.Start });
+        Stack line = null;
+        for (int i = 0; i < visible.Count; i++)
+        {
+            if (i % JumpCols == 0)
+            {
+                line = new Stack(true) { Gap = JumpGap, Width = rowW, Align = Align.Start };
+                grid.Add(line);
+            }
+            int n = i;
+            var g = visible[i].g;
+            var label = new Label(AnyChanged(g) ? g.Title + OptEditor.ChangedMark : g.Title, 1.3f)
+            {
+                Bold = true, Width = bw - 0.16f, NoWrap = true, MinFontSize = 0.8f, TextAlign = TextAlignmentOptions.Center, Color = HeadText,
+            };
+            _jumpLabels.Add(label);
+            line.Add(new Button(label, () => Jump(n))
+            {
+                Size = new Vector2(bw, JumpH),
+                Padding = new Vector2(0.08f, 0.02f),
+                Color = JumpLine,
+                Fill = JumpFill,
+            });
+        }
+        return grid;
     }
 
     private readonly List<Entry> _entries = new();
@@ -137,6 +176,8 @@ internal sealed class SectionPage
             top.Align = Align.Start;
             rows.Add(top);
         }
+        // 出す節と、その行を先に決める (上に節へ飛ぶボタンを並べるため)
+        var visible = new List<(Group g, List<MenuOpt> shown, int values)>();
         foreach (var g in _all)
         {
             var shown = new List<MenuOpt>();
@@ -148,18 +189,26 @@ internal sealed class SectionPage
                 if (!opt.IsText) values++;
             }
             _shownOpts.AddRange(shown);
-            if (values == 0) continue;
+            if (values > 0) visible.Add((g, shown, values));
+        }
+        // 節へ飛ぶボタン: マップの段のように、節の名前の札を 3 つずつ並べる。押すとその節の見出しへ
+        if (visible.Count > 1)
+        {
+            if (top != null) rows.Add(new Spacer(rowW, 0.08f));
+            rows.Add(JumpGrid(visible, rowW));
+        }
+        foreach (var (g, shown, values) in visible)
+        {
             var e = new Entry { Group = g, Changed = AnyChanged(g) };
-            // 見出し: 横いっぱいの色の帯 (節ごとに色を変えて、どこからが次の節か一目で分かるように)。前は広めに間を空ける
-            if (_entries.Count > 0 || top != null) rows.Add(new Spacer(rowW, 0.16f));
-            var accent = g.Color == Color.white ? HeadPalette[_entries.Count % HeadPalette.Length] : g.Color;
+            // 見出し: 節ごとに色を変えると見にくいので、どの節も同じ落ち着いた帯にする。前は広めに間を空ける
+            if (_entries.Count > 0 || top != null || visible.Count > 1) rows.Add(new Spacer(rowW, 0.16f));
             string title = $"{g.Title}  <size=70%><color=#B8C0CC>{string.Format(Translator.GetString("SettingsUI.Count"), values)}</color></size>";
-            e.Head = new Box(new Label(title, 1.65f) { Bold = true, Color = Color.Lerp(accent, Color.white, 0.35f), Width = rowW - 0.3f, MinFontSize = 1.1f })
+            e.Head = new Box(new Label(title, 1.65f) { Bold = true, Color = HeadText, Width = rowW - 0.3f, MinFontSize = 1.1f })
             {
                 Size = new Vector2(rowW, HeadH + 0.06f),
                 Padding = new Vector2(0.15f, 0.04f),
-                Color = accent,
-                Fill = Color.Lerp(accent, new Color(0.08f, 0.09f, 0.11f, 1f), 0.72f),
+                Color = HeadLine,
+                Fill = HeadFill,
                 Align = Align.Start,
             };
             rows.Add(e.Head);
@@ -177,6 +226,7 @@ internal sealed class SectionPage
                 else r = _editor.NarrowRow(opt, edit, rowW - RowPad * 2f, opt.Depth * 0.2f);
                 rows.Add(OptEditor.Plated(r, rowW, k++));
             }
+            if (_entries.Count < _jumpLabels.Count) e.JumpLabel = _jumpLabels[_entries.Count];
             _entries.Add(e);
         }
         _editor.Refresh();
@@ -311,10 +361,13 @@ internal sealed class SectionPage
         foreach (var e in _entries)
         {
             e.Changed = AnyChanged(e.Group);
-            var t = e.TocLabel?.Built;
-            if (!t) continue;
             string s = TocText(e);
-            if (s != e.TocLabel.Content) { e.TocLabel.Content = s; t.text = s; }
+            foreach (var l in new[] { e.TocLabel, e.JumpLabel })
+            {
+                var t = l?.Built;
+                if (!t) continue;
+                if (s != l.Content) { l.Content = s; t.text = s; }
+            }
         }
         _resetBtn?.SetColor(ResetColor());
         _undoBtn?.SetColor(UndoColor);

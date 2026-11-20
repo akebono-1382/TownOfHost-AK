@@ -471,6 +471,9 @@ public static partial class Options
         AddOnList.SetupOptions(AddOnGroup.Debuff);
         #endregion
 
+        // 陣営の人数 (設定画面ではゲームモードのすぐ下に、インポスター数と並べて出す)
+        RoleAssignManager.SetupTeamCountOptions();
+
         TextOptionItem.Create("Head.RoleAssign", TabGroup.ModMainSettings).SetColor(Palette.LightBlue);
         // ここから役職の共通設定までは機能の設定 (設定一覧の「機能」の欄に出す)
         OptionItem.CreatingFeatures = true;
