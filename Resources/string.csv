@@ -4763,6 +4763,7 @@ CCYellowCatInfo,You have become the YellowCat,黄陣営に所属した,你成为
 "VentLimit","Vent limits","ベントの制限"
 "VentBanAtAlive","No vents when alive players are at most","ベント禁止にする生存人数"
 "VentMaxStay","Max time inside a vent","ベントにいられる時間"
+"MiraVentLock","Split up the MIRA HQ vents","ミラHQのベントを区切る"
 "VentLimit.Title","[Vents]","【ベント】"
 "VentLimit.Banned","{0} or fewer players are alive, so vents can no longer be used.","生存者が {0} 人以下になったため、ベントは使えなくなりました。"
 "GameLog.Omitted","(earlier entries omitted)","(古い記録は省略)"

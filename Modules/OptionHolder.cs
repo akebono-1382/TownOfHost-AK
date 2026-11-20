@@ -845,6 +845,7 @@ public static partial class Options
         Modules.MeetingExtras.SetupCustomOption();
         Modules.DeviceTimer.SetupCustomOption();
         Modules.VentLimit.SetupCustomOption();
+        Modules.VentLock.SetupCustomOption();
         // 耳打ち・荒らしの書き込みのキック
         Modules.Whisper.SetupCustomOption();
         Modules.TeamChat.SetupCustomOption();
