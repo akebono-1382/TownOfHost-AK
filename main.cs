@@ -256,8 +256,8 @@ public partial class Main : BasePlugin
         TownOfHostL.Core.Modes.PatchBundleSet.Init(Harmony);
         // 試合用のパッチは後回しにして、タイトル画面が出てから当てる (起動を速くする)
         TownOfHostL.Core.Modes.DeferredPatches.Enabled = true;
-        TownOfHostL.Core.Modes.PatchBundleSet.Apply(TownOfHostL.Core.Modes.ModeCatalog.Standard.LiveBundles);
-        TownOfHostL.Core.Modes.DeferredPatches.Enabled = false;
+        try { TownOfHostL.Core.Modes.PatchBundleSet.Apply(TownOfHostL.Core.Modes.ModeCatalog.Standard.LiveBundles); }
+        finally { TownOfHostL.Core.Modes.DeferredPatches.Enabled = false; }
         Application.quitting += new Action(Utils.SaveNowLog);
         // まとめて保存する設定を、終了前に書き切る
         Application.quitting += new Action(TownOfHostL.Modules.OptionSaver.Flush);
