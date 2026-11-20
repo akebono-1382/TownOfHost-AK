@@ -208,6 +208,8 @@ public static class TempGhost
 
     /// <summary>
     /// 立っていられる場所か。床の当たり (ShipOnlyMask) の重なりと部屋の範囲で見る。
+    /// マップごとの分け方と Polus の範囲の値は Endless Host Roles の ExtendedPlayerControl.IsInsideMap
+    /// (https://github.com/Gurge44/EndlessHostRoles, GPL-3.0) から取った。
     /// マップごとに床の作りが違うので、どちらを使うかを分ける (スケルドは床の当たりが外にも広がっている)
     /// </summary>
     private static bool IsStandable(Vector2 pos)
