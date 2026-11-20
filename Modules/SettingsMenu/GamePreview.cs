@@ -6,6 +6,7 @@ namespace TownOfHostL.SettingsUI;
 
 // ゲームの頁の右の欄に出す、本編の設定の意味を見せる動く図。字は使わない。
 // 移動速度 = 本編で撮った 1 倍の歩きの映像を、値の倍率で再生する / 視界 = 本編で撮った値ごとの止め絵 (いちばん近い値) /
+// キルのクールダウン = 本編のキルボタンが暗くなって秒を数え (10 秒を 1 秒に縮める)、明けたら本編で撮ったキルの映像を流す。
 // 映像が読めない時は自前の図: 移動速度 = 基準 (1 倍・灰) と今の速さのクルーが並んで走る / 視界 = 暗い中のクルーとインポスターの明かりの大きさ (半径は値の平方根) /
 // キルのクールダウン = インポスターの周りの目盛りが埋まる速さ (10 秒で 1 周を 1 秒に縮めて見せる)。
 // どの図を出すかは、最後に当てた・変えた本編の設定で決める (かくれんぼの設定など図の無い項目では変えない)。
@@ -47,6 +48,13 @@ internal sealed class GamePreview : Widget
     private SpriteRenderer _crewGlow, _crewLight, _crewBody, _impGlow, _impLight, _impBody;
     private readonly SpriteRenderer[] _dots = new SpriteRenderer[Dots];
     private SpriteRenderer _victim;
+    private GameObject _killDrawn;
+    private SpriteRenderer _killFoot, _killBtn;
+    private Label _killNum;
+    private int _killShown = -2, _killFrame = -1;
+    private float _killT;
+    private static readonly int PercentId = Shader.PropertyToID("_Percent");
+    private static Material _killMat;
 
     private float _speed = 1f;
     private float _crewR, _impR, _crewTarget, _impTarget;
@@ -136,6 +144,14 @@ internal sealed class GamePreview : Widget
         if (_speedDrawn) _speedDrawn.SetActive(!hasSpeed);
         if (hasSpeed && _speedFrame < 0) { _speedFrame = 0; _speedFoot.sprite = speed.Frame(0); }
 
+        var kill = _scene == Scene.KillCooldown ? Footage.Get("kill") : null;
+        bool hasKill = kill != null && _killFoot;
+        if (_killFoot) _killFoot.gameObject.SetActive(hasKill);
+        if (_killBtn) _killBtn.gameObject.SetActive(hasKill);
+        if (_killNum?.Built) _killNum.Built.gameObject.SetActive(hasKill);
+        if (_killDrawn) _killDrawn.SetActive(!hasKill);
+        if (hasKill && _killFrame < 0) { _killFrame = 0; _killFoot.sprite = kill.Frame(0); }
+
         var vision = _scene == Scene.Vision ? Footage.Get("vision") : null;
         bool hasVision = vision != null && _visionFoot;
         if (_visionFoot) _visionFoot.gameObject.SetActive(hasVision);
@@ -194,19 +210,22 @@ internal sealed class GamePreview : Widget
         (_crewGlow, _crewLight, _crewBody) = Lit(_visionDrawn.transform, crew, circle, CrewColor, -side);
         (_impGlow, _impLight, _impBody) = Lit(_visionDrawn.transform, crew, circle, ImpColor, side);
 
-        // キルのクールダウン: インポスターの周りの目盛り・右に狙われるクルー
+        // キルのクールダウン: 映像と本編のキルボタン (無い時はインポスターの周りの目盛り・右に狙われるクルー)
         _killRoot = Node("Kill", go.transform, layer);
+        _killFoot = FootagePart(_killRoot.transform);
+        BuildKillButton(ctx);
+        _killDrawn = Node("Drawn", _killRoot.transform, layer);
         float cx = -Width * 0.18f, ring = Math.Min(Height * 0.4f, Width * 0.24f);
         for (int i = 0; i < Dots; i++)
         {
             float a = MathF.PI / 2f - i * MathF.PI * 2f / Dots;
-            var d = Part(_killRoot.transform, "Dot", circle, DotOff, 1);
+            var d = Part(_killDrawn.transform, "Dot", circle, DotOff, 1);
             d.transform.localScale = new Vector3(0.07f, 0.07f, 1f);
             d.transform.localPosition = new Vector3(cx + MathF.Cos(a) * ring, MathF.Sin(a) * ring, 0f);
             _dots[i] = d;
         }
-        Figure(_killRoot.transform, crew, ImpColor, 0f, 3).transform.localPosition = new Vector3(cx, 0f, 0f);
-        _victim = Figure(_killRoot.transform, crew, CrewColor, 0f, 3);
+        Figure(_killDrawn.transform, crew, ImpColor, 0f, 3).transform.localPosition = new Vector3(cx, 0f, 0f);
+        _victim = Figure(_killDrawn.transform, crew, CrewColor, 0f, 3);
         _victim.transform.localPosition = new Vector3(Width * 0.3f, 0f, 0f);
         // 相手を左向きに (インポスターの方を向く)
         _victim.flipX = true;
@@ -216,6 +235,33 @@ internal sealed class GamePreview : Widget
         _impR = _impTarget;
         ShowScene();
         return go;
+    }
+
+    // 本編のキルボタンの絵と、待ち時間の暗い覆いの材質 (本編のボタンと同じ _Percent で暗くする) を借りる。秒の字は上に重ねる
+    private void BuildKillButton(BuildCtx ctx)
+    {
+        var src = HudManager.InstanceExists ? HudManager.Instance.KillButton : null;
+        var g = src ? src.graphic : null;
+        if (!g || !g.sprite) return;
+        _killBtn = Part(_killRoot.transform, "KillButton", g.sprite, Color.white, 3);
+        // 材質は 1 つを使い回す (頁を組み直すたびに作ると積み上がる)
+        if (!_killMat && g.sharedMaterial)
+        {
+            _killMat = new Material(g.sharedMaterial) { name = "TohlPreviewKillButton" };
+            _killMat.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+        }
+        if (_killMat) _killBtn.sharedMaterial = _killMat;
+        var b = g.sprite.bounds.size;
+        float size = Height * 0.42f;
+        float sc = size / Math.Max(Math.Max(b.x, b.y), 0.0001f);
+        _killBtn.transform.localScale = new Vector3(sc, sc, 1f);
+        var pos = new Vector3(Width / 2f - size / 2f - 0.08f, -Height / 2f + size / 2f + 0.06f, 0f);
+        _killBtn.transform.localPosition = pos;
+        _killBtn.gameObject.SetActive(false);
+        _killNum = new Label("", 3.2f) { Bold = true, Width = size, TextAlign = TMPro.TextAlignmentOptions.Center };
+        var t = _killNum.Build(_killRoot.transform, ctx, size, out _);
+        t.transform.localPosition = pos + new Vector3(0f, 0f, -0.02f);
+        t.SetActive(false);
     }
 
     private SpriteRenderer Part(Transform parent, string name, Sprite sprite, Color c, int order)
@@ -288,6 +334,7 @@ internal sealed class GamePreview : Widget
             _appliedBase = baseOrder;
             foreach (var (r, order, _) in _parts)
                 if (r) r.sortingOrder = baseOrder + order;
+            if (_killNum?.Built) _killNum.Built.sortingOrder = baseOrder + 4;
         }
         float now = Time.unscaledTime;
         float dt = _last < 0f ? 0f : Math.Min(now - _last, 0.1f);
@@ -296,7 +343,7 @@ internal sealed class GamePreview : Widget
         {
             case Scene.Speed: TickSpeed(now, dt); break;
             case Scene.Vision: TickVision(dt); break;
-            case Scene.KillCooldown: TickKill(now); break;
+            case Scene.KillCooldown: TickKill(now, dt); break;
         }
     }
 
@@ -343,8 +390,31 @@ internal sealed class GamePreview : Widget
         if (glow) glow.transform.localScale = new Vector3(r * 2.5f, r * 2.5f, 1f);
     }
 
-    private void TickKill(float now)
+    private void TickKill(float now, float dt)
     {
+        // 映像: 待ち時間 (ボタンが暗く、秒を数える) → キルの映像を 1 回流す → 繰り返す
+        if (_killFoot && _killFoot.gameObject.activeSelf)
+        {
+            var f = Footage.Get("kill");
+            if (f == null) return;
+            float wait = Math.Max(_cooldown * CooldownScale, 0.3f);
+            float play = f.Count / Math.Max(f.Fps, 1f);
+            _killT += dt;
+            if (_killT >= wait + play) _killT -= (wait + play) * MathF.Floor(_killT / (wait + play));
+            bool waiting = _killT < wait;
+            int frame = waiting ? 0 : Math.Min((int)((_killT - wait) * f.Fps), f.Count - 1);
+            if (frame != _killFrame) { _killFrame = frame; _killFoot.sprite = f.Frame(frame); }
+            float left = waiting ? (1f - _killT / wait) : 0f;
+            if (_killMat) _killMat.SetFloat(PercentId, left);
+            // 秒の字は本編の秒で (縮めて見せるのは進む速さだけ)。変わった時だけ書く
+            int secs = waiting ? (int)MathF.Ceiling(left * _cooldown) : -1;
+            if (secs != _killShown && _killNum != null)
+            {
+                _killShown = secs;
+                _killNum.SetText(secs > 0 ? secs.ToString() : "");
+            }
+            return;
+        }
         float period = Math.Max(_cooldown * CooldownScale, 0.3f);
         float p = now / period;
         p -= MathF.Floor(p);
