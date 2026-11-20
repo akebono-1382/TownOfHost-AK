@@ -294,7 +294,7 @@ public static class TempGhost
         _ = new LateTask(() =>
         {
             // 暗転対策が客の画面の役職を戻し終えるまで待つ (先に送ると身代わりを上書きする)
-            if (gen == generation && AntiBlackout.IsRevertPending) { ScheduleReturnAfterMeeting(); return; }
+            if (gen == generation && GameStates.IsInTask && AntiBlackout.IsRevertPending) { ScheduleReturnAfterMeeting(); return; }
             returnAfterMeeting.Clear();
             if (gen != generation || !GameStates.IsInTask) return;
             foreach (var id in ids)

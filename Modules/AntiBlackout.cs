@@ -158,14 +158,16 @@ public static partial class AntiBlackout
                 if (skipSelf && dummy.PlayerId == pc.PlayerId) continue;
                 // 本編の役職がキル役でない身代わりは、インポスターとして送る
                 var dummyRole = dummy.GetCustomRole().GetRoleTypes();
-                if (!RoleView.IsKillerRole(dummyRole)) dummyRole = RoleTypes.Impostor;
+                bool replaced = !RoleView.IsKillerRole(dummyRole);
+                if (replaced) dummyRole = RoleTypes.Impostor;
                 sender.StartRpc(dummy.NetId, RpcCalls.SetRole)
                     .Write((ushort)dummyRole)
                     .Write(true)
                     .EndRpc();
                 count++;
-                // デシンクの人の画面と、見え方と違う役職で送った身代わり (会議明けの配り直しが見え方へ戻してしまう) は、演出の後で戻す
-                if ((desync && pc.IsAlive()) || dummyRole != RoleView.Living(dummy, pc))
+                // デシンクの人の画面と、デシンクの役職・インポスターに差し替えた身代わり (会議明けの配り直しが見え方へ戻してしまう) は、演出の後で戻す。
+                // 本物のインポスターの身代わりは戻さない (戻すと、演出の締めがホストより遅れた客の画面で生存インポスターが 0 人になる)
+                if ((desync && pc.IsAlive()) || RoleView.IsDesync(dummy) || replaced)
                 {
                     if (!desyncDummies.TryGetValue(clientId, out var sent)) desyncDummies[clientId] = sent = (pc, new());
                     if (!sent.dummies.Contains(dummy)) sent.dummies.Add(dummy);
