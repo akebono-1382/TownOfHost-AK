@@ -75,16 +75,20 @@ internal sealed class VanillaMenuOpt : MenuOpt
     private readonly IntGameSetting _int;
     private readonly CheckboxGameSetting _check;
     private readonly StringGameSetting _string;
+    private readonly PlayerSelectionGameSetting _player;
+    // 人の選択肢 (PlayerSelectionGameSetting)。先頭の -1 は「指名しない」(本編は -1 を未指名として扱う)。
+    // ロビーの顔ぶれで変わるので読むたびに作り直す
+    private readonly List<int> _playerIds = new();
     private readonly StringNames[] _values; // 文字の選択肢 (StringGameSetting)
     private readonly string _label;
     private readonly float _min, _step;
-    private readonly int _count;
+    private int _count;
     private int _index;
 
     /// <summary>本編の設定の名前 (インポスター数などを見分ける)</summary>
     public StringNames SettingTitle => _setting != null ? _setting.Title : default;
 
-    private VanillaMenuOpt(string label, BaseGameSetting s, FloatGameSetting f, IntGameSetting i, CheckboxGameSetting c, StringGameSetting str) : base(null)
+    private VanillaMenuOpt(string label, BaseGameSetting s, FloatGameSetting f, IntGameSetting i, CheckboxGameSetting c, StringGameSetting str, PlayerSelectionGameSetting p) : base(null)
     {
         _label = label;
         _setting = s;
@@ -92,7 +96,9 @@ internal sealed class VanillaMenuOpt : MenuOpt
         _int = i;
         _check = c;
         _string = str;
-        if (str != null)
+        _player = p;
+        if (p != null) _count = RefreshPlayers();
+        else if (str != null)
         {
             var v = str.Values;
             _values = new StringNames[v != null ? v.Length : 0];
@@ -143,7 +149,7 @@ internal sealed class VanillaMenuOpt : MenuOpt
         _ => step,
     };
 
-    // 本編の設定の定義から作る (数値・整数・ON/OFF・文字の選択肢。それ以外は出さない)
+    // 本編の設定の定義から作る (数値・整数・ON/OFF・文字の選択肢・人の指名。マップはゲームの頁の上の段で選ぶので出さない)
     public static VanillaMenuOpt From(BaseGameSetting s)
     {
         if (!s) return null;
@@ -151,9 +157,10 @@ internal sealed class VanillaMenuOpt : MenuOpt
         var i = f == null ? s.TryCast<IntGameSetting>() : null;
         var c = f == null && i == null ? s.TryCast<CheckboxGameSetting>() : null;
         var str = f == null && i == null && c == null ? s.TryCast<StringGameSetting>() : null;
-        if (f == null && i == null && c == null && str == null) return null;
+        var p = f == null && i == null && c == null && str == null ? s.TryCast<PlayerSelectionGameSetting>() : null;
+        if (f == null && i == null && c == null && str == null && p == null) return null;
         string label = TranslationController.Instance ? TranslationController.Instance.GetString(s.Title) : s.Title.ToString();
-        return new VanillaMenuOpt(label, s, f, i, c, str);
+        return new VanillaMenuOpt(label, s, f, i, c, str, p);
     }
 
     private static IGameOptions Options => GameOptionsManager.Instance?.CurrentGameOptions;
@@ -167,7 +174,7 @@ internal sealed class VanillaMenuOpt : MenuOpt
     public override bool IsToggle => _check != null;
     public override bool IsText => false;
     public override bool Fixed => false;
-    public override bool WrapsAround => _check != null || _string != null;
+    public override bool WrapsAround => _check != null || _string != null || _player != null;
     public override Color NameColor => Color.white;
     public override bool Shown => true;
     public override int Depth => 0;
@@ -183,14 +190,38 @@ internal sealed class VanillaMenuOpt : MenuOpt
         if (_float != null) return o.GetFloat(_float.OptionName);
         if (_int != null) return o.GetInt(_int.OptionName);
         if (_string != null) return o.GetInt(_string.OptionName);
+        if (_player != null) return o.GetInt(_player.OptionName);
         return o.GetBool(_check.OptionName) ? 1f : 0f;
     }
 #pragma warning restore CS0618
+
+    // 指名できる人を作り直す (抜けた人を外し、入った人を足す)。選択肢の数を返す
+    private int RefreshPlayers()
+    {
+        _playerIds.Clear();
+        _playerIds.Add(-1);
+        var data = GameData.Instance;
+        if (data)
+        {
+            int first = _playerIds.Count;
+            foreach (var info in data.AllPlayers)
+                if (info && !info.Disconnected) _playerIds.Add(info.PlayerId);
+            _playerIds.Sort(first, _playerIds.Count - first, null);
+        }
+        return _playerIds.Count;
+    }
 
     // 本編の設定から番号を読み直す
     public override void Sync()
     {
         float v = Read();
+        if (_player != null)
+        {
+            _count = RefreshPlayers();
+            // 指名した人が抜けていたら「指名しない」と同じ (本編も試合の開始時に居ない人の指名は使わない)
+            _index = Math.Max(_playerIds.IndexOf((int)v), 0);
+            return;
+        }
         _index = _check != null ? (v != 0f ? 1 : 0)
             : _string != null ? Math.Clamp((int)v, 0, Math.Max(_count - 1, 0))
             : Math.Clamp((int)Math.Round((v - _min) / _step), 0, _count - 1);
@@ -203,6 +234,7 @@ internal sealed class VanillaMenuOpt : MenuOpt
     {
         Sync();
         if (_check != null) return _index != 0 ? "ON" : "OFF";
+        if (_player != null) return _setting.GetValueString(_playerIds[_index]);
         if (_string != null)
         {
             if (_index >= _values.Length) return "-";
@@ -220,6 +252,7 @@ internal sealed class VanillaMenuOpt : MenuOpt
         if (_float != null) o.SetFloat(_float.OptionName, ValueOf(index));
         else if (_int != null) o.SetInt(_int.OptionName, (int)Math.Round(ValueOf(index)));
         else if (_string != null) o.SetInt(_string.OptionName, index);
+        else if (_player != null) o.SetInt(_player.OptionName, _playerIds[Math.Clamp(index, 0, _playerIds.Count - 1)]);
         else o.SetBool(_check.OptionName, index != 0);
         VanillaGame.Dirty = true;
     }
