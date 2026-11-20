@@ -169,7 +169,7 @@ internal sealed class CrewMeter : Widget
     private static Sprite _crew;
     private const int CW = 32, CH = 40;
 
-    private static Sprite CrewSprite()
+    internal static Sprite CrewSprite()
     {
         if (_crew) return _crew;
         var px = new byte[CW * CH * 4];

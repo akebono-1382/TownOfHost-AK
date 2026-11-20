@@ -359,6 +359,9 @@ internal sealed class Plate : Widget
 
     public Plate(Widget content) { Content = content; }
 
+    // 作った地 (当たりの範囲を外から測る時に使う)
+    public SpriteRenderer BuiltBack { get; private set; }
+
     public override GameObject Build(Transform parent, BuildCtx ctx, float maxWidth, out Vector2 size)
     {
         var go = Node("Plate", parent, ctx.Layer);
@@ -377,6 +380,7 @@ internal sealed class Plate : Widget
         bg.drawMode = SpriteDrawMode.Sliced;
         bg.size = s;
         bg.color = Color;
+        BuiltBack = bg;
         size = s;
         return go;
     }

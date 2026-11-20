@@ -17,7 +17,7 @@ internal static class SettingsPages
         GameSettingMenuPatch.CatColor(TabGroup.ModMainSettings), GeneralGroups);
 
     public static readonly SectionPage Game = new("gamepage", () => Translator.GetString("MenuCat.Game"),
-        GameSettingMenuPatch.CatColor(null), GameGroups, MapTop, VanillaGame.Rebuild, TopKey) { HeroSub = MapName };
+        GameSettingMenuPatch.CatColor(null), GameGroups, MapTop, VanillaGame.Rebuild, TopKey) { HeroSub = MapName, HasPreview = true };
 
     public static bool AnyBuilt => General.Built || Game.Built || RolePage.Built;
 
@@ -262,6 +262,7 @@ internal static class SettingsPagesTick
         if (!SettingsPages.AnyBuilt) return;
         TextField.Tick();
         UiFx.Tick();
+        SettingsPages.Game.Tick();
         RolePage.Tick();
         SettingsCover.Tick();
         JumpMenu.Tick();

@@ -38,6 +38,13 @@ internal sealed class SectionPage
     private readonly Func<int> _topKey;         // 上の段の見た目が変わる値 (外で変わったら組み直す)
     private int _builtTopKey;
     public Func<string> HeroSub;                // 頁の見出しの下の字 (null = 無し)
+    public bool HasPreview;                     // 右の欄に本編の設定の動く図を置く (ゲームの頁)
+
+    private GamePreview _preview;
+    private const float PreviewH = 1.3f;
+    // 図のある行と、その地 (カーソルが乗った行を測る)
+    private readonly List<(MenuOpt opt, Plate plate)> _hits = new();
+    private Vector3 _lastMouse = new(float.NaN, 0f, 0f);
     private readonly OptEditor _editor;
 
     private sealed class Entry
@@ -131,6 +138,8 @@ internal sealed class SectionPage
         _entries.Clear();
         _shownOpts.Clear();
         _editor.Clear();
+        _hits.Clear();
+        _preview = null;
         _onBuild?.Invoke();
         _all = _groups();
         _builtTopKey = _topKey?.Invoke() ?? 0;
@@ -187,7 +196,9 @@ internal sealed class SectionPage
                     r = new Label(opt.Label, OptEditor.NarrowFont) { Bold = true, Width = rowW - RowPad * 2f - opt.Depth * 0.2f, Color = tc == Color.white ? SubText : MenuOpt.Readable(tc) };
                 }
                 else r = _editor.NarrowRow(opt, edit, rowW - RowPad * 2f, opt.Depth * 0.2f);
-                rows.Add(OptEditor.Plated(r, rowW, k++));
+                var plated = OptEditor.Plated(r, rowW, k++);
+                if (HasPreview && GamePreview.Has(opt) && plated is Plate plate) _hits.Add((opt, plate));
+                rows.Add(plated);
             }
             _entries.Add(e);
         }
@@ -200,6 +211,11 @@ internal sealed class SectionPage
     {
         var col = new Stack(false) { Gap = 0.06f, Width = SideW };
         col.Add(Hero(SideW, _color, _title(), HeroSub?.Invoke() ?? ""));
+        if (HasPreview)
+        {
+            _preview = new GamePreview(SideW, PreviewH);
+            col.Add(_preview);
+        }
         // 目次: 押すとその節の見出しへ (節の中に初期値から変えた項目があれば点)
         var toc = new Stack(false) { Gap = 0.05f, Width = SideW - 0.2f };
         for (int i = 0; i < _entries.Count; i++)
@@ -209,7 +225,7 @@ internal sealed class SectionPage
             e.TocLabel = new Label(TocText(e), 1.3f) { Width = SideW - 0.44f, NoWrap = true, Bold = true, MinFontSize = 0.9f };
             toc.Add(new Button(e.TocLabel, () => Jump(n)) { Size = new Vector2(SideW - 0.2f, 0.34f), Padding = new Vector2(0.1f, 0.02f), Color = new Color(0.42f, 0.42f, 0.45f, 1f), Hollow = true });
         }
-        float tocH = H - HeroH - 0.06f - (edit ? BarH + 0.06f : 0f);
+        float tocH = H - HeroH - 0.06f - (edit ? BarH + 0.06f : 0f) - (_preview != null ? PreviewH + 0.06f : 0f);
         col.Add(new ScrollView(new Vector2(SideW, tocH), toc) { Tag = _tag + ":toc" });
         if (edit)
         {
@@ -335,8 +351,9 @@ internal sealed class SectionPage
         GameSettingMenuPatch.RefreshCategoryLabels();
     }
 
-    private void AfterEdit(MenuOpt _)
+    private void AfterEdit(MenuOpt opt)
     {
+        _preview?.Focus(opt);
         RefreshMarks();
         GameSettingMenuPatch.RefreshCategoryLabels();
     }
@@ -361,6 +378,7 @@ internal sealed class SectionPage
     public void RefreshFromOutside()
     {
         if (!Built) return;
+        _preview?.Refresh();
         // 自分の行を押して値を書き換えている最中は、その後始末が行う
         if (OptEditor.Busy > 0) return;
         if (_topKey != null && _topKey() != _builtTopKey) { Rebuild(); return; }
@@ -379,5 +397,34 @@ internal sealed class SectionPage
         if (!same || k != _shownOpts.Count) { Rebuild(); return; }
         _editor.Refresh();
         RefreshMarks();
+    }
+
+    // 毎フレーム (頁が見えている間): カーソルが乗った図のある行の図に切り替え、図を動かす
+    public void Tick()
+    {
+        if (_preview == null || !Visible) return;
+        var mouse = Input.mousePosition;
+        if (mouse != _lastMouse && _hits.Count > 0)
+        {
+            _lastMouse = mouse;
+            var cam = Camera.main;
+            var mask = _list?.Scroller ? _list.Scroller.ClickMask : null;
+            if (cam && mask)
+            {
+                Vector2 p = cam.ScreenToWorldPoint(mouse);
+                // 欄の外 (スクロールで隠れた行) には当てない
+                if (mask.OverlapPoint(p))
+                    foreach (var (opt, plate) in _hits)
+                    {
+                        var b = plate.BuiltBack;
+                        if (!b) continue;
+                        var bb = b.bounds;
+                        if (p.x < bb.min.x || p.x > bb.max.x || p.y < bb.min.y || p.y > bb.max.y) continue;
+                        _preview.Focus(opt);
+                        break;
+                    }
+            }
+        }
+        _preview.Tick();
     }
 }
