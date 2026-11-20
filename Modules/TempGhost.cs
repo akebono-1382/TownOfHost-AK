@@ -136,22 +136,54 @@ public static class TempGhost
         Logger.Info($"幽霊から戻る: {pc.GetNameWithRole()}{(forMeeting ? " (会議の前)" : "")}", "TempGhost");
 
         RoleView.Replay(pc);
+        RestoreHostView(pc);
         Revive.BeginSettling();
+        // 幽霊の間はベントに入れないので、ホストの手元に残った inVent (ベントから押し出した客で残ることがある) を下ろす。
+        // 立ったままだとキルの対象にならない (CheckMurderPatch)
+        if (pc.inVent) pc.inVent = false;
         if (forMeeting) return;
 
         BringInside(pc);
-        int gen = generation;
-        // SetRole が届いてから、キルと能力のクールを立て直す (役職が替わるとクールは本編の既定に戻る)
+        AfterReturn(pc, entry, generation, AfterReturnPolls);
+    }
+
+    /// <summary>
+    /// ホストの手元の役職を、生きている時の見え方へ直接戻す。ホストの手元の SetRole (CoSetRole) では、
+    /// 幽霊の役職から生きている役職へ戻らない (2026-11-20 実機で確認。守護天使のまま残り、キルのクールの設定も飛ばされる)
+    /// </summary>
+    private static void RestoreHostView(PlayerControl pc)
+    {
+        var host = PlayerControl.LocalPlayer;
+        if (host == null || pc.Data?.Role == null || !RoleManager.IsGhostRole(pc.Data.Role.Role)) return;
+        try { pc.SetRoleEx(RoleView.Living(pc, host)); }
+        catch (Exception ex) { Logger.Exception(ex, "TempGhost"); }
+    }
+
+    // 戻した後に、ホストの手元の役職が守護天使でなくなるのを待つ間隔と上限
+    private const float AfterReturnPoll = 0.2f;
+    private const int AfterReturnPolls = 10;
+
+    /// <summary>
+    /// SetRole が届いてから、キルと能力のクールを立て直す (役職が替わるとクールは本編の既定に戻る)。
+    /// ホストの手元の役職 (SetRole はコルーチンで替わる) が守護天使のままだとキルのクールの設定が飛ばされるので、替わるまで待つ
+    /// </summary>
+    private static void AfterReturn(PlayerControl pc, Entry entry, int gen, int pollsLeft)
+    {
         _ = new LateTask(() =>
         {
             if (gen != generation || pc == null || !pc.IsAlive() || IsGhost(pc) || !GameStates.IsInTask) return;
+            if (pc.Data?.Role?.Role == RoleTypes.GuardianAngel && pollsLeft > 0)
+            {
+                AfterReturn(pc, entry, gen, pollsLeft - 1);
+                return;
+            }
             pc.ResetKillCooldown();
             pc.SetKillCooldown();
             pc.RpcResetAbilityCooldown();
             try { entry.OnReturned?.Invoke(pc); }
             catch (Exception ex) { Logger.Exception(ex, "TempGhost"); }
             Utils.NotifyRoles(SpecifySeer: pc);
-        }, 0.2f, "TempGhost_AfterReturn");
+        }, AfterReturnPoll, "TempGhost_AfterReturn");
     }
 
     /// <summary>幽霊の間に壁の中や外へ出ていたら、いちばん近いベントへ戻す</summary>
@@ -266,6 +298,7 @@ public static class TempGhost
                 if (pc == null || pc.Data == null || pc.Data.Disconnected || !pc.IsAlive()) continue;
                 Logger.Info($"会議を持ち越した幽霊を戻す: {pc.GetNameWithRole()}", "TempGhost");
                 RoleView.Replay(pc);
+                RestoreHostView(pc);
             }
             Revive.BeginSettling();
         }, AfterMeetingReplayDelay, "TempGhost_AfterMeeting");
