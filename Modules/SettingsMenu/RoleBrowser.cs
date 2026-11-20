@@ -29,7 +29,16 @@ internal sealed class RoleEntry
     // 出る役職か (出現率が 0 でなく、人数も 0 でない)
     public bool On => Chance != null && Chance.Item.GetInt() > 0 && (Count == null || Count.Item.GetInt() > 0);
 
-    public string Values => Count != null ? $"×{Count.Item.GetInt()}  {Chance.Item.GetInt()}%" : $"{Chance.Item.GetInt()}%";
+    // 出ない役職は OFF だけ。出る役職は出現率と人数 (人数は項目の書式のまま「1人」など)
+    public string Values
+    {
+        get
+        {
+            if (!On) return "OFF";
+            string chance = $"{Chance.Item.GetInt()}%";
+            return Count != null ? $"{chance}  {Count.Display()}" : chance;
+        }
+    }
 }
 
 // 役職の出現率の行。名前は役職名ではなく「出現率」にする
@@ -345,8 +354,9 @@ internal sealed class RoleBrowser
         return list;
     }
 
-    private static Color CardColor(RoleEntry e) => e.IsRole && !e.On ? Color.Lerp(e.Color, Gray, 0.55f) : e.Color;
-    private static Color NameColor(RoleEntry e) => e.IsRole && !e.On ? Color.Lerp(e.Color, Gray, 0.55f) : Color.Lerp(e.Color, Color.white, 0.2f);
+    // 出ない役職は縁も名前もほぼ灰色にする (陣営の色が残ると、出る役職と見分けにくい)
+    private static Color CardColor(RoleEntry e) => e.IsRole && !e.On ? Color.Lerp(e.Color, Gray, 0.9f) : e.Color;
+    private static Color NameColor(RoleEntry e) => e.IsRole && !e.On ? Color.Lerp(e.Color, Gray, 0.7f) : Color.Lerp(e.Color, Color.white, 0.2f);
 
     private static string CardValues(RoleEntry e) =>
         e.IsRole ? e.Values : string.Format(Tr("SettingsUI.Count"), CountShown(e));
@@ -367,7 +377,7 @@ internal sealed class RoleBrowser
         return false;
     }
 
-    // narrow = 2 列の一覧のカード (名前+人数と出現率の 1 行・説明は右の欄だけ)。検索の結果は幅いっぱいで説明つき
+    // narrow = 2 列の一覧のカード (名前+出現率と人数の 1 行・説明は右の欄だけ)。検索の結果は幅いっぱいで説明つき
     private Widget Card(RoleEntry e, float width, bool narrow)
     {
         bool on = !e.IsRole || e.On;
@@ -407,7 +417,11 @@ internal sealed class RoleBrowser
         return card;
     }
 
-    private Color SelectFill(RoleEntry e) => e == _open ? Color.Lerp(Color.black, e.Color, 0.28f) : Color.black;
+    // 選んだカードは濃く、出る役職は薄く陣営の色で塗る
+    private Color SelectFill(RoleEntry e) =>
+        e == _open ? Color.Lerp(Color.black, e.Color, 0.32f)
+        : e.IsRole && e.On ? Color.Lerp(Color.black, e.Color, 0.12f)
+        : Color.black;
 
     private void OnCard(RoleEntry e)
     {
@@ -737,6 +751,7 @@ internal sealed class RoleBrowser
                 values.Built.color = on ? Color.white : Gray;
             }
             if (name.Built) name.Built.color = NameColor(e);
+            if (SideEdit && card.FillRenderer) card.FillRenderer.color = SelectFill(e);
         }
     }
 
@@ -791,8 +806,6 @@ internal sealed class RoleBrowser
         // 項目の行 (多い時はこの中だけスクロール)。出現率と人数は役職の色の枠にまとめ、0% / 100% のボタンを添える
         float rowW = SideW - 0.18f;
         var rows = new Stack(false) { Gap = 0.06f, Width = rowW };
-        string detail = e.IsRole ? e.Chance.Detail() : null;
-        if (!string.IsNullOrEmpty(detail)) rows.Add(new Label(detail, 1.05f) { Color = SubText, Width = rowW, Align = Align.Start });
         _editor.Watch(e.Opts);
         Stack core = null;
         float coreW = rowW - 0.1f;
@@ -827,6 +840,13 @@ internal sealed class RoleBrowser
             core.Add(new Stack(true,
                 new Button("0%", () => SetChance(e, 0), 1.3f) { Size = new Vector2(qw, 0.32f) },
                 new Button("100%", () => SetChance(e, 100), 1.3f) { Size = new Vector2(qw, 0.32f) }) { Gap = 0.08f });
+        }
+        // 役職の説明は設定の行の後 (先に置くと、出現率と設定がスクロールの下へ押し出される)
+        string detail = e.IsRole ? e.Chance.Detail() : null;
+        if (!string.IsNullOrEmpty(detail))
+        {
+            rows.Add(new Spacer(0.1f, 0.06f));
+            rows.Add(new Label(detail, 1.05f) { Color = SubText, Width = rowW, Align = Align.Start });
         }
         _editor.Refresh();
 
