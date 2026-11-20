@@ -349,7 +349,8 @@ public abstract class VoteGuesser : RoleBase
         private void SetRoleList()
         {
             roleList = new();
-            foreach (CustomRoles role in CustomRolesHelper.AllStandardRoles.Where(r => r.IsEnable()))
+            // 設定画面と同じ順 (区分ごと) に並べる。組の役職から出る役職は、元の役職の所に並ぶ
+            foreach (CustomRoles role in RoleOrder.Sort(CustomRolesHelper.AllStandardRoles.Where(r => r.IsEnable())))
             {
                 var assign = role.GetRoleAssignInfo()?.AssignUnitRoles;
                 if (assign != null)

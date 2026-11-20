@@ -604,7 +604,7 @@ public static partial class Utils
                 SendMessageAutoSplit($"{formatTag}{GetRoleName(CustomRoles.GM)}{GetString("GMInfoLong")}", false, "", PlayerId, formatTag);
             }
 
-            foreach (var role in CustomRolesHelper.AllStandardRoles)// OneNight追加時にワンナイト役職も含める
+            foreach (var role in RoleOrder.Sort(CustomRolesHelper.AllStandardRoles))
             {
                 //if (Options.IsONMode && !role.IsONRole()) continue;
                 if (!role.IsEnable() || role.IsVanilla()) continue;
@@ -647,7 +647,7 @@ public static partial class Utils
                 }
             }
 
-            foreach (var role in CustomRolesHelper.AllAddOnRoles.Where(role => role.IsOtherAddOn()))
+            foreach (var role in RoleOrder.Sort(CustomRolesHelper.AllAddOnRoles.Where(role => role.IsOtherAddOn())))
             {
                 if (!role.IsEnable()) continue;
                 var addonName = role.ToString();
@@ -668,7 +668,7 @@ public static partial class Utils
                 }
             }
 
-            foreach (var role in CustomRolesHelper.AllAddOnRoles.Where(role => role.IsAddOn()))
+            foreach (var role in RoleOrder.Sort(CustomRolesHelper.AllAddOnRoles.Where(role => role.IsAddOn())))
             {
                 if (!role.IsEnable()) continue;
                 var addonName = role.ToString();
@@ -746,38 +746,34 @@ public static partial class Utils
                 sb.Append("\n</line-height></size>");
                 SendMessageAutoSplitAndClearSB(PlayerId, sb, title, formatTag);
 
-                foreach (var role in Options.CustomRoleCounts.Keys)
+                // 区分の見出しを付けて設定画面と同じ順に並べ、1 通に入る分ずつ詰めて送る (役職の途中では割らない)
+                formatTag = "<size=65%><line-height=1.5pic>";
+                var blocks = new List<string>();
+                TabGroup? lastTab = null;
+                foreach (var role in RoleOrder.Sort(Options.CustomRoleCounts.Keys))
                 {
-                    if (!role.IsEnable() || role.IsHASRole() || role.IsCCRole() /*|| role.Key.IsONRole()*/)
+                    if (!role.IsEnable() || role.IsHASRole() || role.IsCCRole())
                     {
                         continue;
                     }
+                    var tab = RoleOrder.TabOf(role);
+                    if (tab is TabGroup t && tab != lastTab) sb.Append("<size=85%>").Append(RoleOrder.Header(t)).Append("</size>\n");
+                    lastTab = tab;
 
-                    formatTag = "<size=85%>";
-                    sb.Append(formatTag);
-                    if (role.IsAddOn() || role.IsOtherAddOn())
-                    {
-                        sb.Append("<color=#c71585>○</color>");
-                    }
-                    else if (role.GetCustomRoleTypes() == CustomRoleTypes.Unit)
-                    {
-                        sb.Append("<color=#7fff00>Ⓤ</color>");
-                    }
-                    else
-                    {
-                        sb.Append(GetTeamMark(role, 85, false));
-                    }
-
-                    sb.Append($"<u><b>{GetRoleName(role)}</b></u>".Color(GetRoleColor(role).ToReadableColor()));
-                    sb.AppendFormat(" x{0}{1}{2}\n", role.GetCount(), role.IsPairRole() ? GetString("Pair") : "", roleAssignRandomMode ? $"</size><size=70%> ({role.GetChance()}%)</size>" : "");
-
-                    formatTag = "<size=65%><line-height=1.5pic>";
-                    sb.Append(formatTag);
+                    sb.Append("<size=85%>").Append($"<u><b>{GetRoleName(role)}</b></u>".Color(GetRoleColor(role).ToReadableColor()))
+                        .Append(' ').Append(RoleChanceCount(role, roleAssignRandomMode)).Append("</size>");
+                    int head = sb.Length;
                     ShowChildrenSettings(Options.CustomRoleSpawnChances[role], ref sb);
-                    sb.Append("</line-height>\n</size>");
-
-                    SendMessageAutoSplitAndClearSB(PlayerId, sb, formatTag: formatTag);
+                    if (sb.Length > head)
+                    {
+                        while (sb.Length > head && sb[^1] == '\n') sb.Length--;
+                        // 設定の行の字の大きさは、各通の頭に付く formatTag に任せる (</size> で 1 つ前の大きさに戻る)
+                        sb.Insert(head, "\n");
+                    }
+                    blocks.Add(sb.ToString());
+                    sb.Clear();
                 }
+                SendBlocks(blocks, "", PlayerId, formatTag);
             }
 
             formatTag = "<size=65%><line-height=1.5pic>";
@@ -823,7 +819,7 @@ public static partial class Utils
             return;
         }
         sb.Append($"━━━━━━━━━━━━【{GetString("Roles")}】━━━━━━━━━━━━");
-        foreach (var role in Options.CustomRoleCounts)
+        foreach (var role in Options.CustomRoleCounts.OrderBy(kv => RoleOrder.Key(kv.Key)))
         {
             if (!role.Key.IsEnable() || role.Key.IsHASRole() || role.Key.IsCCRole() /*|| role.Key.IsONRole()*/) continue;
 
@@ -887,45 +883,49 @@ public static partial class Utils
         }
         else
         {
-            sb.Append(formatTag);
-            foreach (CustomRoles role in CustomRolesHelper.AllStandardRoles)
+            // 区分ごとに見出しを付け、区分の中は設定画面と同じ順。1 行 1 役職で、陣営の印は見出しに任せる
+            // (1 行のタグを減らすほど 1 通に多く入る)。1 通に入る分ずつ区分の境で詰めて送る
+            var blocks = new List<string>();
+            if (sb.Length > 0)
+            {
+                blocks.Add(sb.ToString());
+                sb.Clear();
+            }
+            TabGroup? lastTab = null;
+            bool first = true;
+            foreach (var role in RoleOrder.Sort(CustomRolesHelper.AllStandardRoles.Concat(CustomRolesHelper.AllAddOnRoles)))
             {
                 if (!role.IsEnable()) continue;
                 // バニラ役職(元)は反映させないので表示させない
                 if (role.IsVanilla()) continue;
-
-                // 陣営ごとのマーク
-                if (role.GetCustomRoleTypes() == CustomRoleTypes.Unit)
+                var tab = RoleOrder.TabOf(role);
+                if (first || tab != lastTab)
                 {
-                    sb.Append("<color=#7fff00>Ⓤ</color>");
+                    if (sb.Length > 0) blocks.Add(sb.ToString());
+                    sb.Clear();
+                    if (tab is TabGroup t) sb.Append(RoleOrder.Header(t));
                 }
-                else
-                {
-                    sb.Append(GetTeamMark(role, 80, false));
-                }
-
-                // 役職名表示
-                sb.Append($" {GetRoleName(role)}".Color(GetRoleColor(role)));
-                // 確率＆人数
-                sb.AppendFormat(" x{0}{1}{2}\n", role.GetCount(), role.IsPairRole() ? GetString("Pair") : "", roleAssignRandomMode ? $"<size=70%> ({role.GetChance()}%)</size>" : "");
+                first = false;
+                lastTab = tab;
+                if (sb.Length > 0) sb.Append('\n');
+                sb.Append('<').Append(GetRoleColorCode(role)).Append('>').Append(GetRoleName(role)).Append("</color> ")
+                    .Append(RoleChanceCount(role, roleAssignRandomMode));
             }
-            SendMessageAutoSplitAndClearSB(PlayerId, sb, $"【{GetString("Roles")}】".Color(Color.yellow), formatTag);
-
-            formatTag = $"<size=70%><line-height=1.5pic>";
-            sb.Append(formatTag);
-            foreach (CustomRoles role in CustomRolesHelper.AllAddOnRoles)
-            {
-                if (!role.IsEnable()) continue;
-
-                // 陣営ごとのマーク
-                sb.Append("<color=#ee82ee>○</color>");
-                // 役職名表示
-                sb.Append($" {GetRoleName(role)}".Color(GetRoleColor(role)));
-                // 確率＆人数
-                sb.AppendFormat(" x{0}{1}\n", role.GetCount(), roleAssignRandomMode ? $"<size=65%> ({role.GetChance()}%)</size>" : "");
-            }
-            SendMessageAutoSplitAndClearSB(PlayerId, sb, string.Empty, formatTag);
+            if (sb.Length > 0) blocks.Add(sb.ToString());
+            sb.Clear();
+            SendBlocks(blocks, $"【{GetString("Roles")}】".Color(Color.yellow), PlayerId, formatTag);
         }
+    }
+
+    /// <summary>
+    /// 役職の出現率と人数の短い書き方 (「×1」「50%×1」)。出現率は 100% でない時に出す
+    /// (割り当てが固定でも 100% 未満は確率で抜けるので)。ランダム割り当ての時は 100% も出す
+    /// </summary>
+    public static string RoleChanceCount(CustomRoles role, bool alwaysChance = false)
+    {
+        int chance = role.GetChance();
+        string text = chance < 100 || alwaysChance ? $"{chance}%×{role.GetCount()}" : $"×{role.GetCount()}";
+        return role.IsPairRole() ? text + GetString("Pair") : text;
     }
 
     public static void ShowChildrenSettings(OptionItem option, ref StringBuilder sb, int deep = 0)
@@ -1066,15 +1066,51 @@ public static partial class Utils
         if (!AmongUsClient.Instance.AmHost) return;
         EnqueueMessage((text, sendTo, $"<color=#aaaaff>{GetString("DefaultSystemMessageTitle")}</color>", false));
     }
+    private const int MAX_LENGTH = 320;
+    private const int MAX_LINES = 13;
+    private const string FORMAT_TAG_START = "<align=left><color=#ffffff>";
+
+    private static bool FitsOneMessage(string fullText, int maxBytes)
+        => fullText.Length <= MAX_LENGTH && fullText.Split('\n').Length <= MAX_LINES
+            && Encoding.UTF8.GetByteCount(fullText) <= maxBytes;
+
+    /// <summary>
+    /// まとまり (区分の見出しと役職の行など) を、1 通に入る分ずつ詰めて送る。まとまりの途中では割らない
+    /// (1 つで 1 通に入らない時だけ SendMessageAutoSplit が割る)。見出しは最初の 1 通だけ。formatTag は各通の頭に付ける
+    /// </summary>
+    public static void SendBlocks(IReadOnlyList<string> blocks, string title, byte sendTo, string formatTag)
+    {
+        if (!AmongUsClient.Instance.AmHost) return;
+        int maxBytes = TownOfHostL.Core.ChatSenderName.BodyBudget(TownOfHostL.Core.ChatSenderName.Sender());
+        bool showTitle = title != "";
+        string titleText = showTitle ? title + "\n" : "";
+        var cur = new StringBuilder();
+        foreach (var block in blocks)
+        {
+            if (string.IsNullOrEmpty(block)) continue;
+            if (cur.Length > 0)
+            {
+                if (FitsOneMessage($"{FORMAT_TAG_START}{titleText}{formatTag}{cur}\n{block}", maxBytes))
+                {
+                    cur.Append('\n').Append(block);
+                    continue;
+                }
+                SendMessageAutoSplit(formatTag + cur, showTitle, title, sendTo, formatTag);
+                showTitle = false;
+                titleText = "";
+                cur.Clear();
+            }
+            cur.Append(block);
+        }
+        if (cur.Length > 0) SendMessageAutoSplit(formatTag + cur, showTitle, title, sendTo, formatTag);
+    }
+
     public static void SendMessageAutoSplit(string text, bool showTitle, string title = "", byte sendTo = byte.MaxValue, string formatTag = "<size=70%><line-height=1.6pic>")
     {
         if (!AmongUsClient.Instance.AmHost) return;
 
-        const int MAX_LENGTH = 320;
-        const int MAX_LINES = 13;
         // 1 行が長すぎると下の分割では切れないので、バイト数でも割る。予算は戻す名前やホストの生死で変わる
         int MAX_LINE_BYTES = TownOfHostL.Core.ChatSenderName.BodyBudget(TownOfHostL.Core.ChatSenderName.Sender());
-        const string FORMAT_TAG_START = "<align=left><color=#ffffff>";
 
         string titleText = (title == "") ? $"<color=#aaaaff>{GetString("DefaultSystemMessageTitle")}</color>" : title;
 
@@ -1089,8 +1125,7 @@ public static partial class Utils
         }
 
         // 一回の送信で収まる場合はそのまま送信
-        if (fullText.Length <= MAX_LENGTH && (fullText.Split("\n")?.Length ?? 0) <= MAX_LINES
-            && Encoding.UTF8.GetByteCount(fullText) <= MAX_LINE_BYTES)
+        if (FitsOneMessage(fullText, MAX_LINE_BYTES))
         {
             EnqueueMessage((fullText, sendTo, "", true));
             return;

@@ -108,20 +108,20 @@ namespace TownOfHostL
                     if (Options.EnableGM.GetBool())
                         sb.Append($"<color={Utils.GetRoleColorCode(CustomRoles.GM)}>{Utils.GetRoleName(CustomRoles.GM)}:</color> {Options.EnableGM.GetString()}\n\n");
                     sb.Append(GetString("ActiveRolesList")).Append('\n');
-                    foreach (var kvp in Options.CustomRoleSpawnChances)
-                        if (kvp.Value.IsShown() && kvp.Value.GetBool()) //スタンダードか全てのゲームモードで表示する役職
-                        {
-                            var role = kvp.Key;
-                            // 陣営ごとのマーク
-                            if (role.IsAddOn() || role.IsOtherAddOn())
-                                sb.Append("<size=85%><color=#ee82ee>○</color></size>");
-                            else if (role.GetCustomRoleTypes() == CustomRoleTypes.Unit) sb.Append("<color=#7fff00>Ⓤ</color>");
-                            else sb.Append(Utils.GetTeamMark(role, 85));
+                    // 区分の見出しを付けて、設定画面と同じ順に並べる
+                    TabGroup? lastTab = null;
+                    foreach (var role in RoleOrder.Sort(Options.CustomRoleSpawnChances.Keys))
+                    {
+                        var opt = Options.CustomRoleSpawnChances[role];
+                        if (!opt.IsShown() || !opt.GetBool()) continue; //スタンダードか全てのゲームモードで表示する役職
+                        var tab = RoleOrder.TabOf(role);
+                        if (tab is TabGroup t && tab != lastTab) sb.Append(RoleOrder.Header(t)).Append('\n');
+                        lastTab = tab;
 
-                            sb.Append($"{Utils.ColorString(Utils.GetRoleColor(role), Utils.GetRoleName(role))}：{kvp.Value.GetString()}×{role.GetCount()}");
-                            if (role.IsPairRole()) sb.Append(GetString("Pair"));
-                            sb.Append('\n');
-                        }
+                        sb.Append($"{Utils.ColorString(Utils.GetRoleColor(role), Utils.GetRoleName(role))}：{opt.GetString()}×{role.GetCount()}");
+                        if (role.IsPairRole()) sb.Append(GetString("Pair"));
+                        sb.Append('\n');
+                    }
                     pages.Add(sb.ToString() + "\n\n");
                     sb.Clear();
                 }
@@ -135,7 +135,7 @@ namespace TownOfHostL
                 nameAndValue(Options.EnableGM);
                 if (!ModeCatalog.IsCatchCat)
                 {
-                    foreach (var kvp in Options.CustomRoleSpawnChances)
+                    foreach (var kvp in Options.CustomRoleSpawnChances.OrderBy(kv => RoleOrder.Key(kv.Key)))
                     {
                         if (!kvp.Key.IsEnable() || !kvp.Value.IsShown()) continue;
                         sb.Append('\n');
