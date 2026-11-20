@@ -136,11 +136,12 @@ public static partial class AntiBlackout
             // キルを持つ前の役職 (ワルキューレなど) は自分をクルーに見せ、他人はキルの対象に見せるので、
             // その画面には生存インポスターがいない。追放の演出の締めでクルーの勝ちとみなして暗転する (2026-11-10 実機で確認)
             bool desync = RoleView.IsDesync(pc);
-            if (pc.IsAlive() && desync && RoleView.IsKillerRole(RoleView.Living(pc, pc))) continue;
+            // 身代わりも死者の幽霊化も送らない (自分のキル役で生存インポスターが足りる)。頭数が並ぶ時の手当て (下の BalanceView) だけ送る
+            bool selfKiller = pc.IsAlive() && desync && RoleView.IsKillerRole(RoleView.Living(pc, pc));
             // 身代わりのインポスターの外に、生きたキル役が既に見えている画面 (役職の能力でキル役になった本人・その仲間) には身代わりを足さない。
             // 足すとその画面の生存インポスターが増え、追放の演出の締めで試合が終わったとみなして暗転する (2026-11-09 実機で確認)。
             // 死者を幽霊のクルーにする分は送る (会議中は全員を生きているとして送るので、死んだキル役の ImpostorGhost も生存インポスターに数えられる)
-            bool noDummies = SeesOtherKiller(pc, list);
+            bool noDummies = selfKiller || SeesOtherKiller(pc, list);
 
             var clientId = pc.GetClientId();
             if (clientId == -1) continue;
@@ -183,9 +184,16 @@ public static partial class AntiBlackout
                 int aliveCrew = Main.AllAlivePlayerControls.Count(x => x.PlayerId != ExiledPlayerId && !list.Contains(x));
                 lacking = list.Count + 1 - aliveCrew;
             }
+            else if (fillCrew)
+            {
+                // 身代わりを送らない画面でも、見えているキル役 (自分・仲間) が生きたクルー以上なら、追放の演出の締めで試合が終わったとみなして暗転する
+                // (ジャッカルとサイドキックの 2 人・インポスター・クルーが残った会議の後、ジャッカルの画面が 2 対 2 で暗転した。2026-11-21 実機で確認)
+                lacking = BalanceView(pc, clientId, sender, ref count);
+            }
             foreach (var dead in deadPlayers)
             {
                 bool fill = lacking > 0;
+                if (!fill && selfKiller) continue;
                 if (fill)
                 {
                     lacking--;
@@ -218,6 +226,40 @@ public static partial class AntiBlackout
             Logger.Info($"SetDummyImpostor player: {pc?.name} ({count} rpc{(filledCrew.TryGetValue(clientId, out var f) ? $", 生きたクルーに見せた死者 {f.Count}" : "")})", "AntiBlackout");
         }
         ExiledPlayerId = -1;
+    }
+
+    /// <summary>
+    /// 身代わりを送らない画面 (自分や仲間のキル役が見えている) の頭数を、追放の演出の締めで試合が終わらない形にそろえる。
+    /// 生きたキル役が生きたクルー以上に見えるなら、本人以外のキル役を演出の間だけクルーに見せ (RevertDesyncDummies で戻す)、
+    /// それでも足りない数を返す (死者を生きたクルーに見せて補う)
+    /// </summary>
+    private static int BalanceView(PlayerControl pc, int clientId, CustomRpcSender sender, ref int count)
+    {
+        var killers = new List<PlayerControl>();
+        int alive = 0;
+        foreach (var target in Main.AllAlivePlayerControls)
+        {
+            if (target.PlayerId == ExiledPlayerId) continue;
+            alive++;
+            if (RoleView.IsKillerRole(RoleView.Living(target, pc))) killers.Add(target);
+        }
+        int visible = killers.Count;
+        if (visible == 0) return 0;
+        foreach (var target in killers)
+        {
+            if (visible <= 1 || alive - visible > visible) break;
+            if (target.PlayerId == pc.PlayerId) continue;
+            sender.StartRpc(target.NetId, RpcCalls.SetRole)
+                .Write((ushort)RoleTypes.Crewmate)
+                .Write(true)
+                .EndRpc();
+            count++;
+            visible--;
+            if (!desyncDummies.TryGetValue(clientId, out var sent)) desyncDummies[clientId] = sent = (pc, new());
+            if (!sent.dummies.Contains(target)) sent.dummies.Add(target);
+            logger.Info($"{pc.name} の画面で {target.name} を演出の間だけクルーに見せる");
+        }
+        return visible + 1 - (alive - visible);
     }
 
     /// <summary>
