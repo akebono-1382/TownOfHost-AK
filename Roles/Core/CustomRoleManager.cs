@@ -765,6 +765,9 @@ public enum CustomRoles
     Spelunker, Tuna, Vulture, PavlovDog, PavlovOwner, PavlovDogImprint, JackalHadouHo, Tama, Onmyoji, Shikigami,
     Freeter, AntiHero, StandMaster, Stand, Zombie, JackalWolf, Chameleon, Eater, Fox, Obolus, PlagueDoctor,
 
+    // 他の mod から移した役職
+    EvilBusker, Busker, JackalBusker,
+
     GM,
     CounselorAndMadDilemma,
     GodfatherAndJanitor,

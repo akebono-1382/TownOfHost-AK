@@ -68,7 +68,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
 - [TownOfPlus](https://github.com/tugaru1975/TownOfPlus)
   - MODクライアント視点霊界での視界ズーム
 - [SuperNewRoles](https://github.com/ykundesu/SuperNewRoles)
-  - 猫又系役職の道連れ・純愛者・神・自爆魔・マッドジェスター/マッドてるてる・パン屋レアコメント・にじいろスター/スター・ロビーBGMのミュート・波動砲・公式サーバーへの Mod GUID の登録 (オンラインの時だけ付け、ローカルの部屋では外す)
+  - 猫又系役職の道連れ・純愛者・神・自爆魔・マッドジェスター/マッドてるてる・パン屋レアコメント・にじいろスター/スター・ロビーBGMのミュート・波動砲・公式サーバーへの Mod GUID の登録 (オンラインの時だけ付け、ローカルの部屋では外す)・バスカーのアイデア
 - [TheOtherRoles](https://github.com/TheOtherRolesAU/TheOtherRoles)
   - サングラス・弁護士・VIP・タイブレーカー・ゲッサー・チェインシフター・ゴッドファーザー＆ジャニター/マフィア・ジャッカルサイドキック
   - バウンティハンター・ヴァンパイア・魔女・ベイト・メイヤー・シェリフ・スニッチ・ライター・シーア・ジャッカルのアイデア、Mod の作り方
@@ -92,6 +92,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
 - [ExtremeRoles](https://github.com/yukieiji/ExtremeRoles)
   - トトカルチョ
 - [End K not](https://github.com/waffle-ful/Aeterna-End-K-not)
+  - イビルバスカー・ジャッカルバスカー
   - 切断された時に部屋を自動で作り直す流れ
   - 配信の視聴者がコメントで試合に干渉する仕組み (ポイント・待ち行列・干渉の種類)
   - YouTube ライブのコメントの読み取り
@@ -105,6 +106,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
   - 設定の検索の一致判定 (More Roles Plus 経由)
   - 波動砲のためとビームを偽の PlayerControl の名前で描く方法
 - [Endless Host Roles](https://github.com/Gurge44/EndlessHostRoles)
+  - バスカー (一時的に幽霊になって戻る仕組み)
   - 配布物に入れる Unity Doorstop
   - 他のプレイヤーの外見を、PlayerInfo の送信と本人への変身解除で着せ替える方式
   - 会議の後の暗転を防ぐため、生存クルーが足りない時に死者を見た目だけ生き返らせる方法

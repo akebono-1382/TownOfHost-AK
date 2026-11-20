@@ -48,7 +48,7 @@ public sealed class Chameleon : RoleBase, IAdditionalWinner
                 }
             }
         }
-        if (CustomRoles.Jackal.IsPresent() || CustomRoles.JackalAlien.IsPresent() || CustomRoles.JackalMafia.IsPresent() || CustomRoles.JackalWolf.IsPresent())
+        if (CustomRoles.Jackal.IsPresent() || CustomRoles.JackalAlien.IsPresent() || CustomRoles.JackalMafia.IsPresent() || CustomRoles.JackalWolf.IsPresent() || CustomRoles.JackalBusker.IsPresent())
             TeamList.Add(CustomRoles.Jackal);
 
         if (CustomRoles.Egoist.IsPresent())
@@ -75,7 +75,7 @@ public sealed class Chameleon : RoleBase, IAdditionalWinner
     {
         if (AmongUsClient.Instance.AmHost is false) return;
         var oldteam = NowTeam;
-        if (!Main.AllAlivePlayerControls.Any(p => p.GetCustomRole() is CustomRoles.Jackal or CustomRoles.JackalAlien or CustomRoles.JackalMafia or CustomRoles.JackalWolf))
+        if (!Main.AllAlivePlayerControls.Any(p => p.GetCustomRole() is CustomRoles.Jackal or CustomRoles.JackalAlien or CustomRoles.JackalMafia or CustomRoles.JackalWolf or CustomRoles.JackalBusker))
             TeamList.Remove(CustomRoles.Jackal);
         if (!Main.AllAlivePlayerControls.Any(p => p.GetCustomRole() is CustomRoles.Egoist))
             TeamList.Remove(CustomRoles.Egoist);

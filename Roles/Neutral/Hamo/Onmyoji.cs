@@ -1182,7 +1182,7 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
             CustomRoles.Sheriff or CustomRoles.SwitchSheriff or
 
-            CustomRoles.WolfBoy or CustomRoles.JackalWolf or CustomRoles.Stand or CustomRoles.Ogre;
+            CustomRoles.WolfBoy or CustomRoles.JackalWolf or CustomRoles.JackalBusker or CustomRoles.Stand or CustomRoles.Ogre;
 
     }
 

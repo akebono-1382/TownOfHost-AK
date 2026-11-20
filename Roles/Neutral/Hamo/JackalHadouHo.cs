@@ -1663,7 +1663,7 @@ public sealed class Tama : RoleBase, IKiller
     private static void AdjustGameEndCounts(GameEndCounts counts)
     {
         if (counts[CountTypes.Jackal] != 0) return;
-        if (!Main.AllPlayerControls.Any(p => p.Is(CustomRoles.Jackal) || p.Is(CustomRoles.JackalHadouHo) || p.Is(CustomRoles.JackalWolf))) return;
+        if (!Main.AllPlayerControls.Any(p => p.Is(CustomRoles.Jackal) || p.Is(CustomRoles.JackalHadouHo) || p.Is(CustomRoles.JackalWolf) || p.Is(CustomRoles.JackalBusker))) return;
         if (!Main.AllAlivePlayerControls.Any(p => p.Is(CustomRoles.Tama))) return;
         counts[CountTypes.Jackal]++;
         counts[CountTypes.Crew]--;

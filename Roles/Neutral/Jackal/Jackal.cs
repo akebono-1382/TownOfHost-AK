@@ -33,7 +33,7 @@ namespace TownOfHostL.Roles.Neutral
                 flags: RoleFlags.FixedCount | RoleFlags.DontSelectLoyalty | RoleFlags.AddAddOn | RoleFlags.NeutralKiller | RoleFlags.CountedAsKiller,
                 introTeam: CustomRoles.Jackal,
                 killingFaction: new(CountTypes.Jackal, CustomWinner.Jackal, 100,
-                    [CustomRoles.JackalHadouHo, CustomRoles.JackalWolf, CustomRoles.Tama, CustomRoles.Jackal, CustomRoles.JClient, CustomRoles.JSidekick])
+                    [CustomRoles.JackalHadouHo, CustomRoles.JackalWolf, CustomRoles.JackalBusker, CustomRoles.Tama, CustomRoles.Jackal, CustomRoles.JClient, CustomRoles.JSidekick])
             );
         public Jackal(PlayerControl player)
         : base(

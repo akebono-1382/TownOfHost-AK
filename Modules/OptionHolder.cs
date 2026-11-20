@@ -1115,6 +1115,7 @@ public static partial class Options
         ImpDefault = 11000,
         ImpTOH = 12000,
         ImpY = 20000,
+        ImpPorted = 24000,
 
         // Madmate
         MadTOH = 28500,
@@ -1126,6 +1127,7 @@ public static partial class Options
         CrewSheriff = 32000,
         CrewTOH = 33000,
         CrewY = 40000,
+        CrewPorted = 44000,
 
         // Neutral
         NeuJackal = 51000,
