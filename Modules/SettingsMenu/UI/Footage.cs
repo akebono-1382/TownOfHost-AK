@@ -21,7 +21,9 @@ internal sealed class Footage
 
     public static Footage Get(string name)
     {
-        if (Loaded.TryGetValue(name, out var f)) return f;
+        // シーンの移り変わりで絵が捨てられていたら読み直す
+        if (Loaded.TryGetValue(name, out var f) && (f == null || f._tex)) return f;
+        f?.Release();
         f = Load(name);
         Loaded[name] = f;   // 読めなかった時も null を覚え、開いている間は何度も試さない
         return f;
@@ -35,6 +37,7 @@ internal sealed class Footage
 
     private static Footage Load(string name)
     {
+        Footage f = null;
         try
         {
             var asm = Assembly.GetExecutingAssembly();
@@ -42,7 +45,7 @@ internal sealed class Footage
             using var meta = asm.GetManifestResourceStream(head + ".txt");
             using var img = asm.GetManifestResourceStream(head + ".jpg");
             if (meta == null || img == null) return null;
-            var f = new Footage();
+            f = new Footage();
             using (var r = new StreamReader(meta))
             {
                 string line;
@@ -67,6 +70,7 @@ internal sealed class Footage
             img.CopyTo(ms);
             f._tex = new Texture2D(2, 2, TextureFormat.RGB24, false) { name = "TohlFootage_" + name };
             if (!ImageConversion.LoadImage(f._tex, ms.ToArray(), true)) { f.Release(); return null; }
+            f._tex.hideFlags |= HideFlags.DontUnloadUnusedAsset;
             f._tex.filterMode = FilterMode.Bilinear;
             f._tex.wrapMode = TextureWrapMode.Clamp;
             f._frames = new Sprite[f.Count];
@@ -74,6 +78,7 @@ internal sealed class Footage
         }
         catch (Exception ex)
         {
+            f?.Release();
             Logger.Error($"映像 {name} を読めませんでした: {ex.Message}", "Footage");
             return null;
         }
@@ -88,6 +93,7 @@ internal sealed class Footage
         if (sp) return sp;
         int x = i % Cols * W, y = _tex.height - (i / Cols + 1) * H;
         sp = Sprite.Create(_tex, new Rect(x, y, W, H), new Vector2(0.5f, 0.5f), W);
+        sp.hideFlags |= HideFlags.DontUnloadUnusedAsset;
         _frames[i] = sp;
         return sp;
     }
