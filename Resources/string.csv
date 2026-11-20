@@ -4607,6 +4607,7 @@ CCYellowCatInfo,You have become the YellowCat,黄陣営に所属した,你成为
 "RoleDictionary.Unit","Units","ユニット"
 "RoleDictionary.AddOn","Add-ons","属性"
 "RoleDictionary.Search","Search","探す"
+"RoleDictionary.SearchHint","Role name","役職の名前"
 "RoleDictionary.OnlyEnabled","Enabled only","入っている役職だけ"
 "RoleDictionary.None","No roles found","見つかりません"
 "RoleDictionary.On","On: {0}% x {1}","有効: {0}% × {1}人"

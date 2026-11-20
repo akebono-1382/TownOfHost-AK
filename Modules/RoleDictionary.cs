@@ -30,6 +30,7 @@ public class RoleDictionary : MonoBehaviour
     public static void SetOpen(bool value)
     {
         open = value;
+        if (!value && typing) SetTyping(false);
         if (Instance != null) Instance.enabled = value;
         if (value) { listDirty = true; detailDirty = true; }
     }
@@ -43,8 +44,41 @@ public class RoleDictionary : MonoBehaviour
 
     public void Update()
     {
-        // 閉じている間は Update も回さない (enabled = false)。開いている間の Esc で閉じる
-        if (Input.GetKeyDown(KeyCode.Escape)) SetOpen(false);
+        // 閉じている間は Update も回さない (enabled = false)。開いている間の Esc で閉じる (打っている時は打つのをやめるだけ)
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (typing) SetTyping(false);
+            else SetOpen(false);
+            return;
+        }
+        if (!typing) return;
+        var changed = false;
+        var sb = new StringBuilder(search ?? "");
+        foreach (var c in Input.inputString ?? "")
+        {
+            if (c == '\b') { if (sb.Length > 0) { sb.Length--; changed = true; } }
+            else if (c == '\n' || c == '\r') SetTyping(false);
+            else if (!char.IsControl(c) && sb.Length < 30) { sb.Append(c); changed = true; }
+        }
+        var ctrl = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+        if (ctrl && Input.GetKeyDown(KeyCode.V)) { sb.Append((GUIUtility.systemCopyBuffer ?? "").Replace("\n", " ")); if (sb.Length > 30) sb.Length = 30; changed = true; }
+        if (changed) { search = sb.ToString(); listDirty = true; }
+    }
+
+    // 探す欄に打っているか。打っている間は本編の移動とキー操作を止める
+    static bool typing;
+    public static bool Typing => open && typing;
+    static void SetTyping(bool value)
+    {
+        typing = value;
+        Input.imeCompositionMode = value ? IMECompositionMode.On : IMECompositionMode.Auto;
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
+    static class MovePatch
+    {
+        public static bool Prefix() => !Typing;
     }
 
     /// <summary>F4 で開け閉めする。チャットや設定の文字を打っている間は効かせない</summary>
@@ -276,7 +310,7 @@ public class RoleDictionary : MonoBehaviour
     static float BigFont => Font * 1.6f;
     static float RowH => 46f * Scale;
     static float Pad => 10f * Scale;
-    static GUIStyle sWindow, sTitle, sRow, sRowOn, sTab, sTabOn, sDetail, sField, sSmall, sClose, sPanel;
+    static GUIStyle sWindow, sTitle, sRow, sRowOn, sTab, sTabOn, sDetail, sField, sFieldOn, sSmall, sClose, sPanel;
     static float wx = -1, wy, ww, wh;
     static bool dragging;
     static float dragDx, dragDy;
@@ -311,8 +345,18 @@ public class RoleDictionary : MonoBehaviour
         var fx = wx + ww - cs - Pad * 3f - fw;
         var fh = titleH * 0.62f;
         GUI.Label(new Rect(fx - 70f * Scale, wy + (titleH - fh) / 2f, 70f * Scale, fh), GetString("RoleDictionary.Search"), sSmall);
-        var ns = GUI.TextField(new Rect(fx, wy + (titleH - fh) / 2f, fw, fh), search ?? "", 30, sField);
-        if (ns != search) { search = ns; listDirty = true; }
+        // GUI.TextField はこの本編では中身が削られていて使えないので、押すと打てる欄を自分で描く (字は Update で Input.inputString から足す)
+        var fieldRect = new Rect(fx, wy + (titleH - fh) / 2f, fw, fh);
+        if (type == EventType.MouseDown && e.button == 0)
+        {
+            var hit = fieldRect.Contains(e.mousePosition);
+            if (hit != typing) SetTyping(hit);
+        }
+        var comp = typing ? Input.compositionString ?? "" : "";
+        var caret = typing && (int)(Time.unscaledTime * 2f) % 2 == 0 ? "|" : "";
+        var fieldText = (search ?? "") + (comp.Length > 0 ? $"<color=#9fd7ff>{comp}</color>" : "") + caret;
+        if (fieldText.Length == 0) fieldText = $"<color=#5a6478>{GetString("RoleDictionary.SearchHint")}</color>";
+        GUI.Box(fieldRect, fieldText, typing ? sFieldOn : sField);
         var ow = 230f * Scale;
         var ox = fx - 80f * Scale - ow;
         if (GUI.Button(new Rect(ox, wy + (titleH - fh) / 2f, ow, fh), (onlyEnabled ? "☑ " : "☐ ") + GetString("RoleDictionary.OnlyEnabled"), onlyEnabled ? sTabOn : sTab)) { onlyEnabled = !onlyEnabled; listDirty = true; }
@@ -396,7 +440,9 @@ public class RoleDictionary : MonoBehaviour
             border = HostPanel.Border(br),
             padding = HostPanel.Border(Mathf.Max(4, br / 2)),
             clipping = TextClipping.Clip,
+            richText = true,
         };
+        sFieldOn = new GUIStyle(sField) { normal = { background = HostPanel.RoundTex(new Color(0.06f, 0.10f, 0.22f), br), textColor = Color.white } };
         detailDirty = true;
     }
 

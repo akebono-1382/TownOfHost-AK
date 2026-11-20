@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -56,6 +56,8 @@ public static class PatchBundleSet
         }
         foreach (var type in AccessTools.GetTypesFromAssembly(typeof(Main).Assembly))
         {
+            // パッチではないクラス (数千個) は Harmony に渡さない。渡すだけで起動が遅くなる (TownOfHost-hamo の DeferredPatcher と同じ)
+            if (!type.IsDefined(typeof(HarmonyAttribute), false)) continue;
             var bundle = BundleOf(type);
             if (!types.TryGetValue(bundle, out var list))
                 throw new InvalidOperationException($"{type.FullName} の束 {bundle} は 1 つの束ではありません");
@@ -75,6 +77,8 @@ public static class PatchBundleSet
     {
         target &= PatchBundles.All;
         if (target == Live) return;
+        // 後回しにしたパッチが残っていたら先に当てる (束の外し・当て直しの前に揃えておく)
+        DeferredPatches.FinishNow();
         var sw = Stopwatch.StartNew();
         if ((target & ~Live) != 0)
         {
@@ -85,7 +89,11 @@ public static class PatchBundleSet
             {
                 if (!target.HasFlag(bundle)) continue;
                 var harmony = harmonies[bundle];
-                foreach (var type in types[bundle]) harmony.CreateClassProcessor(type).Patch();
+                foreach (var type in types[bundle])
+                {
+                    if (DeferredPatches.TryDefer(harmony, type)) continue;
+                    harmony.CreateClassProcessor(type).Patch();
+                }
             }
         }
         else
@@ -95,5 +103,132 @@ public static class PatchBundleSet
         Live = target;
         int methods = harmonies.Values.Sum(h => h.GetPatchedMethods().Count());
         Logger.Info($"パッチの束を {target} にしました ({methods} メソッド・{sw.ElapsedMilliseconds}ms)", "PatchBundles");
+    }
+}
+
+/// <summary>
+/// 起動を速くする: タイトル画面では使わない試合用のパッチ (PlayerControl・MeetingHud など) は起動の時に当てず、
+/// タイトル画面が出てから 1 フレームに少しずつ当てる。部屋を作る・入る・フリープレイの前には残りを全部当てるので、
+/// 試合やロビーではいつも全部のパッチが効いている。
+/// </summary>
+/// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/DeferredPatcher.cs) を元に、L の束 (<see cref="PatchBundleSet"/>) に合わせた。</remarks>
+public static class DeferredPatches
+{
+    /// <summary>起動の 1 回目の <see cref="PatchBundleSet.Apply"/> の間だけ true にする</summary>
+    public static bool Enabled;
+
+    // タイトル画面では動かない、試合・ロビー用の本編の型
+    static readonly HashSet<string> DeferredTargets = new()
+    {
+        "PlayerControl", "MeetingHud", "LobbyBehaviour", "HudManager", "ChatController", "ShipStatus",
+        "PlayerPhysics", "IntroCutscene", "EndGameManager", "ExileController", "Vent", "NetworkedPlayerInfo",
+        "SpawnInMinigame", "SabotageButton", "MovingPlatformBehaviour", "LogicGameFlowNormal", "ElectricTask",
+        "GameManager", "TaskAddButton",
+        "GameStartManager", "GameSettingMenu", "GameOptionsMenu", "StringOption", "NumberOption", "ToggleOption",
+        "MapBehaviour", "VentilationSystem", "HeliSabotageSystem", "MushroomMixupSabotageSystem",
+        "SwitchSystem", "SecurityCameraSystemType", "VitalsMinigame", "SurveillanceMinigame", "SecurityLogGame",
+        "ShapeshifterMinigame", "ShapeshifterPanel", "TaskAdderGame", "TaskPanelBehaviour", "ViewSettingsInfoPanel",
+        "BanMenu", "DetectiveRole",
+        "RoleManager", "SabotageSystemType", "RolesSettingsMenu", "TutorialManager",
+    };
+
+    // AmongUsClient・InnerNetClient のうち、部屋の中でしか呼ばれないもの (OnGameJoined は入る時に使うので今すぐ当てる)
+    static readonly HashSet<string> RoomOnlyClientMethods = new()
+    {
+        "OnGameEnd", "OnPlayerJoined", "OnPlayerLeft", "StartGame", "CoStartGame", "KickPlayer", "CreatePlayer",
+        "CanBan", "StartRpcImmediately", "FinishRpcImmediately", "SendAllStreamedObjects",
+    };
+
+    static readonly Queue<(Harmony harmony, Type type)> pending = new();
+    static bool begun;
+    static int total;
+    static readonly Stopwatch totalWatch = new();
+
+    public static int PendingCount => pending.Count;
+
+    /// <summary>後回しにできるパッチなら控えて true を返す</summary>
+    public static bool TryDefer(Harmony harmony, Type type)
+    {
+        if (!Enabled || !IsDeferred(type)) return false;
+        pending.Enqueue((harmony, type));
+        total++;
+        return true;
+    }
+
+    static bool IsDeferred(Type type)
+    {
+        try
+        {
+            var attrs = HarmonyMethodExtensions.GetFromType(type);
+            if (attrs == null || attrs.Count == 0) return false;
+            var merged = HarmonyMethod.Merge(attrs);
+            var target = merged?.declaringType;
+            if (target == null) return false;
+            if (DeferredTargets.Contains(target.Name)) return true;
+            return target.Name is "AmongUsClient" or "InnerNetClient" && merged.methodName != null && RoomOnlyClientMethods.Contains(merged.methodName);
+        }
+        catch { return false; }
+    }
+
+    /// <summary>タイトル画面が出たら、1 フレームに 12ms までずつ当てていく</summary>
+    public static void Tick()
+    {
+        if (pending.Count == 0) return;
+        if (!begun) { begun = true; totalWatch.Start(); }
+        var frame = Stopwatch.StartNew();
+        while (pending.Count > 0 && frame.ElapsedMilliseconds < 12) PatchOne(pending.Dequeue());
+        if (pending.Count == 0) Logger.Info($"後回しのパッチを当て終えました ({total} クラス・{totalWatch.ElapsedMilliseconds}ms)", "DeferredPatches");
+    }
+
+    /// <summary>残りを今すぐ全部当てる。部屋・試合・フリープレイへ進む前に呼ぶ</summary>
+    public static void FinishNow()
+    {
+        if (pending.Count == 0) return;
+        var sw = Stopwatch.StartNew();
+        var count = pending.Count;
+        while (pending.Count > 0) PatchOne(pending.Dequeue());
+        Logger.Info($"後回しのパッチを今すぐ当てました ({count} クラス・{sw.ElapsedMilliseconds}ms)", "DeferredPatches");
+    }
+
+    static void PatchOne((Harmony harmony, Type type) item)
+    {
+        try { item.harmony.CreateClassProcessor(item.type).Patch(); }
+        catch (Exception e) { Logger.Error($"後回しのパッチを当てられませんでした: {item.type.FullName}\n{e}", "DeferredPatches"); }
+    }
+
+    [PatchBundle(PatchBundles.Core)]
+    [HarmonyPatch(typeof(MainMenuManager), nameof(MainMenuManager.LateUpdate))]
+    static class MainMenuTickPatch
+    {
+        public static void Postfix() => Tick();
+    }
+
+    // 部屋・試合・フリープレイへ進む前に、残りを全部当てる
+    [PatchBundle(PatchBundles.Core)]
+    [HarmonyPatch(typeof(MainMenuManager))]
+    static class MainMenuFinishPatch
+    {
+        [HarmonyPatch(nameof(MainMenuManager.OpenGameModeMenu)), HarmonyPatch(nameof(MainMenuManager.OpenOnlineMenu)),
+         HarmonyPatch(nameof(MainMenuManager.OpenCreateGame)), HarmonyPatch(nameof(MainMenuManager.OpenEnterCodeMenu))]
+        [HarmonyPrefix, HarmonyPriority(Priority.First)]
+        public static void Prefix() => FinishNow();
+    }
+
+    // 招待や部屋の立て直しなど、メニューのボタンを通らずに部屋へ入る時も
+    [PatchBundle(PatchBundles.Core)]
+    [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
+    static class GameJoinedPatch
+    {
+        [HarmonyPriority(Priority.First)]
+        public static void Prefix() => FinishNow();
+    }
+
+    // フリープレイなど、場面が変わる時も
+    [PatchBundle(PatchBundles.Core)]
+    [HarmonyPatch(typeof(SceneChanger), nameof(SceneChanger.ChangeScene), typeof(string))]
+    static class ChangeScenePatch
+    {
+        [HarmonyPriority(Priority.First)]
+        public static void Prefix() => FinishNow();
     }
 }
