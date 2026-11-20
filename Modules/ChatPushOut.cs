@@ -19,9 +19,10 @@ namespace TownOfHostL.Modules;
 public static class ChatPushOut
 {
     private const string Blank = "<size=32767>.";
-    // 送り直すのは新しい方から 10 件・1 件 80 文字まで (まとめが何通にも割れて送信待ちの列を埋めないように)
-    private const int MaxHistory = 10;
-    private const int MaxLength = 80;
+    // 送り直すのは新しい方から 20 件・1 件 300 文字 (TOHL 入りの客の入力の上限) まで。
+    // まとめはバイト数で何通かに割れても、送信待ちの列を 1 通ずつ通る
+    private const int MaxHistory = 20;
+    private const int MaxLength = 300;
     private static readonly List<(byte id, string text)> history = new();
 
     // 追放の画面の間に、生きている扱いの人の書き込みが届いたか。追放される人は画面が終わるまで生きている扱いなので、
@@ -107,7 +108,8 @@ public static class ChatPushOut
                 .Append(": ").Append(Escape(text)).Append('\n');
         }
         if (sb.Length == 0) return;
-        Utils.SendMessageAutoSplit(sb.ToString().TrimEnd('\n'), true, $"<color=#aaaaff>{GetString("ChatPushOut.Title")}</color>");
+        // 何通かに割れても、続きの字の大きさを 1 通目とそろえる
+        Utils.SendMessageAutoSplit(sb.ToString().TrimEnd('\n'), true, $"<color=#aaaaff>{GetString("ChatPushOut.Title")}</color>", formatTag: "");
     }
 
     /// <summary>人が打った文や名前の &lt; &gt; を全角にする (装飾を混ぜて、ホストのお知らせに見える偽の表示を作れないように)</summary>
