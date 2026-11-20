@@ -455,7 +455,7 @@ public static partial class Utils
         string RoleInfoTitle = $"{ColorString(GetRoleColor(myRole), RoleInfoTitleString)}";
 
         var roleString = $"<size=85%>{GetString(roleName)}</size>".Color(GetRoleColor(myRole).ToReadableColor());
-        var roleInfoString = $"{roleInfoLong}</line-height></size>";
+        var roleInfoString = $"{roleInfoLong}{FromLine(myRole)}</line-height></size>";
         sb.Append(roleString).Append(formatTag).Append(roleInfoString);
 
         SendMessageAutoSplitAndClearSB(PlayerId, sb, RoleInfoTitle, formatTag);
@@ -483,7 +483,7 @@ public static partial class Utils
                 var subroleName = (standsFor != CustomRoles.NotAssigned ? standsFor : subRole).ToString();
 
                 var subroleString = $"<size=85%>{GetString(subroleName)}</size>".Color(GetRoleColor(subRole).ToReadableColor());
-                var subroleInfoString = $"{GetString($"{subroleName}InfoLong")}</line-height></size>";
+                var subroleInfoString = $"{GetString($"{subroleName}InfoLong")}{FromLine(standsFor != CustomRoles.NotAssigned ? standsFor : subRole)}</line-height></size>";
 
                 sb.Append(subroleString).Append(formatTag).Append(subroleInfoString);
 
@@ -518,7 +518,14 @@ public static partial class Utils
             roleInfoLong = GetString($"{role.ToString()}InfoLong");
         }
 
-        return roleInfoLong;
+        return roleInfoLong + FromLine(role);
+    }
+
+    /// <summary>役職の説明の最後に付ける「From:〇〇」の行 (出どころが分からない役職は空)</summary>
+    public static string FromLine(CustomRoles role)
+    {
+        var from = TownOfHostL.Roles.Core.RoleFrom.GetText(role);
+        return from.Length == 0 ? "" : "\n" + from;
     }
 
     public static string GetRoleInfoLongWithColor(CustomRoles role)
