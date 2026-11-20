@@ -208,7 +208,7 @@ public static partial class Utils
         if (PlayerTraits.KillFlashToAll(target)) return true;
         if (target == BestieWolf.EnableKillFlash) return true;
 
-        if (seer.Data.IsDead || killer == seer || target == seer) return false;
+        if (seer.Data.IsDead || TownOfHostL.Core.NativeObject.Same(killer, seer) || TownOfHostL.Core.NativeObject.Same(target, seer)) return false;
 
         // 属性などの印は、役職ごとの条件より先に見る (役職の条件が偽でも属性の光は消さない)
         if (PlayerTraits.SeesKillFlash(seer)) return true;
@@ -256,7 +256,7 @@ public static partial class Utils
     public static (bool enabled, string text) GetRoleNameAndProgressTextData(bool isMeeting, PlayerControl seer, PlayerControl seen = null)
     {
         seen ??= seer;// CO可否表示
-        var coDisplay = (seer == seen && isMeeting) ? DisplayComingOut.GetString(seer.GetCustomRole()) : "";
+        var coDisplay = (TownOfHostL.Core.NativeObject.Same(seer, seen) && isMeeting) ? DisplayComingOut.GetString(seer.GetCustomRole()) : "";
         var teamMark = RoleText.GetDisplayTeamMark(seer, seen);
         var roleName = RoleText.GetDisplayRoleName(isMeeting, seer, seen);
         var progressText = GetProgressText(seer, seen);
@@ -355,22 +355,24 @@ public static partial class Utils
     private static string GetProgressText(PlayerControl seer, PlayerControl seen = null)
     {
         seen ??= seer;
-        var comms = IsActive(SystemTypes.Comms);
         //seer側による変更
-        bool enabled = seer == seen
+        bool enabled = TownOfHostL.Core.NativeObject.Same(seer, seen)
                     || (Main.VisibleTasksCount && !seer.IsAlive() && !Options.GhostCantSeeOtherTasks.GetBool())
                     || (seen.GetRoleClass()?.ShowsTaskProgressToAll ?? false);
-        string text = GetProgressText(seen.PlayerId, comms);
+        // 上書きは text を読まずに差し替えるだけなので、既定の字は見える時だけ組む (null = 上書きされていない)
+        string text = null;
 
         seer.GetRoleClass()?.OverrideProgressTextAsSeer(seen, ref enabled, ref text);
         // 見られる側による変更
         seen.GetRoleClass()?.OverrideProgressTextAsSeen(seer, ref enabled, ref text);
-        if (ModeCatalog.IsCatchCat && seer == seen)
+        if (!enabled) return "";
+        text ??= GetProgressText(seen.PlayerId, IsActive(SystemTypes.Comms));
+        if (ModeCatalog.IsCatchCat && TownOfHostL.Core.NativeObject.Same(seer, seen))
         {
             text += CatchCat.Common.GetMark(seer);
         }
 
-        return enabled ? text : "";
+        return text;
     }
     private static string GetProgressText(byte playerId, bool comms = false)
     {
@@ -1359,6 +1361,8 @@ public static partial class Utils
         HudManagerPatch.LastSetNameDesyncCount = 0;
 
         bool everyoneNeedsSeenNames = NoCache || ForceLoop || TownOfHostL.Core.NameParts.EveryoneNeedsSeenNames();
+        // 他人の名前を隠すか (通信妨害のカモフラなど) は、この組み立ての間は変わらない
+        bool hideSeenNames = TownOfHostL.Core.NameParts.HideSeenName(isForMeeting);
         var seerList = PlayerControl.AllPlayerControls;
         if (SpecifySeer != null)
         {
@@ -1370,7 +1374,7 @@ public static partial class Utils
         foreach (var seer in seerList)
         {
             //seerが落ちているときに何もしない
-            if (seer == null || seer.Data.Disconnected) continue;
+            if (!TownOfHostL.Core.NativeObject.IsAlive(seer) || seer.Data.Disconnected) continue;
 
             //if (seer.IsModClient()) continue;
             string fontSize = isForMeeting ? "1.5" : Main.RoleTextSize.ToString();
@@ -1458,7 +1462,7 @@ public static partial class Utils
                 foreach (var target in Main.AllPlayerControls)
                 {
                     //targetがseer自身の場合は何もしない
-                    if (target == seer) continue;
+                    if (TownOfHostL.Core.NativeObject.Same(target, seer)) continue;
                     if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:START");
 
                     TargetMark.Clear();
@@ -1490,7 +1494,7 @@ public static partial class Utils
 
                     string TargetDeathReason = TownOfHostL.Core.NameParts.DeathReason(seer, target);
 
-                    if (TownOfHostL.Core.NameParts.HideSeenName(isForMeeting))
+                    if (hideSeenNames)
                         TargetPlayerName = $"<size=0%>{TargetPlayerName}</size>";
 
                     //全てのテキストを合成します。

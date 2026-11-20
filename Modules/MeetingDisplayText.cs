@@ -167,20 +167,22 @@ public static class MeetingDisplayText
         int column = 0;
         float height = 2f;
 
+        // 生きている人を PlayerId の順に並べた時の位置 (生きていなければ -1)。見る人×見られる人のぶん呼ばれるので並べ替えずに数える
+        int rank = AliveRank(pc);
         // 0 = 左上(1番目)
-        if (pc == Main.AllAlivePlayerControls.OrderBy(x => x.PlayerId).ElementAtOrDefault(0))
+        if (rank == 0)
         {
             (addText, column, height) = LeftUp();
             if (addText == "") return name;
         }
         // 1 = 真ん中上(2番目)
-        else if (pc == Main.AllAlivePlayerControls.OrderBy(x => x.PlayerId).ElementAtOrDefault(1))
+        else if (rank == 1)
         {
             (addText, column, height) = CenterUp();
             if (addText == "") return name;
         }
         // 2 = 右上(3番目)
-        else if (pc == Main.AllAlivePlayerControls.OrderBy(x => x.PlayerId).ElementAtOrDefault(2))
+        else if (rank == 2)
         {
             (addText, column, height) = RightUp(true);
         }
@@ -199,5 +201,17 @@ public static class MeetingDisplayText
         adjust += "ㅤ";
 
         return plusDisplay + name + adjust;
+    }
+    private static int AliveRank(PlayerControl pc)
+    {
+        if (pc == null) return -1;
+        int rank = 0;
+        bool found = false;
+        foreach (var p in Main.AllAlivePlayerControls)
+        {
+            if (p == pc) found = true;
+            else if (p.PlayerId < pc.PlayerId) rank++;
+        }
+        return found ? rank : -1;
     }
 }

@@ -26,16 +26,21 @@ public static class Players
     private static readonly Func<PlayerControl, bool> isAlive = static pc => pc.IsAlive();
     private static readonly Func<PlayerControl, bool> isDead = static pc => !pc.IsAlive();
 
-    private static readonly Func<PlayerControl, bool> notDestroyed = static pc => pc != null;
-
     /// <summary>部屋にいる全員 (破棄済みを除く)。破棄されたかは走査した時点で判定する。</summary>
     public static IEnumerable<PlayerControl> All
     {
         get
         {
             Refresh();
-            return all.Where(notDestroyed);
+            return NotDestroyed(all);
         }
+    }
+
+    // 破棄済みかは Unity の == null と同じ判定 (本体の場所が空か) を、ゲーム側を呼ばずに見る
+    private static IEnumerable<PlayerControl> NotDestroyed(PlayerControl[] players)
+    {
+        foreach (var pc in players)
+            if (NativeObject.IsAlive(pc)) yield return pc;
     }
 
     /// <summary>生きている人。生死は走査した時点で判定する。</summary>
@@ -51,7 +56,7 @@ public static class Players
     {
         Refresh();
         var pc = byId[playerId];
-        return pc != null ? pc : null;
+        return NativeObject.IsAlive(pc) ? pc : null;
     }
 
     /// <summary>次に読んだ時に作り直させる。プレイヤーの出入りで呼ぶ。</summary>
@@ -119,16 +124,43 @@ public static class Players
         clientsDirty = false;
     }
 
+    // 本編のリストの包み (読むたびに作られる) と、要素数の欄の位置。同じフレームの中では包みを使い回し、要素数は欄を直に読む
+    private static Il2CppSystem.Collections.Generic.List<PlayerControl> sourceList;
+    private static int sourceListFrame = -1;
+    private static int sizeOffset = -1;
+
+    private static int SourceCount(Il2CppSystem.Collections.Generic.List<PlayerControl> source)
+    {
+        IntPtr p = source.Pointer;
+        if (sizeOffset < 0 && p != IntPtr.Zero)
+        {
+            sizeOffset = 0;
+            try
+            {
+                IntPtr field = Il2CppInterop.Runtime.IL2CPP.il2cpp_class_get_field_from_name(Il2CppInterop.Runtime.IL2CPP.il2cpp_object_get_class(p), "_size");
+                uint off = field == IntPtr.Zero ? 0 : Il2CppInterop.Runtime.IL2CPP.il2cpp_field_get_offset(field);
+                if (off is not (0 or uint.MaxValue)) sizeOffset = (int)off;
+            }
+            catch { }
+        }
+        return sizeOffset > 0 && p != IntPtr.Zero ? System.Runtime.InteropServices.Marshal.ReadInt32(p, sizeOffset) : source.Count;
+    }
+
     private static void Refresh()
     {
-        var source = PlayerControl.AllPlayerControls;
+        int frame = Time.frameCount;
+        if (frame != sourceListFrame)
+        {
+            sourceList = PlayerControl.AllPlayerControls;
+            sourceListFrame = frame;
+        }
+        var source = sourceList;
         if (source == null)
         {
             if (all.Length != 0) Clear();
             return;
         }
-        int frame = Time.frameCount;
-        int count = source.Count;
+        int count = SourceCount(source);
         if (!dirty && frame == builtFrame && count == builtSourceCount) return;
 
         var buffer = new List<PlayerControl>(count);

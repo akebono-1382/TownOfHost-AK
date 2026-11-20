@@ -39,7 +39,7 @@ namespace TownOfHostL
         {
             try
             {
-                if (__instance == null) return; // 安全ガード
+                if (!TownOfHostL.Core.NativeObject.IsAlive(__instance)) return; // 安全ガード
                 // CNO (偽のプレイヤー) にも本編は FixedUpdate を呼ぶ
                 if (Core.CustomNetObject.Is(__instance)) return;
 
@@ -113,7 +113,7 @@ namespace TownOfHostL
                 if ((step + __instance.PlayerId) % NameUpdateInterval != 0) return;
 
                 TMPro.TextMeshPro RoleText = null;
-                if (RoleTextCache.TryGetValue(nameTextObj.Pointer, out var cachedRoleText) && TextWriteCache.IsAlive(cachedRoleText))
+                if (RoleTextCache.TryGetValue(nameTextObj.Pointer, out var cachedRoleText) && TownOfHostL.Core.NativeObject.IsAlive(cachedRoleText))
                     RoleText = cachedRoleText;
                 var RoleTextTransform = RoleText is not null ? null : nameTextObj.transform.Find("RoleText");
                 if (RoleTextTransform != null)
@@ -171,7 +171,7 @@ namespace TownOfHostL
                     // まず seer (表示する側) を取得。LocalPlayer が null かもしれないので代替を用意
                     var seer = PlayerControl.LocalPlayer ?? __instance;
                     // seer が null であればロール表示を諦める
-                    if (seer == null)
+                    if (!TownOfHostL.Core.NativeObject.IsAlive(seer))
                     {
                         RoleText.enabled = false;
                         RoleText.text = "";
@@ -265,7 +265,7 @@ namespace TownOfHostL
                     try
                     {
                         TownOfHostL.Core.NameParts.AppendMark(Mark, seer, target, false);
-                        if (seer == target) TownOfHostL.Core.NameParts.AppendReportMark(Mark, seer);
+                        if (TownOfHostL.Core.NativeObject.Same(seer, target)) TownOfHostL.Core.NameParts.AppendReportMark(Mark, seer);
                         TownOfHostL.Core.NameParts.AppendSeenSuffix(Suffix, seer, target, false);
                     }
                     catch (Exception ex)

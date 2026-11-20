@@ -20,7 +20,7 @@ public static class RoleText
     {
         seen ??= seer;
         //デフォルト値
-        bool enabled = seer == seen
+        bool enabled = TownOfHostL.Core.NativeObject.Same(seer, seen)
             || seen.GetCustomRole().IsSpectator()
             || (Main.VisibleTasksCount && !seer.IsAlive() && !Options.GhostCantSeeOtherRoles.GetBool());
         //オーバーライドによる表示ではサブロールは見えないようにする/上記場合のみ表示
@@ -75,7 +75,7 @@ public static class RoleText
         // 陣営表示ONのとき
         if (Options.DisplayTeamMark.GetBool())
         {
-            enabled = seer == seen // 自分自身はtrue
+            enabled = TownOfHostL.Core.NativeObject.Same(seer, seen) // 自分自身はtrue
                 || seen.GetCustomRole().IsSpectator() // 観戦者はtrue
                 || (Main.VisibleTasksCount && !seer.IsAlive() && !Options.GhostCantSeeOtherRoles.GetBool()); // 幽霊で役職見れるとき
         }

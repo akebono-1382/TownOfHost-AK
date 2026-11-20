@@ -19,7 +19,6 @@ public static class TextWriteCache
 
     static readonly Dictionary<IntPtr, Entry> Entries = new();
     static int textOffset = -1;      // TMP_Text.m_text の位置 (0 = 使えない → 常に書く)
-    static int cachedPtrOffset = -1; // UnityEngine.Object.m_CachedPtr の位置
 
     static int TextOffset
     {
@@ -30,39 +29,7 @@ public static class TextWriteCache
         }
     }
 
-    static int CachedPtrOffset
-    {
-        get
-        {
-            if (cachedPtrOffset < 0) cachedPtrOffset = ResolveOffset(Il2CppClassPointerStore<UnityEngine.Object>.NativeClassPtr, "m_CachedPtr");
-            return cachedPtrOffset;
-        }
-    }
-
-    static int ResolveOffset(IntPtr klass, string name)
-    {
-        try
-        {
-            IntPtr field = klass == IntPtr.Zero ? IntPtr.Zero : IL2CPP.il2cpp_class_get_field_from_name(klass, name);
-            uint off = field == IntPtr.Zero ? 0 : IL2CPP.il2cpp_field_get_offset(field);
-            return off is 0 or uint.MaxValue ? 0 : (int)off;
-        }
-        catch
-        {
-            return 0;
-        }
-    }
-
-    /// <summary>Unity 側の本体が生きているか (破棄済みなら false)。ゲーム側を呼ばずに調べる。</summary>
-    public static bool IsAlive(UnityEngine.Object obj)
-    {
-        if (obj is null) return false;
-        IntPtr p = obj.Pointer;
-        if (p == IntPtr.Zero) return false;
-        int off = CachedPtrOffset;
-        if (off == 0) return obj != null;
-        return Marshal.ReadIntPtr(p, off) != IntPtr.Zero;
-    }
+    static int ResolveOffset(IntPtr klass, string name) => Core.NativeObject.ResolveOffset(klass, name);
 
     /// <summary>
     /// tmp が今 value を表示していて、前に Remember してからほかに書き換えられていないか。

@@ -63,7 +63,7 @@ static partial class ExtendedPlayerControl
     }
     public static InnerNet.ClientData GetClient(this PlayerControl player)
     {
-        if (player == null) return null;
+        if (!TownOfHostL.Core.NativeObject.IsAlive(player)) return null;
         return TownOfHostL.Core.Players.ClientOf(player.PlayerId);
     }
     public static int GetClientId(this PlayerControl player)
@@ -80,7 +80,7 @@ static partial class ExtendedPlayerControl
     /// </summary>
     public static CustomRoles GetCustomRole(this PlayerControl player)
     {
-        if (player == null)
+        if (!TownOfHostL.Core.NativeObject.IsAlive(player))
         {
             var caller = new System.Diagnostics.StackFrame(1, false);
             var callerMethod = caller.GetMethod();
@@ -96,7 +96,7 @@ static partial class ExtendedPlayerControl
 
     public static List<CustomRoles> GetCustomSubRoles(this PlayerControl player)
     {
-        if (player == null)
+        if (!TownOfHostL.Core.NativeObject.IsAlive(player))
         {
             Logger.Warn("CustomSubRoleを取得しようとしましたが、対象がnullでした。", "getCustomSubRole");
             return new() { CustomRoles.NotAssigned };
@@ -105,7 +105,7 @@ static partial class ExtendedPlayerControl
     }
     public static CountTypes GetCountTypes(this PlayerControl player)
     {
-        if (player == null)
+        if (!TownOfHostL.Core.NativeObject.IsAlive(player))
         {
             var caller = new System.Diagnostics.StackFrame(1, false);
             var callerMethod = caller.GetMethod();
@@ -130,8 +130,8 @@ static partial class ExtendedPlayerControl
     {
         //player: 名前の変更対象
         //seer: 上の変更を確認することができるプレイヤー
-        if (player == null || name == null || !AmongUsClient.Instance.AmHost) return;
-        if (seer == null) seer = player;
+        if (!TownOfHostL.Core.NativeObject.IsAlive(player) || name == null || !AmongUsClient.Instance.AmHost) return;
+        if (!TownOfHostL.Core.NativeObject.IsAlive(seer)) seer = player;
         if (!force && Main.LastNotifyNames.TryGetValue((player.PlayerId, seer.PlayerId), out var lastName) && lastName == name)
         {
             //Logger.info($"Cancel:{player.name}:{name} for {seer.name}", "RpcSetNamePrivate");
@@ -457,7 +457,7 @@ static partial class ExtendedPlayerControl
     {
         try
         {
-            if (player == null) return null;
+            if (!TownOfHostL.Core.NativeObject.IsAlive(player)) return null;
             string cachedName = (Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(player.PlayerId, out var n))
                 ? n
                 : player?.Data?.PlayerName;
@@ -764,7 +764,7 @@ static partial class ExtendedPlayerControl
             return true;
         }
         //targetがnullならば切断者なので生きていない
-        if (target == null)
+        if (!TownOfHostL.Core.NativeObject.IsAlive(target))
         {
             return false;
         }

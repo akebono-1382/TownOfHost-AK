@@ -34,7 +34,7 @@ namespace TownOfHostL
         }
         private static bool KnowTargetRoleColor(PlayerControl seer, PlayerControl target, bool isMeeting)
         {
-            return seer == target
+            return TownOfHostL.Core.NativeObject.Same(seer, target)
                 || target.GetCustomRole().IsSpectator()
                 || (seer.Is(CustomRoleTypes.Impostor) && target.Is(CustomRoleTypes.Impostor) && !seer.GetCustomRole().IsLoneImpostor() && !target.GetCustomRole().IsLoneImpostor())
                 || (target.GetRoleClass()?.ShowsRoleColorToAll(isMeeting) ?? false)
