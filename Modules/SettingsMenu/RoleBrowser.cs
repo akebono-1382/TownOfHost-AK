@@ -169,7 +169,8 @@ internal sealed class RoleBrowser
     private Holder _side;
     private float _sideH;
     private ScrollView _list, _sideList;
-    private readonly List<(RoleEntry e, Button card, Label values, Label name)> _cards = new();
+    private readonly List<(RoleEntry e, Button card, Label values, Label name, CrewMeter meter)> _cards = new();
+    private bool _growIn;   // 次に組んだ一覧で出現率の棒を 0 から伸ばす (区分を開いた時)
     private readonly List<RoleEntry> _listed = new();   // 一覧に並べている役職の欄 (外で値が変わった時に並びが変わったかを比べる)
     private Button _resetBtn, _undoBtn;
     private Slider _slider;
@@ -207,11 +208,14 @@ internal sealed class RoleBrowser
         SetQueryText(query);
         _open = null;
         _hover = null;
+        _growIn = true;
         Rebuild();
     }
 
     public void Detach()
     {
+        // 画面を捨てた後に動きの後始末 (壊れた物を握ったまま次に開くまで残さない)
+        UiFx.Clear();
         _screen?.Clear();
         _screen = null;
         ChipScreen?.Clear();
@@ -249,6 +253,7 @@ internal sealed class RoleBrowser
         {
             _open = null;
             _hover = null;
+            _growIn = teamChanged;
         }
         Rebuild();
     }
@@ -271,6 +276,14 @@ internal sealed class RoleBrowser
         _pendingSide = false;
         ChipScreen?.Clear();
         _screen.Set(_open != null && !SideEdit ? DetailPage(_open) : Searching ? SearchPage() : ListPage());
+        if (_growIn)
+        {
+            _growIn = false;
+            // 上から順に少しずつ遅らせて伸ばす (全部で 0.3 秒ほど・操作は待たせない)
+            int i = 0;
+            foreach (var c in _cards)
+                if (c.meter != null) c.meter.GrowIn(Math.Min(i++ * 0.012f, 0.3f));
+        }
     }
 
     // 一覧 = 役職を押すと右の欄で編集する (頁を切り替えない)。検索の結果から開いた時は細かい頁
@@ -382,14 +395,18 @@ internal sealed class RoleBrowser
     {
         bool on = !e.IsRole || e.On;
         float pad = narrow ? 0.09f : 0.14f;
-        Label name, values;
+        Label name, values = null;
+        CrewMeter meter = null;
         Widget body;
         if (narrow)
         {
             float textW = width - pad * 2f;
             name = new Label(e.Title, 1.6f) { Width = textW, MinFontSize = 1.05f, Bold = true, Color = NameColor(e), Align = Align.Start };
-            values = new Label(CardValues(e), 1.15f) { Width = textW, Bold = true, Color = on ? Color.white : Gray, Align = Align.Start };
-            body = new Stack(false, name, values) { Gap = 0f, Width = textW, Align = Align.Start };
+            // 役職は人数をクルーの人形・出現率を棒で見せる (まとまりは項目の数の字)
+            Widget under;
+            if (e.IsRole) under = meter = new CrewMeter(textW, e.Color, e.On, ChanceOf(e), e.Count != null, CountOf(e)) { Align = Align.Start };
+            else under = values = new Label(CardValues(e), 1.15f) { Width = textW, Bold = true, Color = on ? Color.white : Gray, Align = Align.Start };
+            body = new Stack(false, name, under) { Gap = 0.02f, Width = textW, Align = Align.Start };
         }
         else
         {
@@ -413,9 +430,12 @@ internal sealed class RoleBrowser
             OnHover = () => { if (narrow) ShowSide(e); },
             OnUnhover = () => { if (narrow && _hover == e) ShowSide(null); },
         };
-        _cards.Add((e, card, values, name));
+        _cards.Add((e, card, values, name, meter));
         return card;
     }
+
+    private static int ChanceOf(RoleEntry e) => e.Chance?.Item.GetInt() ?? 0;
+    private static int CountOf(RoleEntry e) => e.Count?.Item.GetInt() ?? 0;
 
     // 選んだカードは濃く、出る役職は薄く陣営の色で塗る
     private Color SelectFill(RoleEntry e) =>
@@ -469,7 +489,7 @@ internal sealed class RoleBrowser
     private void Select(RoleEntry e)
     {
         _open = e;
-        foreach (var (s, card, _, _) in _cards)
+        foreach (var (s, card, _, _, _) in _cards)
             if (card.FillRenderer) card.FillRenderer.color = SelectFill(s);
         RefreshSide();
     }
@@ -737,14 +757,20 @@ internal sealed class RoleBrowser
     // カードの値と縁の色だけを今の値に (作り直さない)
     public void RefreshCards()
     {
-        foreach (var (e, card, values, name) in _cards)
+        foreach (var (e, card, values, name, meter) in _cards)
         {
             if (!card.BackRenderer) continue;
             bool on = !e.IsRole || e.On;
             card.SetColor(CardColor(e));
             card.SetBadge(DetailChanged(e));
+            if (meter != null)
+            {
+                bool was = meter.On;
+                meter.Set(e.Color, on, ChanceOf(e), CountOf(e), true);
+                if (was != on) Flip(e, card, on);
+            }
             // 字はゲーム側へ写すたびに費用が掛かるので、変わったカードだけ書く
-            if (values.Built)
+            if (values != null && values.Built)
             {
                 string v = CardValues(e);
                 if (v != values.Content) values.SetText(v);
@@ -753,6 +779,18 @@ internal sealed class RoleBrowser
             if (name.Built) name.Built.color = NameColor(e);
             if (SideEdit && card.FillRenderer) card.FillRenderer.color = SelectFill(e);
         }
+    }
+
+    // 出す/止めるが切り替わったカード: 出したら弾んで陣営の色に光り、止めたら少し沈む
+    private void Flip(RoleEntry e, Button card, bool on)
+    {
+        var t = card.BackRenderer ? card.BackRenderer.transform.parent : null;
+        if (!t) return;
+        UiFx.Pop(t, on ? 0.07f : -0.04f, on ? 0.2f : 0.16f);
+        var fill = card.FillRenderer;
+        if (!on || !fill) return;
+        var flash = Color.Lerp(Color.black, e.Color, 0.65f);
+        UiFx.Play(fill, UiFx.ChannelColor, 0.35f, p => fill.color = Color.Lerp(flash, SelectFill(e), UiFx.EaseOut(p)));
     }
 
     // 外 (ほかの頁・プリセット・コマンド・取り消し) で値を変えた後。並びが変わっていれば組み直し、そうでなければ値だけ書き直す
