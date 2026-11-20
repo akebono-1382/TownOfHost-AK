@@ -261,8 +261,8 @@ public partial class Main : BasePlugin
         AddComponent<TownOfHostL.Modules.Watchdog>();
         TownOfHostL.Core.Modes.PatchBundleSet.Init(Harmony);
         TownOfHostL.Core.Modes.DeferredPatches.Enabled = true;
-        TownOfHostL.Core.Modes.PatchBundleSet.Apply(TownOfHostL.Core.Modes.ModeCatalog.Standard.LiveBundles);
-        TownOfHostL.Core.Modes.DeferredPatches.Enabled = false;
+        try { TownOfHostL.Core.Modes.PatchBundleSet.Apply(TownOfHostL.Core.Modes.ModeCatalog.Standard.LiveBundles); }
+        finally { TownOfHostL.Core.Modes.DeferredPatches.Enabled = false; }
         TownOfHostL.Logger.Info($"init={bootInit}ms roles={bootRoles - bootInit}ms rest={bootWatch.ElapsedMilliseconds - bootRoles}ms", "BootTime");
         Application.quitting += new Action(Utils.SaveNowLog);
         // まとめて保存する設定を、終了前に書き切る

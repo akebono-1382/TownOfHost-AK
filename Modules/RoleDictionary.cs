@@ -10,6 +10,14 @@ using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Modules;
 
+/// <summary>
+/// 役職辞典。全部の役職を陣営ごと・五十音順に並べ、選んだ役職の名前・陣営・出どころ (From)・説明・今の設定を出す。
+/// タイトル画面のボタン、試合中の右上の本のボタン、F4 キー、チャットの /dic で開く。どこでも見られる (自分の画面だけ。通信はしない)。
+/// </summary>
+/// <remarks>
+/// 見せ方の案は TownOfHost-hamo の役職の説明画面 (rar006/TownOfHost-hamo@f7b00a9e Modules/RoleInfoShower.cs) で、IMGUI で一から描く。
+/// 窓の見た目と OnGUI の扱いは <see cref="HostPanel"/> に合わせる (閉じている間は OnGUI ごと止め、中身の組み直しは選び直した時だけ)。
+/// </remarks>
 public class RoleDictionary : MonoBehaviour
 {
     public RoleDictionary(IntPtr ptr) : base(ptr) { }

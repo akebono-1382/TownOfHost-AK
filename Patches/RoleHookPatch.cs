@@ -133,6 +133,7 @@ public static class RoleHooks
         var user = physics?.myPlayer;
         if (user == null || CanVentMoving(physics, id)) return;
         if (user.PlayerId == PlayerControl.LocalPlayer.PlayerId) return; // ホストは TryMoveToVent で止める
+        if (user.LacksClient("BootFromVent")) return;
         int clientId = user.GetClientId();
         _ = new LateTask(() =>
         {

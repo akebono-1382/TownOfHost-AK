@@ -76,8 +76,8 @@ public static class SurrogateSystem
         ProxyToOwner[target.PlayerId] = owner.PlayerId;
 
         target.RpcChangeRole(CustomRoles.MadProxy);
-        // 見え方の表に残す (会議明けの配り直しで、インポスターの見え方へ戻す)
-        target.RpcSetRoleNormal(RoleTypes.Impostor, true);
+        // 見え方の表に残す (会議明けの配り直しで、インポスターの見え方へ戻す)。デシンクのキル役の画面では仲間にしない
+        TownOfHostL.Modules.RoleView.SendKillerRole(target, RoleTypes.Impostor);
         target.SyncSettings();
 
         ShareKillCooldown(owner, target, Surrogate.KillCooldown);

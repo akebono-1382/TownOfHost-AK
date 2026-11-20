@@ -102,7 +102,7 @@ public static class ChatPushOut
         {
             var pc = Utils.GetPlayerById(id);
             if (pc == null || pc.Data == null) continue;
-            var name = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(id, out var n) ? n : pc.Data.PlayerName;
+            var name = pc.GetPlainName() ?? pc.Data.PlayerName;
             sb.Append(Utils.ColorString(Palette.PlayerColors[pc.Data.DefaultOutfit.ColorId], Escape(name)))
                 .Append(": ").Append(Escape(text)).Append('\n');
         }

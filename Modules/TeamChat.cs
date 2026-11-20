@@ -45,7 +45,7 @@ public static class TeamChat
     }
 
     private static string NameOf(PlayerControl pc)
-        => ChatPushOut.Escape(Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(pc.PlayerId, out var n) ? n : pc.Data?.PlayerName ?? "?");
+        => ChatPushOut.Escape(pc.GetPlainName() ?? "?");
 
     private static bool IsImpostorMember(PlayerControl pc)
         => pc != null && pc.GetCustomRole().IsImpostor() && pc.GetCountTypes() == CountTypes.Impostor;

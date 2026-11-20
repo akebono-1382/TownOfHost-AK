@@ -70,7 +70,7 @@ public static class PlayerRoleExtensions
     public static string ColoredName(this PlayerControl player)
     {
         if (player == null) return "";
-        var name = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(player.PlayerId, out var n) ? n : player.Data?.PlayerName;
+        var name = player.GetPlainName();
         return Utils.ColorString(Main.PlayerColors.TryGetValue(player.PlayerId, out var c) ? (Color)c : Color.white, $"{name}");
     }
     public static string ColoredName(this byte playerId) => Utils.GetPlayerById(playerId)?.ColoredName() ?? "";
@@ -247,6 +247,7 @@ public static class PlayerRoleExtensions
         if (target == null) target = killer;
         // ホスト自身の画面は送らずに済む。TOHL を入れた客も客の間は本編のまま動くので、本編の客と同じく送る
         if (target.AmOwner) return;
+        if (target.LacksClient("MeetingKill")) return;
         var messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.Reliable, target.GetClientId());
         messageWriter.WriteNetObject(target);
         messageWriter.Write((int)MurderResultFlags.Succeeded);

@@ -177,7 +177,7 @@ public static class Audience
         PlayerControl hit = null;
         foreach (var pc in Main.AllPlayerControls)
         {
-            var name = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(pc.PlayerId, out var n) ? n : pc.Data?.PlayerName;
+            var name = pc.GetPlainName();
             if (name == null) continue;
             if (name.Equals(part, StringComparison.OrdinalIgnoreCase)) return pc;
             if (hit == null && name.Contains(part, StringComparison.OrdinalIgnoreCase)) hit = pc;

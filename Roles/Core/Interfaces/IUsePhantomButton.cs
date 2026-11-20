@@ -113,6 +113,7 @@ public static class PhantomButton
             Main.AllPlayerKillCooldown[player.PlayerId] = cooldown < 10 ? cooldown : cooldown * 2;
             player.SyncSettings();
         }
+        if (player.LacksClient("Phantom OneClick")) return false;
         var writer = CustomRpcSender.Create("Phantom OneClick", SendOption.None);
         writer.StartMessage(player.GetClientId());
         if (ResetCooldown is not null)

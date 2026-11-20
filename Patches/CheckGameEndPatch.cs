@@ -232,6 +232,7 @@ namespace TownOfHostL
             {
                 if (pc.PlayerId == PlayerControl.LocalPlayer.PlayerId) continue;
                 if (pc == null) continue;
+                if (pc.LacksClient("WinnerName")) continue;
                 try
                 {
                     var target = (winnerList.Contains(pc.PlayerId) ? pc : (winnerList.Count == 0 ? pc : Main.AllPlayerControls.FirstOrDefault(p => p.PlayerId == winnerList.OrderBy(x => x).FirstOrDefault()) ?? pc)) ?? pc;

@@ -526,7 +526,7 @@ public class HostPanel : MonoBehaviour
         {
             if (pc == null || pc.Data == null || pc.Data.Disconnected) continue;
             // 試合中の PlayerName は役職の表示などで飾られているので、元の名前を使う
-            var rawName = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(pc.PlayerId, out var n) ? n : pc.Data.PlayerName;
+            var rawName = pc.GetPlainName() ?? pc.Data.PlayerName;
             var name = Utils.ColorString(Palette.PlayerColors.Length > pc.Data.DefaultOutfit.ColorId && pc.Data.DefaultOutfit.ColorId >= 0
                 ? (Color)Palette.PlayerColors[pc.Data.DefaultOutfit.ColorId] : Color.white, rawName);
             if (GameStates.IsInGame && !pc.IsAlive()) name = $"<i>{name}</i>";

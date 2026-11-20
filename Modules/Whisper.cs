@@ -29,7 +29,7 @@ public static class Whisper
     private static string Title(string key, string name) => $"<color=#b48cff>{string.Format(GetString(key), name)}</color>";
 
     private static string NameOf(PlayerControl pc)
-        => ChatPushOut.Escape(Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(pc.PlayerId, out var n) ? n : pc.Data?.PlayerName ?? "?");
+        => ChatPushOut.Escape(pc.GetPlainName() ?? "?");
 
     private static bool CanWhisper(PlayerControl from, PlayerControl to)
     {

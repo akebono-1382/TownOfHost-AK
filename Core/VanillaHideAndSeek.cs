@@ -344,8 +344,14 @@ public static class VanillaHideAndSeek
     }
 
     // 休んでいる間は TOHL のチャットの処理が無いので、/mode だけをここで拾う
+    // 客の間も TOHL のチャットの処理 (Standard) が無いので、ホストで動くコマンドに /cmd を付けて他の人に見えないようにする
     private static bool SendChatPrefix(ChatController __instance)
     {
+        if (state == State.Client)
+        {
+            PrefixCmdAsClient(__instance);
+            return true;
+        }
         if (state != State.Suspended) return true;
         var field = __instance.freeChatField;
         if (!field || !field.textArea) return true;
@@ -356,6 +362,24 @@ public static class VanillaHideAndSeek
         field.textArea.Clear();
         Command(args);
         return false;
+    }
+
+    private static void PrefixCmdAsClient(ChatController chat)
+    {
+        try
+        {
+            var field = chat.freeChatField;
+            if (!field || !field.textArea) return;
+            var text = field.textArea.text;
+            if (string.IsNullOrEmpty(text)) return;
+            TownOfHostL.Modules.ChatInput.Remember(text);
+            var args = text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (args.Length == 0 || args[0].Equals("/cmd", StringComparison.OrdinalIgnoreCase)) return;
+            if (TownOfHostL.ChatCommandTable.Find(args[0])?.Remote == null) return;
+            var cmdText = $"/cmd {text.Trim()}";
+            TownOfHostL.Modules.ChatInput.SetText(field.textArea, cmdText, cmdText.Length);
+        }
+        catch (Exception ex) { Logger.Exception(ex, "ClientMode"); }
     }
 
     private static void Say(string text)

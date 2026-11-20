@@ -147,6 +147,26 @@ public static class RoleView
         }
     }
 
+    /// <summary>
+    /// target を全員の画面でインポスター側の役職 (Impostor・Phantom など) killerRole にする。
+    /// 全員宛てに送ると、デシンクのキル役の画面ではインポスターの仲間に見えてキルできなくなるので、
+    /// デシンクの人には規則どおりの見え方 (仲間でなければ Scientist) を送る (n 本)
+    /// </summary>
+    public static void SendKillerRole(PlayerControl target, RoleTypes killerRole)
+    {
+        if (target == null) return;
+        foreach (var seer in Main.AllPlayerControls)
+        {
+            var role = killerRole;
+            if (seer.PlayerId != target.PlayerId && IsDesync(seer) && !seer.AmOwner)
+            {
+                var rule = Default(target, seer);
+                if (rule != RoleTypes.Impostor) role = rule;
+            }
+            Send(target, seer, role);
+        }
+    }
+
     /// <summary>その人を全員の画面で規則どおりに見せる (その人の画面の他の人は変えない。n 本)</summary>
     public static void ApplyToEveryone(PlayerControl player)
     {
