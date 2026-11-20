@@ -18,6 +18,7 @@ namespace TownOfHostL
         private static StringBuilder Mark = new(20);
         private static StringBuilder Suffix = new(120);       
         private static float OptionsSendTimer = 1f;
+        private static float SuffixTimer;
         private const int NameUpdateInterval = 3;
         // RoleText は名前の子に一度作られたら変わらないので、毎フレーム探し直さずに覚えておく (nameText の場所で引く)
         private static readonly System.Collections.Generic.Dictionary<IntPtr, TMPro.TextMeshPro> RoleTextCache = new();
@@ -81,7 +82,9 @@ namespace TownOfHostL
 
                     if (__instance.AmOwner)
                     {
-                        Utils.ApplySuffix();
+                        // 名前の組み立ては 0.5 秒に 1 回で足りる (毎フレームだと 1 秒に 50 回、文字列を作り直していた)
+                        SuffixTimer -= Time.fixedDeltaTime;
+                        if (SuffixTimer <= 0f) { SuffixTimer = 0.5f; Utils.ApplySuffix(); }
                         PeriodicSendDirtyGameOptions();
                     }
                 }
