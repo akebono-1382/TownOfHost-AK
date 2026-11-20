@@ -104,6 +104,8 @@ namespace TownOfHostL
         public static void OnFixedUpdate(PlayerControl seer)
         {
             if (!GameStates.IsInTask) return;
+            // 全員の FixedUpdate から呼ばれるので、矢印が無い間は何も作らない
+            if (TargetArrows.Count == 0) return;
             // ターゲット矢印の更新間隔。
             // 従来は「通常0.1秒 / 超軽量化ON時のみ0.2秒」だったが、矢印の追従間隔としては
             // 0.2秒でも体感の差はほぼ無く、常時この間隔にすることで軽量化モードを

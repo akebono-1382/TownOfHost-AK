@@ -35,6 +35,24 @@ namespace TownOfHostL
             {
                 __instance.text.alignment = TextAlignmentOptions.TopRight;
 
+                // 位置調整
+                // 毎フレーム通るので、部品は PingTracker が替わった時だけ引き直す
+                if (aspectOwner != __instance) { aspectOwner = __instance; aspect = __instance.GetComponent<AspectPosition>(); nextBuildAt = 0f; }
+                if (aspect) aspect.DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
+
+                // 本編は毎フレーム Ping の字を書き直すので、足す字も毎フレーム付ける。足す字の中身は設定や状態が変わった時にしか変わらないので、組み直すのは 0.25 秒ごと
+                float now = Time.unscaledTime;
+                if (now >= nextBuildAt)
+                {
+                    nextBuildAt = now + 0.25f;
+                    suffix = BuildSuffix();
+                }
+                __instance.text.text += suffix;
+            }
+            static string suffix = "";
+            static float nextBuildAt;
+            static string BuildSuffix()
+            {
                 sb.Clear();
 
                 sb.Append("\r\n").Append(Main.credentialsText);
@@ -48,11 +66,6 @@ namespace TownOfHostL
                 if (!GameStates.IsModHost && !(AmongUsClient.Instance && AmongUsClient.Instance.AmHost)) sb.Append($"\r\n").Append(Utils.ColorString(Color.red, GetString("Warning.NoModHost")));
                 if (DebugModeManager.IsDebugMode) sb.Append("\r\n").Append(Utils.ColorString(Color.green, "デバッグモード"));
 
-                // 位置調整
-                // 毎フレーム通るので、部品は PingTracker が替わった時だけ引き直す
-                if (aspectOwner != __instance) { aspectOwner = __instance; aspect = __instance.GetComponent<AspectPosition>(); }
-                if (aspect) aspect.DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
-
                 if (GameStates.IsLobby && !asClient)
                 {
                     // 役職が宣言したロビーの警告 (SimpleRoleInfo.LobbyWarning)
@@ -64,7 +77,7 @@ namespace TownOfHostL
                     }
                 }
 
-                __instance.text.text += sb.ToString();
+                return sb.ToString();
             }
         }
         [HarmonyPatch(typeof(VersionShower), nameof(VersionShower.Start))]

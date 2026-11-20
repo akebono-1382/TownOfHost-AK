@@ -17,26 +17,30 @@ namespace TownOfHostL
             {
                 if (PlayerControl.LocalPlayer.Is(CustomRoleTypes.Impostor) && Options.ImpostorOperateVisibility.GetBool()) return;
 
-                if (Camera.main.orthographicSize > 3.0f)
-                    ResetButtons = true;
-                
-                if (Input.mouseScrollDelta.y > 0)
+                // カメラの大きさを変えるのはホイールを回した時だけ。回していないフレームはカメラを引かない
+                float scroll = Input.mouseScrollDelta.y;
+                if (scroll != 0f)
                 {
-                    if (Camera.main.orthographicSize > 3.0f)
-                    {
-                        SetZoomSize(times: false);
-                    }
+                    float size = Camera.main.orthographicSize;
+                    if (size > 3.0f)
+                        ResetButtons = true;
 
-                }
-                if (Input.mouseScrollDelta.y < 0)
-                {
-                    if (GameStates.IsDead || GameStates.IsFreePlay)
+                    if (scroll > 0)
                     {
-                        if (Camera.main.orthographicSize < 18.0f)
+                        if (size > 3.0f)
+                        {
+                            SetZoomSize(times: false);
+                        }
+                    }
+                    else if (GameStates.IsDead || GameStates.IsFreePlay)
+                    {
+                        if (size < 18.0f)
                         {
                             SetZoomSize(times: true);
                         }
                     }
+                    // 引いたままなら、戻す時にボタンの配置を直させる (大きさが変わるのはここだけ)
+                    ResetButtons = Camera.main.orthographicSize > 3.0f;
                 }
                 Flag.NewFlag("Zoom");
             }
@@ -44,6 +48,8 @@ namespace TownOfHostL
             {
                 Flag.Run(() =>
                 {
+                    // ホイール以外でカメラが引かれていた時も、戻す時にボタンの配置を直させる
+                    if (Camera.main.orthographicSize > 3.0f) ResetButtons = true;
                     SetZoomSize(reset: true);
                 }, "Zoom");
             }

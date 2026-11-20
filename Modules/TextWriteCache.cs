@@ -64,6 +64,31 @@ public static class TextWriteCache
         return Marshal.ReadIntPtr(p, off) != IntPtr.Zero;
     }
 
+    /// <summary>
+    /// tmp が今 value を表示していて、前に Remember してからほかに書き換えられていないか。
+    /// 書き込みを本編の関数 (ボタンの OverrideText など) に任せる所で、SetText の代わりに Remember と組で使う。
+    /// </summary>
+    public static bool IsCurrent(TMP_Text tmp, string value)
+    {
+        if (value == null) return false;
+        IntPtr p = tmp.Pointer;
+        int off = TextOffset;
+        if (off == 0 || p == IntPtr.Zero) return false;
+        IntPtr current = Marshal.ReadIntPtr(p, off);
+        return current != IntPtr.Zero && Entries.TryGetValue(p, out var e) && e.Native == current && string.Equals(e.Text, value, StringComparison.Ordinal);
+    }
+
+    /// <summary>tmp に value を書いた直後に呼び、次の IsCurrent で比べられるようにする。</summary>
+    public static void Remember(TMP_Text tmp, string value)
+    {
+        if (value == null) return;
+        IntPtr p = tmp.Pointer;
+        int off = TextOffset;
+        if (off == 0 || p == IntPtr.Zero) return;
+        if (Entries.Count > 512) Entries.Clear();
+        Entries[p] = new Entry { Text = value, Native = Marshal.ReadIntPtr(p, off) };
+    }
+
     /// <summary>tmp.text = value と同じ。前回と同じ内容でほかから書き換えられてもいなければ何もしない。</summary>
     public static void SetText(TMP_Text tmp, string value)
     {

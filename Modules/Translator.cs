@@ -191,8 +191,24 @@ namespace TownOfHostL
             foreach (var v in EnumHelper.GetAllValues<StringNames>()) map.TryAdd(v.ToString(), v);
             return map;
         }
+        // 本編の文字は言語が変わらない限り同じ。ボタンの文字などで毎フレーム引かれるので、言語ごとに覚えておく
+        static readonly System.Collections.Generic.Dictionary<StringNames, string> vanillaStrings = new();
+        static SupportedLangs vanillaStringsLang = (SupportedLangs)(-1);
         public static string GetString(StringNames stringName)
-            => DestroyableSingleton<TranslationController>.Instance.GetString(stringName, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
+        {
+            var tc = DestroyableSingleton<TranslationController>.Instance;
+            var lang = tc.currentLanguage.languageID;
+            if (lang != vanillaStringsLang)
+            {
+                vanillaStrings.Clear();
+                vanillaStringsLang = lang;
+            }
+            if (vanillaStrings.TryGetValue(stringName, out var text)) return text;
+            text = tc.GetString(stringName, new Il2CppReferenceArray<Il2CppSystem.Object>(0));
+            // 翻訳が引けなかった印 (STRMISS) は覚えず、次に引き直す
+            if (text != null && !text.StartsWith("STRMISS", StringComparison.Ordinal)) vanillaStrings[stringName] = text;
+            return text;
+        }
         public static string GetRoleString(string str)
         {
             var CurrentLanguage = TranslationController.Instance.currentLanguage.languageID;

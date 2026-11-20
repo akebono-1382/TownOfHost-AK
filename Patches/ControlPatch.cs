@@ -56,6 +56,8 @@ namespace TownOfHostL
     {
         public static void Postfix(ControllerManager __instance)
         {
+            // どの操作もそのフレームに押されたキーで始まる。何も押されていないフレームは、キーの組ごとの配列も作らずに抜ける
+            if (!Input.anyKeyDown) return;
             // 設定画面の検索欄に字を打っている間は、キー操作として受け取らない
             if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing) return;
             if (GameStates.IsLobby)

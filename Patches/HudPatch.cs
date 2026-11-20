@@ -19,18 +19,13 @@ class HudManagerPatch
 {
     static TextMeshPro optionShowerText;
     static string lastOptionText;
-    // 「キル」の文字は言語が変わらない限り同じなので、毎フレーム本編の翻訳を引かない
-    static string killLabelCache;
-    static SupportedLangs killLabelLang;
-    static string KillLabel()
+    // ボタンの文字は前と同じなら書かない (毎フレーム文字列をゲーム側へ写していた)。本編が書き換えた時は書き直す
+    static void SetButtonText(ActionButton button, string text)
     {
-        var lang = TranslationController.Instance.currentLanguage.languageID;
-        if (killLabelCache == null || lang != killLabelLang)
-        {
-            killLabelCache = GetString(StringNames.KillLabel);
-            killLabelLang = lang;
-        }
-        return killLabelCache;
+        var label = button.buttonLabelText;
+        if (label != null && TextWriteCache.IsCurrent(label, text)) return;
+        button.OverrideText(text);
+        if (label != null) TextWriteCache.Remember(label, text);
     }
 
     public static bool ShowDebugText = false;
@@ -142,11 +137,11 @@ class HudManagerPatch
                 var roleClass = player.GetRoleClass();
                 if (roleClass != null)
                 {
-                    var killLabel = (roleClass as IKiller)?.OverrideKillButtonText(out string text) == true ? text : KillLabel();
-                    __instance.KillButton.OverrideText(killLabel);
+                    var killLabel = (roleClass as IKiller)?.OverrideKillButtonText(out string text) == true ? text : GetString(StringNames.KillLabel);
+                    SetButtonText(__instance.KillButton, killLabel);
                     if (roleClass.HasAbility)
                     {
-                        __instance.AbilityButton.OverrideText(roleClass.GetAbilityButtonText());
+                        SetButtonText(__instance.AbilityButton, roleClass.GetAbilityButtonText());
                         __instance.AbilityButton.ToggleVisible(roleClass.CanUseAbilityButton() && GameStates.IsInTask);
                     }
                 }
@@ -204,7 +199,7 @@ class HudManagerPatch
                 __instance.ImpostorVentButton.Hide();
                 __instance.KillButton.Hide();
                 __instance.AbilityButton.Show();
-                __instance.AbilityButton.OverrideText(GetString(StringNames.HauntAbilityName));
+                SetButtonText(__instance.AbilityButton, GetString(StringNames.HauntAbilityName));
             }
         }
 
