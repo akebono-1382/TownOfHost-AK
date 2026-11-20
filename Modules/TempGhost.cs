@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using AmongUs.GameOptions;
 using HarmonyLib;
@@ -71,7 +71,7 @@ public static class TempGhost
     {
         if (pc == null || !AmongUsClient.Instance.AmHost) return "host";
         if (!GameStates.IsInTask || AmongUsClient.Instance.IsGameOver) return "not in task";
-        if (MeetingHud.Instance || ExileController.Instance || MeetingStates.MeetingCalled || AntiBlackout.IsCached) return "meeting";
+        if (MeetingHud.Instance || ExileController.Instance || MeetingStates.MeetingCalled || AntiBlackout.IsCached || AntiBlackout.IsRevertPending) return "meeting";
         if (Revive.IsSettling) return "settling";
         if (Time.realtimeSinceStartup - Revive.LastMeetingAt < AfterMeetingGap || returnAfterMeeting.Count != 0) return "after meeting";
         if (!pc.IsAlive()) return "dead";
@@ -293,6 +293,8 @@ public static class TempGhost
         int gen = generation;
         _ = new LateTask(() =>
         {
+            // 暗転対策が客の画面の役職を戻し終えるまで待つ (先に送ると身代わりを上書きする)
+            if (gen == generation && AntiBlackout.IsRevertPending) { ScheduleReturnAfterMeeting(); return; }
             returnAfterMeeting.Clear();
             if (gen != generation || !GameStates.IsInTask) return;
             foreach (var id in ids)

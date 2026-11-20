@@ -104,9 +104,14 @@ public static partial class AntiBlackout
     // デシンクの人の画面に送った身代わり (演出の後で RoleView の見え方へ戻す)
     private static readonly Dictionary<int, (PlayerControl seer, List<PlayerControl> dummies)> desyncDummies = new();
 
+    // 会議の締めで身代わりなどを送ってから、追放の演出の後でそれを戻すまでの間 (この間に客の画面の役職を送り直すと暗転しうる)
+    private static bool revertPending;
+    public static bool IsRevertPending => revertPending;
+
     public static void SetRoleChange(PlayerControl killer = null, bool fillCrew = false)
     {
         if (CustomWinnerHolder.WinnerTeam != CustomWinner.Default) return;
+        if (fillCrew) revertPending = true;
 
         RecognizeType remaining = RecognizeType.Impostor;
         List<PlayerControl> list = new();
@@ -159,8 +164,8 @@ public static partial class AntiBlackout
                     .Write(true)
                     .EndRpc();
                 count++;
-                // デシンクの人の画面と、デシンクの役職の身代わり (会議明けの配り直しが見え方へ戻してしまう) は、演出の後で戻す
-                if ((desync && pc.IsAlive()) || dummy.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true)
+                // デシンクの人の画面と、見え方と違う役職で送った身代わり (会議明けの配り直しが見え方へ戻してしまう) は、演出の後で戻す
+                if ((desync && pc.IsAlive()) || dummyRole != RoleView.Living(dummy, pc))
                 {
                     if (!desyncDummies.TryGetValue(clientId, out var sent)) desyncDummies[clientId] = sent = (pc, new());
                     if (!sent.dummies.Contains(dummy)) sent.dummies.Add(dummy);
@@ -265,6 +270,8 @@ public static partial class AntiBlackout
     /// 生きたクルーに見せた人なら、死を送るのを RevertFilledCrew まで遅らせて true を返す。
     /// 追放の締めで追放者の IsDead を立てる前に呼ぶ
     /// </summary>
+    public static bool IsDeathDeferred(byte playerId) => deferredDead.ContainsKey(playerId);
+
     public static bool DeferDeathIfFilled(byte playerId)
     {
         if (!deferredDead.TryGetValue(playerId, out var val)) return false;
@@ -275,6 +282,7 @@ public static partial class AntiBlackout
     // 追放の演出の締めで各クライアントが判定を終えた後に呼ぶ
     public static void RevertFilledCrew()
     {
+        revertPending = false;
         RevertDesyncDummies();
         if (deferredDead.Count > 0)
         {
@@ -401,5 +409,6 @@ public static partial class AntiBlackout
         filledCrew.Clear();
         deferredDead.Clear();
         desyncDummies.Clear();
+        revertPending = false;
     }
 }

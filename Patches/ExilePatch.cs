@@ -1,4 +1,4 @@
-using AmongUs.Data;
+﻿using AmongUs.Data;
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using HarmonyLib;
 using System.Collections;
@@ -145,7 +145,12 @@ namespace TownOfHostL
                         exiled != null &&
                         exiled.Object != null)
                     {
-                        exiled.Object.RpcExileV3();
+                        // 暗転対策で生きたクルーに見せている追放者は、客の締めの判定の後 (RevertFilledCrew) まで死なせない
+                        var obj = exiled.Object;
+                        if (AntiBlackout.IsDeathDeferred(exiled.PlayerId))
+                            _ = new LateTask(() => { if (obj != null) obj.RpcExileV3(); }, 2f, "Restore IsDead Task (deferred)");
+                        else
+                            obj.RpcExileV3();
                     }
                 }, 0.5f, "Restore IsDead Task");
 
