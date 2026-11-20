@@ -224,7 +224,10 @@ public sealed class SchrodingerCatKiller : RoleBase, IKiller, IAdditionalWinner,
 
         return true;
     }
+    // 会議明けの演出の直後に化けると、客の追放の演出の締めより前に頭数が動いて暗転しうるので、暗転対策の身代わりを戻してから化ける
     private static void ChangeCatKiller(PlayerControl cat, PlayerControl owner, CustomRoles ownerRole, TeamType team, CountTypes countType)
+        => AntiBlackout.RunAfterRevert(() => ChangeCatKillerNow(cat, owner, ownerRole, team, countType));
+    private static void ChangeCatKillerNow(PlayerControl cat, PlayerControl owner, CustomRoles ownerRole, TeamType team, CountTypes countType)
     {
         if (cat == null || !cat.IsAlive()) return;
         if (owner == null || !owner.IsAlive()) return;

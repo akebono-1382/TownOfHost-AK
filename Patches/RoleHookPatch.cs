@@ -73,8 +73,8 @@ public static class RoleHooks
         {
             foreach (var pc in Main.AllPlayerControls) pc.GetRoleClass()?.OnSpawn();
         }
-        // 追放の演出の後に送る (演出の間に本人の画面のキル役を増やすと、AntiBlackout の見積もりが外れる)
-        _ = new LateTask(ApplyAfterMeetingRoles, airship ? 0.5f : 1.0f, "RoleHooks.AfterMeetingRole");
+        // 追放の演出の後、暗転対策の身代わりを戻してから送る (客の演出の締めより前に本人の画面のキル役を増やすと、AntiBlackout の見積もりが外れる)
+        _ = new LateTask(() => AntiBlackout.RunAfterRevert(ApplyAfterMeetingRoles), airship ? 0.5f : 1.0f, "RoleHooks.AfterMeetingRole");
     }
 
     /// <summary>AfterMeetingRole を持つ役職の、本人の画面の本人の役職を送る (見え方の表に残る)</summary>
