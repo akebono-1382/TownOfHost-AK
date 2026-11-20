@@ -39,7 +39,6 @@ public static class TempGhost
     // 会議に持ち越した人 (会議の間は送らず、会議明けに戻す)
     private static readonly List<byte> returnAfterMeeting = new();
     private static readonly List<byte> scratch = new();
-    private static float lastMeetingAt = float.NegativeInfinity;
     private static bool wasInMeeting;
     private static int generation;
 
@@ -48,7 +47,6 @@ public static class TempGhost
     {
         ghosts.Clear();
         returnAfterMeeting.Clear();
-        lastMeetingAt = float.NegativeInfinity;
         wasInMeeting = false;
         generation++;
     }
@@ -58,24 +56,42 @@ public static class TempGhost
 
     /// <summary>幽霊でいる残りの秒 (切り上げ)。幽霊でなければ 0</summary>
     public static int RemainingSeconds(byte playerId)
-        => ghosts.TryGetValue(playerId, out var e) ? Mathf.Max(0, Mathf.CeilToInt(e.EndAt - Time.realtimeSinceStartup)) : 0;
+        => ghosts.TryGetValue(playerId, out var e) ? Math.Max(0, CeilSeconds(e.EndAt - Time.realtimeSinceStartup)) : 0;
+
+    private static int CeilSeconds(float seconds) => (int)Math.Ceiling(seconds);
 
     /// <summary>今、幽霊になれるか (会議・追放・会議明けの配り直しの間と、復活や幽霊化の SetRole が落ち着く前は不可)</summary>
-    public static bool CanBegin(PlayerControl pc)
+    public static bool CanBegin(PlayerControl pc) => BlockReason(pc, true) == null;
+
+    /// <summary>ベントの中かどうかを除いて <see cref="CanBegin"/> と同じ (ベントを能力のボタンにする役職が、ベントに入った時に見る)</summary>
+    public static bool CanBeginIgnoringVent(PlayerControl pc) => BlockReason(pc, false) == null;
+
+    /// <summary>今は幽霊になれない理由 (なれるなら null)</summary>
+    private static string BlockReason(PlayerControl pc, bool checkVent)
     {
-        if (pc == null || !AmongUsClient.Instance.AmHost || !GameStates.IsInTask || AmongUsClient.Instance.IsGameOver) return false;
-        if (MeetingHud.Instance || ExileController.Instance || MeetingStates.MeetingCalled || AntiBlackout.IsCached) return false;
-        if (Time.realtimeSinceStartup - lastMeetingAt < AfterMeetingGap || returnAfterMeeting.Count != 0) return false;
-        if (!pc.IsAlive() || IsGhost(pc.PlayerId) || pc.inVent || pc.inMovingPlat || pc.onLadder) return false;
-        return true;
+        if (pc == null || !AmongUsClient.Instance.AmHost) return "host";
+        if (!GameStates.IsInTask || AmongUsClient.Instance.IsGameOver) return "not in task";
+        if (MeetingHud.Instance || ExileController.Instance || MeetingStates.MeetingCalled || AntiBlackout.IsCached) return "meeting";
+        if (Revive.IsSettling) return "settling";
+        if (Time.realtimeSinceStartup - Revive.LastMeetingAt < AfterMeetingGap || returnAfterMeeting.Count != 0) return "after meeting";
+        if (!pc.IsAlive()) return "dead";
+        if (IsGhost(pc.PlayerId)) return "already ghost";
+        if (pc.inMovingPlat || pc.onLadder) return "moving";
+        if (checkVent && pc.inVent) return "in vent";
+        return null;
     }
 
     /// <summary>
     /// duration 秒だけ幽霊にする。なれたら true。onReturned は会議以外で戻った後に呼ぶ (キルのクールの立て直しなど)。
+    /// ignoreVent は、ベントから押し出した直後に呼ぶ時に使う (押し出された客は出ても、ホストの手元では inVent が立ったまま残る)。
     /// </summary>
-    public static bool Begin(PlayerControl pc, float duration, Action<PlayerControl> onReturned = null)
+    public static bool Begin(PlayerControl pc, float duration, Action<PlayerControl> onReturned = null, bool ignoreVent = false)
     {
-        if (!CanBegin(pc)) return false;
+        if (BlockReason(pc, !ignoreVent) is { } reason)
+        {
+            Logger.Info($"幽霊になれない ({reason}): {pc?.GetNameWithRole()}", "TempGhost");
+            return false;
+        }
         Logger.Info($"幽霊になる: {pc.GetNameWithRole()} {duration}s", "TempGhost");
 
         ghosts[pc.PlayerId] = new Entry
@@ -142,7 +158,7 @@ public static class TempGhost
     private static void BringInside(PlayerControl pc)
     {
         Vector2 pos = pc.GetTruePosition();
-        if (IsStandable(pc, pos)) return;
+        if (IsStandable(pos)) return;
         Vent nearest = null;
         float best = float.MaxValue;
         foreach (var vent in ShipStatus.Instance.AllVents)
@@ -162,10 +178,11 @@ public static class TempGhost
     /// 立っていられる場所か。床の当たり (ShipOnlyMask) の重なりと部屋の範囲で見る。
     /// マップごとに床の作りが違うので、どちらを使うかを分ける (スケルドは床の当たりが外にも広がっている)
     /// </summary>
-    private static bool IsStandable(PlayerControl pc, Vector2 pos)
+    private static bool IsStandable(Vector2 pos)
     {
         int floors = Physics2D.OverlapPointNonAlloc(pos, overlapBuffer, Constants.ShipOnlyMask);
-        bool inRoom = pc.GetPlainShipRoom() != null;
+        // 幽霊の体は当たり判定が切れているので、体の当たりではなく位置で部屋を引く
+        bool inRoom = pos.GetPlainShipRoom() != null;
         return (MapNames)Main.NormalOptions.MapId switch
         {
             MapNames.Skeld or MapNames.Dleks => inRoom,
@@ -179,6 +196,8 @@ public static class TempGhost
 
     private static void Update()
     {
+        // 幽霊も会議に持ち越した人もいなければ何もしない (ふだんの毎フレームはここで終わる)
+        if (ghosts.Count == 0 && returnAfterMeeting.Count == 0) return;
         var client = AmongUsClient.Instance;
         if (!client || !client.AmHost || !GameStates.IsInGame) return;
         float now = Time.realtimeSinceStartup;
@@ -186,7 +205,6 @@ public static class TempGhost
         bool inMeeting = MeetingHud.Instance || ExileController.Instance || AntiBlackout.IsCached;
         if (inMeeting)
         {
-            lastMeetingAt = now;
             wasInMeeting = true;
             // 通報を通らずに開いた会議: 会議の間は送らず、会議明けに戻す
             if (ghosts.Count != 0)
@@ -220,7 +238,7 @@ public static class TempGhost
                 continue;
             }
             // 残りの秒が変わった時だけ、本人の名前の下の秒読みを書き直す
-            int shown = Mathf.CeilToInt(entry.EndAt - now);
+            int shown = CeilSeconds(entry.EndAt - now);
             if (shown != entry.ShownSeconds)
             {
                 entry.ShownSeconds = shown;

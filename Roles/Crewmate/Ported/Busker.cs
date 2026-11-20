@@ -49,8 +49,9 @@ public sealed class Busker : RoleBase
     private static int tasksPerUse;
 
     private int uses;
-    // ベントから出てから幽霊になるまでの間 (ベントの中で役職を替えると出られなくなる)
-    private const float AfterBootDelay = 1f;
+    // ベントから押し出してから幽霊にするまでの間 (ベントの中で役職を替えると出られなくなる)。
+    // 押し出された客がベントから出ても、ホストの手元の inVent は立ったまま残るので、出たかどうかは見ずに時間で待つ
+    private const float AfterBootDelay = 1.5f;
 
     private static void SetupOptionItem()
     {
@@ -87,11 +88,11 @@ public sealed class Busker : RoleBase
 
     public override bool OnEnterVent(PlayerPhysics physics, int ventId)
     {
-        if (uses <= 0 || !TempGhost.CanBegin(Player)) return true;
+        if (uses <= 0 || !TempGhost.CanBeginIgnoringVent(Player)) return true;
         physics.RpcBootFromVent(ventId);
         _ = new LateTask(() =>
         {
-            if (uses <= 0 || Player == null || !TempGhost.Begin(Player, duration)) return;
+            if (uses <= 0 || Player == null || !TempGhost.Begin(Player, duration, ignoreVent: true)) return;
             uses--;
             Player.MarkDirtySettings();
         }, AfterBootDelay, "Busker_BecomeGhost");

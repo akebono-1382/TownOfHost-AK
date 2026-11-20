@@ -30,11 +30,17 @@ public static class ChatPushOut
     private static bool chattedDuringExile;
     private const float ExilePushOutDelay = 3f;
 
+    // 一時的に幽霊になっている人 (TempGhost) は、本編では生きている扱いのまま幽霊のチャット欄を持つので、
+    // 試合中の書き込みが生きている人のチャット欄に残る。届いたら少し待って押し出す (続けて書かれても 1 回にまとめる)
+    private static bool ghostPushOutPending;
+    private const float GhostPushOutDelay = 1f;
+
     [GameModuleInitializer]
     public static void Reset()
     {
         history.Clear();
         chattedDuringExile = false;
+        ghostPushOutPending = false;
     }
 
     /// <summary>客の書き込みが届いた時に呼ぶ (ホストだけ)。追放の画面の間なら覚えておく</summary>
@@ -42,6 +48,17 @@ public static class ChatPushOut
     {
         if (player == null || player.AmOwner || !AmongUsClient.Instance.AmHost) return;
         if (ExileController.Instance != null && player.Data != null && !player.Data.IsDead) chattedDuringExile = true;
+        if (TempGhost.IsGhost(player) && !ghostPushOutPending)
+        {
+            ghostPushOutPending = true;
+            _ = new LateTask(() =>
+            {
+                ghostPushOutPending = false;
+                if (!GameStates.IsInGame) return;
+                Logger.Info("一時的に幽霊になっている人の書き込みを押し出します", "ChatPushOut");
+                PushOut();
+            }, GhostPushOutDelay, "ChatPushOutGhost");
+        }
     }
 
     /// <summary>追放の画面が終わって試合に戻った時に呼ぶ (ホストだけ)</summary>
