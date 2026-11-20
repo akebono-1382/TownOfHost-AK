@@ -60,6 +60,7 @@ public sealed class Obolus : RoleBase, ILNKiller, IAdditionalWinner
     int KillCount;
     bool WinFlag;
     int Daycount;
+    int countedDay = -1;
     int NeedCount;
     bool KilledOnThisTurn;
     bool IKiller.CanKill => !KilledOnThisTurn;
@@ -177,7 +178,7 @@ public sealed class Obolus : RoleBase, ILNKiller, IAdditionalWinner
     }
     public override void AfterMeetingTasks()
     {
-        ++Daycount;
+        if (MeetingStates.OncePerDay(ref countedDay)) ++Daycount;
         KilledOnThisTurn = false;
     }
     public override string GetProgressText(bool comms = false)

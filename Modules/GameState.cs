@@ -300,4 +300,14 @@ public static partial class MeetingStates
         Day++;
         return true;
     }
+    /// <summary>
+    /// 会議の後の処理で日ごとの数を進める時に使う。その日の最初の 1 回だけ true を返す
+    /// (会議の後の処理は 1 回の会議で 2 度呼ばれる)。lastDay は役職ごとに持ち、-1 で始める
+    /// </summary>
+    public static bool OncePerDay(ref int lastDay)
+    {
+        if (lastDay == Day) return false;
+        lastDay = Day;
+        return true;
+    }
 }

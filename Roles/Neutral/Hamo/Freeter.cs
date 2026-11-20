@@ -88,6 +88,7 @@ public sealed class Freeter : RoleBase, IKiller, IAdditionalWinner
     bool hasBeenEmployed;
 
     int unemployedTurns;
+    int countedDay = -1;
 
 
 
@@ -432,6 +433,7 @@ public sealed class Freeter : RoleBase, IKiller, IAdditionalWinner
 
 
 
+        if (!MeetingStates.OncePerDay(ref countedDay)) return;
         unemployedTurns++;
 
 

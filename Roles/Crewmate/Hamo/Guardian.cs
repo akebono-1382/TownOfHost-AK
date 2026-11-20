@@ -88,6 +88,7 @@ public sealed class Guardian : RoleBase, ISelfVoter
     private bool isGuardMode;
     // 現在守っている対象と、残り会議数のペア
     private readonly Dictionary<byte, int> guardedTargets = new();
+    private int countedDay = -1;
     // これまでに守った(生涯)対象の数(重複カウントしない、対象ごとに1回)
     private readonly HashSet<byte> lifetimeGuardedTargets = new();
 
@@ -186,6 +187,7 @@ public sealed class Guardian : RoleBase, ISelfVoter
         if (!AmongUsClient.Instance.AmHost) return;
 
         // 会議終了ごとに残りターン数を減らし、0になったら守護を解除する
+        if (!MeetingStates.OncePerDay(ref countedDay)) return;
         var expired = new List<byte>();
         var keys = guardedTargets.Keys.ToList();
         foreach (var id in keys)

@@ -167,6 +167,7 @@ public sealed class AntiHero : RoleBase, IAdditionalWinner, IKiller
     // キルが成立してから経過した会議数(1ターン経過するまで勝利条件に反映しない)
 
     private int turnsSinceLastKill = int.MaxValue;
+    private int countedDay = -1;
 
     // 一度もキルしないまま試合が終わったかどうかの判定用
 
@@ -266,7 +267,7 @@ public sealed class AntiHero : RoleBase, IAdditionalWinner, IKiller
 
         if (!AmongUsClient.Instance.AmHost) return;
 
-        if (turnsSinceLastKill != int.MaxValue)
+        if (turnsSinceLastKill != int.MaxValue && MeetingStates.OncePerDay(ref countedDay))
 
             turnsSinceLastKill++;
 
