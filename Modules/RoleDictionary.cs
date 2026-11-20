@@ -15,7 +15,7 @@ namespace TownOfHostL.Modules;
 /// タイトル画面のボタン、F4 キー、チャットの /dic で開く。どこでも見られる (自分の画面だけ。通信はしない)。
 /// </summary>
 /// <remarks>
-/// 見せ方の案は TownOfHost-hamo の役職の説明画面 (RoleInfoShower) だが、絵は使わず IMGUI で一から描く。
+/// 見せ方の案は TownOfHost-hamo の役職の説明画面 (rar006/TownOfHost-hamo@f7b00a9e Modules/RoleInfoShower.cs) で、IMGUI で一から描く。
 /// 窓の見た目と OnGUI の扱いは <see cref="HostPanel"/> に合わせる (閉じている間は OnGUI ごと止め、中身の組み直しは選び直した時だけ)。
 /// </remarks>
 public class RoleDictionary : MonoBehaviour

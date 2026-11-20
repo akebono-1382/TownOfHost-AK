@@ -3,7 +3,7 @@
 namespace TownOfHostL.Roles.Core;
 
 /// <summary>役職の出どころ (どの MOD で生まれた役職か)。役職の説明の最後に「From:」で出す。</summary>
-/// <remarks>並びと色は TownOfHost-hamo の From に合わせる。</remarks>
+/// <remarks>並びと色は TownOfHost-hamo の From に合わせる (rar006/TownOfHost-hamo@f7b00a9e Roles/Core/SimpleRoleInfo.cs・Modules/Utils/UtilsOption.cs)。</remarks>
 public enum From
 {
     None,
@@ -37,7 +37,7 @@ public enum From
 public static class RoleFrom
 {
     /// <summary>
-    /// 役職ごとの出どころ。TownOfHost-hamo にある役職は hamo の From をそのまま使い、
+    /// 役職ごとの出どころ。TownOfHost-hamo で From を持つ役職はそれを使い、From の無い役職は役職の冒頭コメントと README のクレジットに合わせ、
     /// hamo に無い役職は TownOfHost_Y (L のフォーク元) の分け方 (TOH / Y / Default) から決めた。
     /// 表に無い役職 (L で生まれた役職など) は出さない。
     /// </summary>
@@ -53,19 +53,19 @@ public static class RoleFrom
         [CustomRoles.Arsonist] = From.TownOfUs,
         [CustomRoles.Assassin] = From.ExtremeRoles,
         [CustomRoles.Bait] = From.TheOtherRoles,
-        [CustomRoles.Bakery] = From.TownOfHost_hamo,
+        [CustomRoles.Bakery] = From.TownOfHost_Y,
         [CustomRoles.Balancer] = From.SuperNewRoles,
         [CustomRoles.Ballooner] = From.TownOfHost_K,
         [CustomRoles.BestieWolf] = From.TownOfHost_Y,
         [CustomRoles.Blinder] = From.TownOfHost_Y,
         [CustomRoles.Bomber] = From.TownOfHost_K,
         [CustomRoles.BountyHunter] = From.TheOtherRoles,
-        [CustomRoles.Braid] = From.TownOfHost_hamo,
+        [CustomRoles.Braid] = From.TownOfHost_K,
         [CustomRoles.Busker] = From.EndlessHostRoles,
         [CustomRoles.CandleLighter] = From.TownOfHost_Y,
         [CustomRoles.ChainShifter] = From.TownOfHost_Y,
         [CustomRoles.Chairman] = From.TownOfHost_Y,
-        [CustomRoles.Chameleon] = From.TownOfHost_hamo,
+        [CustomRoles.Chameleon] = From.TownOfHost_K,
         [CustomRoles.Charger] = From.TownOfHost_Y,
         [CustomRoles.CharismaStar] = From.TownOfHost_Y,
         [CustomRoles.Chaser] = From.TownOfHost_Y,
@@ -120,7 +120,7 @@ public static class RoleFrom
         [CustomRoles.GuardianAngel] = From.AmongUs,
         [CustomRoles.HadouHo] = From.SuperNewRoles,
         [CustomRoles.HateKiller] = From.TownOfHost_Pko,
-        [CustomRoles.Hunter] = From.TownOfHost_hamo,
+        [CustomRoles.Hunter] = From.TownOfHost_Y,
         [CustomRoles.Immoralist] = From.TownOfHost_Y,
         [CustomRoles.Insider] = From.TownOfHost,
         [CustomRoles.Jack] = From.TownOfHost_Y,
@@ -163,7 +163,7 @@ public static class RoleFrom
         [CustomRoles.Mayor] = From.TownOfUs,
         [CustomRoles.Medic] = From.TownOfHost_Y,
         [CustomRoles.MeetingSheriff] = From.SuperNewRoles,
-        [CustomRoles.Merlin] = From.TownOfHost_hamo,
+        [CustomRoles.Merlin] = From.ExtremeRoles,
         [CustomRoles.NekoKabocha] = From.TOR_GM_Edition,
         [CustomRoles.Nekomata] = From.TownOfHost_Y,
         [CustomRoles.NiceAddoer] = From.TownOfHost_K,
@@ -188,8 +188,8 @@ public static class RoleFrom
         [CustomRoles.Onmyoji] = From.SuperNewRoles,
         [CustomRoles.Opportunist] = From.TOR_GM_Edition,
         [CustomRoles.PavlovDog] = From.SuperNewRoles,
-        [CustomRoles.PavlovDogImprint] = From.TownOfHost_hamo,
-        [CustomRoles.PavlovOwner] = From.TownOfHost_hamo,
+        [CustomRoles.PavlovDogImprint] = From.SuperNewRoles,
+        [CustomRoles.PavlovOwner] = From.SuperNewRoles,
         [CustomRoles.Penguin] = From.SuperNewRoles,
         [CustomRoles.Pirate] = From.TownOfHost_Y,
         [CustomRoles.PlagueDoctor] = From.TOR_GM_Edition,
@@ -251,7 +251,7 @@ public static class RoleFrom
         [CustomRoles.Warlock] = From.TheOtherRoles,
         [CustomRoles.Witch] = From.TheOtherRoles,
         [CustomRoles.Workaholic] = From.TownOfHost_Y,
-        [CustomRoles.Zombie] = From.TownOfHost_hamo,
+        [CustomRoles.Zombie] = From.TownOfHost_Pko,
         // 属性
         [CustomRoles.Lovers] = From.Love_Couple_Mod,
     };
