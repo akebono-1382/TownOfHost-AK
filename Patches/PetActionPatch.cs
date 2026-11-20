@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using AmongUs.GameOptions;
 using HarmonyLib;
-using Hazel;
+using TownOfHostL.Modules.Net;
 using TownOfHostL.Roles.Core;
 
 namespace TownOfHostL.Patches;
@@ -56,36 +56,11 @@ internal static class ExternalRpcPetPatch
 
         LastProcess[pc.PlayerId] = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        if (!pc.AmOwner
-            && !pc.inVent
-            && !pc.inMovingPlat
-            && !pc.walkingToVent
-            && !pc.onLadder
-            && !__instance.Animations.IsPlayingEnterVentAnimation()
-            && !__instance.Animations.IsPlayingAnyLadderAnimation()
-            && GameStates.IsInTask)
-        {
-            CancelPetNow(__instance);
-            _ = new LateTask(() => CancelPetNow(__instance), 0.4f, "ExternalRpcPetPatch.CancelPet");
-        }
-
+        // かわいがりはホストから止めない。本人がボタンを離すか歩くと本編が自分で止める。押している間にホストが止めると、
+        // 離した時の本編の解除 (PlayerPhysics.CheckCancelPetting) が走らず、ペットのボタンが押せないまま残る (2026-11-08 実機で確認)
         Logger.Info($"{pc.Data?.PlayerName} がペットを撫でた", "PetActionPatch");
 
         OnPetUse(pc);
-    }
-
-    private static void CancelPetNow(PlayerPhysics physics)
-    {
-        try { physics.CancelPet(); }
-        catch { }
-
-        try
-        {
-            MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(
-                physics.NetId, (byte)RpcCalls.CancelPet, SendOption.None);
-            AmongUsClient.Instance.FinishRpcImmediately(w);
-        }
-        catch { }
     }
 
     private static void OnPetUse(PlayerControl pc)
@@ -110,24 +85,24 @@ internal static class ExternalRpcPetPatch
 
 public static class PetsHelper
 {
+    // 今の既定の外見のペットだけを変えて OutfitSync で送る (他人の SetPetStr はホストから送らない)。
+    // カモフラ中などで戻す先の外見も同じペットにそろえる
     public static void SetPet(PlayerControl pc, string petId)
     {
         if (pc == null) return;
-        pc.RpcSetPet(petId);
+        if (Camouflage.PlayerSkins.TryGetValue(pc.PlayerId, out var original)) original.PetId = petId;
+        var cur = pc.Data?.DefaultOutfit;
+        if (cur == null) return;
+        OutfitSync.Apply(pc, new NetworkedPlayerInfo.PlayerOutfit().Set(cur.PlayerName, cur.ColorId, cur.HatId, cur.SkinId, cur.VisorId, petId, cur.NamePlateId));
     }
 
     public static void RemovePet(PlayerControl pc)
     {
-        if (pc?.Data == null || pc.IsAlive()) return;
-        if (pc.CurrentOutfit.PetId == "") return;
+        // 死んだ直後 (PlayerControl.Die) は TOHL の生死より先に本編の IsDead が立つので、どちらかで死んでいれば外す
+        if (pc?.Data == null || (pc.IsAlive() && !pc.Data.IsDead)) return;
+        if (string.IsNullOrEmpty(pc.Data.DefaultOutfit?.PetId)) return;
 
         SetPet(pc, "");
-
-        if (Camouflage.PlayerSkins.TryGetValue(pc.PlayerId, out var outfit))
-        {
-            outfit.PetId = "";
-            Camouflage.PlayerSkins[pc.PlayerId] = outfit;
-        }
 
         Logger.Info($"{pc.Data?.PlayerName} が死亡したのでペットを外しました", "PetActionPatch");
     }
@@ -179,20 +154,29 @@ public static class PetActionManager
         var pc = Utils.GetPlayerById(playerId);
         if (pc == null || !pc.IsAlive() || HasPet(pc)) return;
 
-        PetsHelper.SetPet(pc, DefaultPetIdForPetAction);
+        // 本編の客は幽霊になると自分でペットを外し、生き返っても付け直さない。試合の始めに覚えた本人のペットがあればそれを戻す
+        string petId = Camouflage.PlayerSkins.TryGetValue(playerId, out var original) && IsPet(original.PetId) ? original.PetId : DefaultPetIdForPetAction;
+        PetsHelper.SetPet(pc, petId);
 
-        if (Camouflage.PlayerSkins.TryGetValue(playerId, out var outfit))
-        {
-            outfit.PetId = DefaultPetIdForPetAction;
-            Camouflage.PlayerSkins[playerId] = outfit;
-        }
-
-        Logger.Info($"{pc.Data?.PlayerName} にペットを自動付与: {DefaultPetIdForPetAction}", "PetActionPatch");
+        Logger.Info($"{pc.Data?.PlayerName} にペットを自動付与: {petId}", "PetActionPatch");
     }
 
-    private static bool HasPet(PlayerControl pc)
+    /// <summary>
+    /// 外見を着せ替える時のペット (OutfitSync.Apply が使う)。付与が有効な試合中は、生きている人のペットを空にしない
+    /// (ペットは能力の押す口。カモフラの外見などにはペットが無い)
+    /// </summary>
+    public static string KeepPet(PlayerControl target, string petId)
     {
-        string petId = pc.Data?.DefaultOutfit?.PetId ?? pc.CurrentOutfit?.PetId ?? "";
+        if (IsPet(petId) || !AutoGrantPetEnabled || !GameStates.IsInGame || GameStates.IsLobby) return petId ?? "";
+        var data = target?.Data;
+        if (data == null || data.IsDead || data.Disconnected) return petId ?? "";
+        return DefaultPetIdForPetAction;
+    }
+
+    private static bool HasPet(PlayerControl pc) => IsPet(pc.Data?.DefaultOutfit?.PetId ?? pc.CurrentOutfit?.PetId);
+
+    private static bool IsPet(string petId)
+    {
         if (string.IsNullOrEmpty(petId)) return false;
 
         petId = petId.ToLowerInvariant();

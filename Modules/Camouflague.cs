@@ -66,7 +66,7 @@ public static partial class Camouflage
                     RpcSetSkin(IsCamouflage, pc, CamouflageOutfit);
 
                 // バニラのペットバグの対応
-                if (!IsCamouflage && !pc.IsAlive()) pc.RpcSetPet("");
+                if (!IsCamouflage) TownOfHostL.Patches.PetsHelper.RemovePet(pc);
             }
             Utils.NotifyRoles(NoCache: true);
         }
