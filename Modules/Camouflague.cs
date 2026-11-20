@@ -4,6 +4,7 @@ using HarmonyLib;
 using System.Linq;
 using TownOfHostL.Attributes;
 using TownOfHostL.Roles.Impostor;
+using TownOfHostL.Modules;
 using TownOfHostL.Modules.Net;
 namespace TownOfHostL;
 
@@ -66,7 +67,7 @@ public static partial class Camouflage
                     RpcSetSkin(IsCamouflage, pc, CamouflageOutfit);
 
                 // バニラのペットバグの対応
-                if (!IsCamouflage) TownOfHostL.Patches.PetsHelper.RemovePet(pc);
+                if (!IsCamouflage) PetAbility.RemovePet(pc);
             }
             Utils.NotifyRoles(NoCache: true);
         }

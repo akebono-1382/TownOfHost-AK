@@ -9,7 +9,7 @@ namespace TownOfHostL.Roles.Neutral;
 // ジャッカルバスカー: ジャッカル陣営のキラー。ファントムのボタンで、決めた時間だけ幽霊になる。時間が来るか会議が始まると元に戻る。
 // キルで使える回数が増える。
 // 役職の元: End K not (Endless Host Roles のアストラル (バスカー) をジャッカルにした物。案は SuperNewRoles のバスカー)
-public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchrodingerCatOwner
+public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchrodingerCatOwner, IUsePetButton
 {
     public override bool SeesNamesInMushroomMixup => Jackal.CanSeeNameMushroomMixup;
     public static readonly SimpleRoleInfo RoleInfo =
@@ -44,7 +44,7 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
         duration = OptionDuration.GetFloat();
         killsPerUse = OptionKillsPerUse.GetInt();
         uses = OptionUseCount.GetInt();
-        if (OptionUsePet.GetBool()) pet = new Crewmate.BuskerPet(player, cooldown, TryBecomeGhost);
+        if (OptionUsePet.GetBool()) pet = new Crewmate.BuskerPet(cooldown, TryBecomeGhost);
     }
 
     private static OptionItem OptionKillCooldown;
@@ -96,8 +96,9 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
 
     public override bool CanUseAbilityButton() => true;
 
-    public override void Add() => pet?.Register();
-    public override void OnDestroy() => pet?.Unregister();
+    public override void Add() => pet?.Restart();
+    bool IUsePetButton.UsesPet => pet != null;
+    void IUsePetButton.OnPet() => pet?.OnPet();
     public override void AfterMeetingTasks() => pet?.Restart();
 
     private bool TryBecomeGhost(System.Action<PlayerControl> onReturned)

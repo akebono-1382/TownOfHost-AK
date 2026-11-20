@@ -7,13 +7,14 @@ using UnityEngine;
 using TownOfHostL.Modules;
 using TownOfHostL.Patches;
 using TownOfHostL.Roles.Core;
+using TownOfHostL.Roles.Core.Interfaces;
 
 namespace TownOfHostL.Roles.Crewmate;
 
 // ナイスハッカー: ペットを撫でるとタスクモードとハックモードを切り替える。
 // ハックモードの間はシェイプシフトの画面(名前の下)にアドミンの情報が出る。シェイプシフトはできない。
 // ハックモードのまま会議になると、設定した秒数前のアドミンがチャットに出る(回数制限あり)。会議の後はタスクモードに戻る。
-public sealed class NiceHacker : RoleBase
+public sealed class NiceHacker : RoleBase, IUsePetButton
 {
     // 役職の元: TownOfHost-hamo
     public static readonly SimpleRoleInfo RoleInfo =
@@ -75,11 +76,9 @@ public sealed class NiceHacker : RoleBase
         remaining = maxCount;
         history.Clear();
         nameAdmin.Clear();
-        PetActionManager.Register(Player.PlayerId, OnPet);
     }
 
-    public override void OnDestroy() => PetActionManager.Unregister(Player.PlayerId);
-
+    void IUsePetButton.OnPet() => OnPet();
     private void OnPet()
     {
         if (!AmongUsClient.Instance.AmHost || Player == null || !Player.IsAlive() || GameStates.IsMeeting) return;

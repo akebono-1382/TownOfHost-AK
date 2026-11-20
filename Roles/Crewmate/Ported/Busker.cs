@@ -1,13 +1,14 @@
 using AmongUs.GameOptions;
 using TownOfHostL.Modules;
 using TownOfHostL.Roles.Core;
+using TownOfHostL.Roles.Core.Interfaces;
 using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Roles.Crewmate;
 
 // バスカー: ベント (設定でペットにもできる) で、決めた時間だけ幽霊になる。時間が来るか会議が始まると元に戻る。タスクで使える回数が増える。
 // 役職の元: Endless Host Roles のアストラル (案は SuperNewRoles のバスカー)
-public sealed class Busker : RoleBase
+public sealed class Busker : RoleBase, IUsePetButton
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
@@ -30,7 +31,7 @@ public sealed class Busker : RoleBase
         duration = OptionDuration.GetFloat();
         tasksPerUse = OptionTasksPerUse.GetInt();
         uses = OptionUseCount.GetInt();
-        if (OptionUsePet.GetBool()) pet = new BuskerPet(player, cooldown, TryBecomeGhost);
+        if (OptionUsePet.GetBool()) pet = new BuskerPet(cooldown, TryBecomeGhost);
     }
 
     private static OptionItem OptionCooldown;
@@ -84,8 +85,9 @@ public sealed class Busker : RoleBase
         return string.Format(GetString("BuskerCountdown"), TempGhost.RemainingSeconds(owner.PlayerId));
     }
 
-    public override void Add() => pet?.Register();
-    public override void OnDestroy() => pet?.Unregister();
+    public override void Add() => pet?.Restart();
+    bool IUsePetButton.UsesPet => pet != null;
+    void IUsePetButton.OnPet() => pet?.OnPet();
     public override void AfterMeetingTasks() => pet?.Restart();
 
     private bool TryBecomeGhost(System.Action<PlayerControl> onReturned)

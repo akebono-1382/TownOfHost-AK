@@ -20,7 +20,7 @@ namespace TownOfHostL.Roles.Crewmate;
 
 
 
-public sealed class Sage : RoleBase
+public sealed class Sage : RoleBase, IUsePetButton
 
 {
 
@@ -114,24 +114,11 @@ public sealed class Sage : RoleBase
 
 
 
-    public override void Add()
-
-    {
-
-        PetActionManager.Register(Player.PlayerId, ActivateBarrier);
-
-
-
-    }
-
-
-
     public override void OnDestroy()
 
     {
         TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(Sage));
 
-        PetActionManager.Unregister(Player.PlayerId);
 
 
 
@@ -173,6 +160,7 @@ public sealed class Sage : RoleBase
 
 
 
+    void IUsePetButton.OnPet() => ActivateBarrier();
     public void ActivateBarrier()
 
     {

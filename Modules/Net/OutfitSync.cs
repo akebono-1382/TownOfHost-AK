@@ -42,7 +42,7 @@ public static class OutfitSync
         // ネームプレートは渡された物が空でない時だけ写すので、比べるのもその時だけ
         bool samePlate = string.IsNullOrEmpty(outfit.NamePlateId) || current.NamePlateId == outfit.NamePlateId;
         // ペットはペットの能力の押す口なので、生きている人からは外さない (カモフラの外見などはペットが空)
-        string petId = TownOfHostL.Patches.PetActionManager.KeepPet(target, outfit.PetId);
+        string petId = PetAbility.KeepPet(target, outfit.PetId);
         if (current.ColorId == outfit.ColorId && current.HatId == outfit.HatId && current.SkinId == outfit.SkinId
             && current.VisorId == outfit.VisorId && current.PetId == petId && samePlate) return false;
 

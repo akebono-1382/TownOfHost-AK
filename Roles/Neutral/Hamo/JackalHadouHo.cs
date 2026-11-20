@@ -27,7 +27,7 @@ namespace TownOfHostL.Roles.Neutral;
 
 
 
-public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISelfVoter
+public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISelfVoter, IUsePetButton
 
 {
 
@@ -439,7 +439,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
 
 
-        PetActionManager.Register(Player.PlayerId, OnPetUsed);
         beam = new HadouHoBeam(Player, drawnByClientEffects: false);
     }
 
@@ -452,7 +451,6 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         beam?.End();
 
-        PetActionManager.Unregister(Player.PlayerId);
 
         CustomRoleManager.LowerOthers.Remove(GetLowerTextOthers);
 
@@ -492,6 +490,7 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
 
 
+    void IUsePetButton.OnPet() => OnPetUsed();
     private void OnPetUsed()
 
     {

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace TownOfHostL.Roles.Crewmate;
 
-public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
+public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton, IUsePetButton
 {
     // 役職の元: TownOfHost_Pko (TownOfHost-hamo 経由)
     public static readonly SimpleRoleInfo RoleInfo =
@@ -120,7 +120,6 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
         beamMode = false;
         nowcool = Cooldown;
         LastCooltime = (int)Cooldown;
-        PetActionManager.Register(Player.PlayerId, OnPetUsed);
         beam = new HadouHoBeam(Player, drawnByClientEffects: false);
     }
 
@@ -128,7 +127,6 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
     {
         TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(SheriffHadouHo));
         beam?.End();
-        PetActionManager.Unregister(Player.PlayerId);
         CustomRoleManager.LowerOthers.Remove(GetLowerTextOthers);
     }
 
@@ -165,6 +163,7 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton
     public override RoleTypes? AfterMeetingRole
         => (beamMode && ShotLimit > 0 && IsBeamUnlocked) ? RoleTypes.Phantom : RoleTypes.Engineer;
 
+    void IUsePetButton.OnPet() => OnPetUsed();
     void OnPetUsed()
     {
         if (!Player.IsAlive()) return;

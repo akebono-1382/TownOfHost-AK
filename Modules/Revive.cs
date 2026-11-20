@@ -215,7 +215,7 @@ public static class Revive
             try { pc.GetRoleClass()?.OnRevived(); }
             catch (System.Exception ex) { Logger.Exception(ex, "Revive"); }
             CustomRoleManager.NotifyPlayerRevived(pc.PlayerId);
-            TownOfHostL.Patches.PetActionManager.EnsureDefaultPet(pc.PlayerId);
+            PetAbility.EnsurePet(pc);
             Utils.NotifyRoles();
         }, 0.2f, "Revive_Data", true);
     }
