@@ -97,7 +97,7 @@ public static class Revive
             heldTarget = target;
             heldForce = force;
             hasHeldReport = true;
-            Logger.Info($"復活の直後なので通報を預かる: {reporter?.GetNameWithRole()} => {target?.PlayerName ?? "ボタン"}", "Revive");
+            Logger.Info($"役職の SetRole の直後なので通報を預かる: {reporter?.GetNameWithRole()} => {target?.PlayerName ?? "ボタン"}", "Revive");
         }
         return true;
     }
