@@ -1356,6 +1356,8 @@ DSchrodingerCatInfo,You are now on Team Darkhide,ダークハイドの味方に�
 "PresetPage.OpenFolder","Open folder","フォルダを開く","打开文件夹","開啟資料夾","Открыть папку","Abrir pasta","Abrir pasta"
 "PresetPage.CopyCode","Copy code","コードをコピー","复制代码","複製代碼","Копировать код","Copiar código","Copiar código"
 "PresetPage.PasteCode","Load code","コードを読み込む","读取代码","讀取代碼","Загрузить код","Carregar código","Carregar código"
+"PresetPage.SaveCode","Save code as preset","コードを保存","将代码保存为预设","將代碼儲存為預設","Сохранить код","Salvar código","Guardar código"
+"PresetPage.Code","Code","コード","代码","代碼","Код","Código","Código"
 "PresetPage.OnlyHost","Only the host in the lobby can load settings","読み込めるのはロビーにいるホストだけです","只有大厅中的房主可以读取设置","只有大廳中的房主可以讀取設定","Загружать настройки может только хост в лобби","Só o anfitrião no lobby pode carregar configurações","Só o anfitrião no lobby pode carregar definições"
 "PresetPage.ShareFolder","Folder for sharing: {0}","受け渡し用のフォルダ: {0}","分享用文件夹：{0}","分享用資料夾：{0}","Папка для обмена: {0}","Pasta de compartilhamento: {0}","Pasta de partilha: {0}"
 "PresetStore.BadName","Use letters, digits, _ and - only (up to 30)","名前に使えるのは文字・数字・_ と - だけです (30 文字まで)","名称只能使用文字、数字、_ 和 -（最多 30 个）","名稱只能使用文字、數字、_ 和 -（最多 30 個）","Только буквы, цифры, _ и - (до 30)","Use apenas letras, números, _ e - (até 30)","Use apenas letras, números, _ e - (até 30)"
@@ -1370,10 +1372,13 @@ DSchrodingerCatInfo,You are now on Team Darkhide,ダークハイドの味方に�
 "PresetStore.CouldntExport","Couldn't export: {0}","書き出せませんでした: {0}","无法导出：{0}","無法匯出：{0}","Не удалось экспортировать: {0}","Não foi possível exportar: {0}","Não foi possível exportar: {0}"
 "PresetStore.Imported","Imported {0} (skipped {1}) from {2}","{2} から {0} 件を取り込みました ({1} 件は飛ばしました)","已从 {2} 导入 {0} 个（跳过 {1} 个）","已從 {2} 匯入 {0} 個（略過 {1} 個）","Импортировано {0} (пропущено {1}) из {2}","{0} importadas ({1} ignoradas) de {2}","{0} importadas ({1} ignoradas) de {2}"
 "PresetStore.CouldntImport","Couldn't import: {0}","取り込めませんでした: {0}","无法导入：{0}","無法匯入：{0}","Не удалось импортировать: {0}","Não foi possível importar: {0}","Não foi possível importar: {0}"
+"PresetStore.AlreadyExists","A preset named “{0}” already exists","「{0}」というプリセットは既にあります","已存在名为“{0}”的预设","已存在名為「{0}」的預設","Пресет «{0}» уже существует","Já existe uma predefinição “{0}”","Já existe uma predefinição “{0}”"
 "SettingCode.Copied","Copied the settings code ({0} characters)","設定のコードをコピーしました ({0} 文字)","已复制设置代码（{0} 个字符）","已複製設定代碼（{0} 個字元）","Код настроек скопирован ({0} симв.)","Código das configurações copiado ({0} caracteres)","Código das definições copiado ({0} caracteres)"
 "SettingCode.CouldntMake","Couldn't make the code: {0}","コードを作れませんでした: {0}","无法生成代码：{0}","無法產生代碼：{0}","Не удалось создать код: {0}","Não foi possível gerar o código: {0}","Não foi possível gerar o código: {0}"
 "SettingCode.NotACode","The copied text is not a settings code","コピーした文字列は設定のコードではありません","复制的文字不是设置代码","複製的文字不是設定代碼","Скопированный текст не является кодом настроек","O texto copiado não é um código de configurações","O texto copiado não é um código de definições"
 "SettingCode.Loaded","Loaded the settings code ({0} settings changed)","設定のコードを読み込みました ({0} 項目が変わりました)","已读取设置代码（{0} 项设置已更改）","已讀取設定代碼（{0} 項設定已變更）","Код настроек загружен (изменено: {0})","Código carregado ({0} configurações alteradas)","Código carregado ({0} definições alteradas)"
+"SettingCode.CopiedPreset","Copied the code of “{0}” ({1} characters)","「{0}」のコードをコピーしました ({1} 文字)","已复制“{0}”的代码（{1} 个字符）","已複製「{0}」的代碼（{1} 個字元）","Код «{0}» скопирован ({1} симв.)","Código de “{0}” copiado ({1} caracteres)","Código de “{0}” copiado ({1} caracteres)"
+"SettingCode.Saved","Saved the copied code as “{0}” (current settings unchanged)","コピーしたコードを「{0}」に保存しました (今の設定はそのまま)","已将复制的代码保存为“{0}”（当前设置未改变）","已將複製的代碼儲存為「{0}」（目前設定未變更）","Код сохранён как «{0}» (текущие настройки не изменены)","Código salvo como “{0}” (configurações atuais mantidas)","Código guardado como “{0}” (configurações atuais mantidas)"
 "GameSettingHelpText.Page","・Double-click a value: type it\n・Shift + ±: 5 steps at once\n・Hover ?: details","・値をダブルクリック: 数を入力\n・Shift+±: 5 倍の幅で変える\n・「?」に合わせる: 詳しい説明",
 "GameSettingHelpText","","・オプション名クリック:\n　詳細説明を表示\n・左Shift+±クリック:\n　5倍幅で変更",
 "PresetChangedWarning","","もしプリセットや各オプションの値を変更しても表示が更新されない場合は、一度設定画面を開き直してください。",

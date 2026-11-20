@@ -9,9 +9,9 @@ namespace TownOfHostL.SettingsUI;
 
 // 設定画面の「プリセット」の頁。
 //   上: 新しいプリセットの名前の欄と知らせの文
-//   中: 保存したプリセットの枠 (3 列・クルーの絵・保存した日時・読み込む / 書き出す / 消す)。今の設定のままのプリセットは金の縁。
+//   中: 保存したプリセットの枠 (3 列・クルーの絵・保存した日時・読み込む / 書き出す / コード / 消す)。今の設定のままのプリセットは金の縁。
 //       最後の枠は「今の設定を保存」(名前の欄の名前で)
-//   下: 取り込む (受け渡しのフォルダから)・フォルダを開く・コードをコピー・コードを読む
+//   下: 取り込む (受け渡しのフォルダから)・フォルダを開く・今の設定のコードをコピー・コードを今の設定に読む・コードをプリセットとして保存 (名前の欄の名前で)
 // 消すは 2 回押した時だけ消す。押すたびに頁を作り直す (スクロールの位置は残す)
 internal static class PresetPage
 {
@@ -117,12 +117,13 @@ internal static class PresetPage
         float listH = H - NameH - BarH - 0.24f;
         var list = new ScrollView(new Vector2(W, listH), grid) { Tag = "presets" };
 
-        float bw = (W - 0.1f * 3) / 4f;
+        float bw = (W - 0.2f - 0.1f * 4) / 5f;
         var bar = new Stack(true,
-            new Button(Tr("PresetPage.Import"), () => Click(1), 1.3f) { Size = new Vector2(bw, BarH), Color = Blue },
-            new Button(Tr("PresetPage.OpenFolder"), () => Click(2), 1.3f) { Size = new Vector2(bw, BarH), Color = Dim },
-            new Button(Tr("PresetPage.CopyCode"), () => Click(5), 1.3f) { Size = new Vector2(bw, BarH), Color = Blue },
-            new Button(Tr("PresetPage.PasteCode"), () => Click(6), 1.3f) { Size = new Vector2(bw, BarH), Color = Green }) { Gap = 0.1f };
+            BarButton(Tr("PresetPage.Import"), 1, bw, Blue),
+            BarButton(Tr("PresetPage.OpenFolder"), 2, bw, Dim),
+            BarButton(Tr("PresetPage.CopyCode"), 5, bw, Blue),
+            BarButton(Tr("PresetPage.PasteCode"), 6, bw, Green),
+            BarButton(Tr("PresetPage.SaveCode"), 7, bw, Gold)) { Gap = 0.1f };
         return new Stack(false, top, list, bar) { Gap = 0.12f, Width = W };
     }
 
@@ -144,11 +145,12 @@ internal static class PresetPage
         slot.Add(text, 0.1f, 0.1f);
 
         int id = 100 + n * 4;
-        float bw = (w - 0.2f - 0.06f * 2) / 3f;
+        float bw = (w - 0.2f - 0.06f * 3) / 4f;
         string del = _armed == n ? Tr("PresetPage.Really") : Tr("PresetPage.Delete");
         var buttons = new Stack(true,
             SmallButton(Tr("PresetPage.Load"), id, bw, Green),
             SmallButton(Tr("PresetPage.Export"), id + 1, bw, Dim),
+            SmallButton(Tr("PresetPage.Code"), id + 3, bw, Blue),
             SmallButton(del, id + 2, bw, Red)) { Gap = 0.06f };
         slot.Add(buttons, 0.1f, 0.1f, false, true);
         return slot;
@@ -159,6 +161,15 @@ internal static class PresetPage
         {
             Size = new Vector2(w, 0.32f),
             Padding = new Vector2(0.04f, 0.02f),
+            Color = c,
+        };
+
+    // 下の段のボタン (字は枠に収まるまで縮める)
+    private static Button BarButton(string text, int id, float w, Color c) =>
+        new(new Label(text, 1.3f) { Width = w - 0.16f, MinFontSize = 0.8f, TextAlign = TextAlignmentOptions.Center }, () => Click(id))
+        {
+            Size = new Vector2(w, BarH),
+            Padding = new Vector2(0.06f, 0.03f),
             Color = c,
         };
 
@@ -203,6 +214,9 @@ internal static class PresetPage
             case 6:
                 Say(PresetStore.PasteCode());
                 break;
+            case 7:
+                Say(PresetStore.SaveCode(_nameText.Trim()));
+                break;
             default:
             {
                 int n = (id - 100) / 4, kind = (id - 100) % 4;
@@ -210,6 +224,7 @@ internal static class PresetPage
                 string name = _names[n];
                 if (kind == 0) Say(PresetStore.Load(name));
                 else if (kind == 1) Say(PresetStore.Export(name));
+                else if (kind == 3) Say(PresetStore.CopyCode(name));
                 else if (kind == 2)
                 {
                     if (armed != n) { _armed = n; Say(string.Format(Tr("PresetPage.PressAgain"), name)); }

@@ -297,21 +297,73 @@ internal static class PresetStore
 
     // ---- 設定のコード (中身を縮めて base64 にし、頭に版の印) ----
 
+    // 今の設定のコード
     public static string CopyCode()
     {
         try
         {
-            using var ms = new MemoryStream();
-            using (var z = new DeflateStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
-            {
-                var raw = Encoding.UTF8.GetBytes(MakeText());
-                z.Write(raw, 0, raw.Length);
-            }
-            var code = CodePrefix + Convert.ToBase64String(ms.ToArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+            var code = Encode(MakeText());
             GUIUtility.systemCopyBuffer = code;
             return string.Format(Tr("SettingCode.Copied"), code.Length);
         }
         catch (Exception e) { return string.Format(Tr("SettingCode.CouldntMake"), e.Message); }
+    }
+
+    // 保存したプリセットのコード (読み込まずに、ファイルの中身から作る)
+    public static string CopyCode(string name)
+    {
+        if (!Exists(name)) return string.Format(Tr("PresetStore.NoPreset"), name);
+        try
+        {
+            var text = File.ReadAllText(PathOf(name));
+            if (!Parse(text, out _, out _)) return string.Format(Tr("PresetStore.CouldntRead"), name);
+            var code = Encode(text);
+            GUIUtility.systemCopyBuffer = code;
+            return string.Format(Tr("SettingCode.CopiedPreset"), name, code.Length);
+        }
+        catch (Exception e) { return string.Format(Tr("SettingCode.CouldntMake"), e.Message); }
+    }
+
+    // コピーしてあるコードを、今の設定に当てずにプリセットとして保存する。
+    // 名前が空なら「Code」「Code_2」… と空いている名前を付ける。同じ名前が既にあれば上書きしない
+    public static string SaveCode(string name)
+    {
+        string text;
+        try { text = Decode(GUIUtility.systemCopyBuffer); }
+        catch (Exception) { text = null; }
+        if (!Parse(text, out var values, out var vanilla)) return Tr("SettingCode.NotACode");
+        if (string.IsNullOrEmpty(name))
+        {
+            name = "Code";
+            for (int n = 2; File.Exists(PathOf(name)) && n < 1000; n++) name = $"Code_{n}";
+        }
+        if (!ValidName(name)) return Tr("PresetStore.BadName");
+        if (File.Exists(PathOf(name))) return string.Format(Tr("PresetStore.AlreadyExists"), name);
+        // 受け取った文をそのまま書かず、読めた行だけで書き直す
+        var sb = new StringBuilder();
+        sb.Append(Header).Append('\n');
+        foreach (var (key, value) in values)
+            sb.Append(key).Append('=').Append(value.ToString(CultureInfo.InvariantCulture)).Append('\n');
+        if (vanilla != null) sb.Append(VanillaKey).Append('=').Append(vanilla).Append('\n');
+        try
+        {
+            Directory.CreateDirectory(Dir);
+            File.WriteAllText(PathOf(name), sb.ToString());
+            return string.Format(Tr("SettingCode.Saved"), name);
+        }
+        catch (Exception e) { return string.Format(Tr("PresetStore.CouldntSave"), e.Message); }
+    }
+
+    // 中身の文をコードへ
+    private static string Encode(string text)
+    {
+        using var ms = new MemoryStream();
+        using (var z = new DeflateStream(ms, System.IO.Compression.CompressionLevel.Optimal, true))
+        {
+            var raw = Encoding.UTF8.GetBytes(text);
+            z.Write(raw, 0, raw.Length);
+        }
+        return CodePrefix + Convert.ToBase64String(ms.ToArray()).TrimEnd('=').Replace('+', '-').Replace('/', '_');
     }
 
     // コピーしてあるコードを読む (ロビーのホストだけ)
