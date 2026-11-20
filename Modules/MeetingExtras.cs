@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using UnityEngine;
@@ -12,12 +12,14 @@ namespace TownOfHostL.Modules;
 /// 会議と試合の終わりの知らせ (ホストのみ)。
 /// ・投票の残りが 30 秒・10 秒になったらチャットで知らせる
 /// ・試合の終わりに、キル・正しい投票・タスク・勝利・生存から点を付けて MVP をロビーで発表する
+/// ・同じ陣営が続けて勝ったら「〇連勝中」、連勝を止めたら「連勝ストップ」を知らせる (止めた陣営の人は MVP の点が少し増える)
 /// </summary>
-/// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/MeetingTimeAnnounce.cs・MvpAnnouncer.cs) を元にした。</remarks>
+/// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/MeetingTimeAnnounce.cs・MvpAnnouncer.cs・WinStreak.cs) を元にした。</remarks>
 public static class MeetingExtras
 {
     public static OptionItem AnnounceVotingTime;
     public static OptionItem AnnounceMvp;
+    public static OptionItem AnnounceWinStreak;
 
     public static void SetupCustomOption()
     {
@@ -25,6 +27,48 @@ public static class MeetingExtras
             .SetGameMode(CustomGameMode.All);
         AnnounceMvp = StringOptionItem.Create("AnnounceMvp", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, false)
             .SetGameMode(CustomGameMode.Standard);
+        SettingChangeNotice.SetupCustomOption();
+        AnnounceWinStreak = StringOptionItem.Create("AnnounceWinStreak", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, false)
+            .SetGameMode(CustomGameMode.Standard);
+    }
+
+    // ===== 連勝 =====
+
+    /// <summary>連勝を止めた陣営の人に足す MVP の点</summary>
+    const float StopperBonus = 3f;
+    static CustomWinner lastTeam = CustomWinner.Default;
+    static int streak;
+    static bool stoppedThisGame;
+
+    static bool StreakOn => AnnounceWinStreak != null && AnnounceWinStreak.GetBool();
+
+    /// <summary>勝った陣営で連勝を数え直し、知らせる。止めた時は true</summary>
+    static void CountStreak()
+    {
+        stoppedThisGame = false;
+        var team = CustomWinnerHolder.WinnerTeam;
+        if (team is CustomWinner.Draw or CustomWinner.None or CustomWinner.Default) return;
+        var prevStreak = streak;
+        var prevTeam = lastTeam;
+        if (team == lastTeam) streak++;
+        else
+        {
+            stoppedThisGame = prevStreak >= 2;
+            streak = 1;
+            lastTeam = team;
+        }
+        if (!StreakOn) return;
+        var title = Utils.ColorString(new Color32(255, 211, 110, 255), GetString(stoppedThisGame ? "WinStreak.StopTitle" : "WinStreak.Title"));
+        if (stoppedThisGame)
+            Utils.SendMessage(string.Format(GetString("WinStreak.Stopped"), TeamName(prevTeam), prevStreak, TeamName(team)), byte.MaxValue, title);
+        else if (streak >= 2)
+            Utils.SendMessage(string.Format(GetString("WinStreak.Now"), TeamName(team), streak), byte.MaxValue, title);
+    }
+
+    static string TeamName(CustomWinner team)
+    {
+        try { return Utils.GetRoleColorAndName((CustomRoles)team); }
+        catch { return team.ToString(); }
     }
 
     // ===== 投票の残り時間 =====
@@ -80,9 +124,12 @@ public static class MeetingExtras
     public static void OnGameEnd()
     {
         announcedFor = null;
-        if (AnnounceMvp == null || !AnnounceMvp.GetBool() || !AmongUsClient.Instance.AmHost) return;
+        if (!AmongUsClient.Instance.AmHost) return;
         if (Options.CurrentGameMode != CustomGameMode.Standard) return;
+        CountStreak();
+        if (AnnounceMvp == null || !AnnounceMvp.GetBool()) return;
         if (CustomWinnerHolder.WinnerTeam is CustomWinner.Draw or CustomWinner.None) return;
+        var stopper = StreakOn && stoppedThisGame;
         var winners = CustomWinnerHolder.WinnerIds;
         var best = PlayerState.AllPlayerStates
             .Where(kv => kv.Value != null && kv.Value.GetNowMainRole() is not (CustomRoles.NotAssigned or CustomRoles.GM))
@@ -94,7 +141,7 @@ public static class MeetingExtras
                 var task = state.taskState;
                 var taskRate = task != null && task.hasTasks && task.AllTasksCount > 0 ? (float)task.CompletedTasksCount / task.AllTasksCount : 0f;
                 var win = winners.Contains(kv.Key);
-                var score = kills * 3 + votes * 2 + taskRate * 3 + (win ? 2 : 0) + (state.IsDead ? 0 : 1);
+                var score = kills * 3 + votes * 2 + taskRate * 3 + (win ? 2 : 0) + (state.IsDead ? 0 : 1) + (stopper && win ? StopperBonus : 0);
                 return (id: kv.Key, state, kills, votes, taskRate, win, score);
             })
             .OrderByDescending(x => x.score).ThenByDescending(x => x.kills).ThenByDescending(x => x.votes)
@@ -106,6 +153,7 @@ public static class MeetingExtras
         if (best.votes > 0) reasons.Add(string.Format(GetString("Mvp.Votes"), best.votes));
         if (best.taskRate > 0) reasons.Add(string.Format(GetString("Mvp.Tasks"), (int)(best.taskRate * 100)));
         if (best.win) reasons.Add(GetString("Mvp.Win"));
+        if (best.win && stopper) reasons.Add(GetString("Mvp.StoppedStreak"));
         if (!best.state.IsDead) reasons.Add(GetString("Mvp.Alive"));
         var name = Main.AllPlayerNames.TryGetValue(best.id, out var n) ? n : "?";
         Utils.SendMessage($"{name} ({Utils.GetRoleColorAndName(best.state.GetNowMainRole())})\n{string.Join(" / ", reasons)}", byte.MaxValue,

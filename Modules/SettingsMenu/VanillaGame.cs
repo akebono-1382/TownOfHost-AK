@@ -1,4 +1,4 @@
-// Based on https://github.com/haru03741-glitch/More-Roles-Plus src/Options/VanillaGame.cs and src/Roles/Builtin/VanillaRoles.cs (VanillaOpt) (GPL-3.0)
+﻿// Based on https://github.com/haru03741-glitch/More-Roles-Plus src/Options/VanillaGame.cs and src/Roles/Builtin/VanillaRoles.cs (VanillaOpt) (GPL-3.0)
 using System;
 using System.Collections.Generic;
 using AmongUs.GameOptions;
@@ -100,14 +100,14 @@ internal sealed class VanillaMenuOpt : MenuOpt
         {
             var (lo, hi) = Range(s.Title, f.ValidRange.min, f.ValidRange.max);
             _min = lo;
-            _step = f.Increment > 0f ? f.Increment : 1f;
+            _step = Step(s.Title, f.Increment > 0f ? f.Increment : 1f);
             _count = (int)Math.Round((hi - _min) / _step) + 1;
         }
         else if (i != null)
         {
             var (lo, hi) = Range(s.Title, i.ValidRange.min, i.ValidRange.max);
             _min = lo;
-            _step = Math.Max(i.Increment, 1);
+            _step = Math.Max((int)Step(s.Title, i.Increment), 1);
             _count = (int)Math.Round((hi - _min) / _step) + 1;
         }
         else _count = 2;
@@ -131,6 +131,14 @@ internal sealed class VanillaMenuOpt : MenuOpt
         }
         return (min, max);
     }
+
+    // hamo と同じ刻み (キルのクールダウンは 0.5 秒、会議と投票の時間・緊急会議のクールダウンは 1 秒)
+    private static float Step(StringNames title, float step) => title switch
+    {
+        StringNames.GameKillCooldown => 0.5f,
+        StringNames.GameVotingTime or StringNames.GameEmergencyCooldown or StringNames.GameDiscussTime => 1f,
+        _ => step,
+    };
 
     // 本編の設定の定義から作る (数値・整数・ON/OFF・文字の選択肢。それ以外は出さない)
     public static VanillaMenuOpt From(BaseGameSetting s)

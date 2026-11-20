@@ -1,4 +1,4 @@
-using TownOfHostL.Roles.Core;
+﻿using TownOfHostL.Roles.Core;
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -199,6 +199,7 @@ namespace TownOfHostL
         public virtual void SetValue(int afterValue, bool doSave, bool doSync = true)
         {
             int beforeValue = CurrentValue;
+            var beforeText = Modules.SettingChangeNotice.Wants(this) ? GetString() : null;
             if (IsSingleValue)
                 SingleValue = afterValue;
             else
@@ -209,6 +210,7 @@ namespace TownOfHostL
                 SyncAllOptions();
             if (doSave)
                 OptionSaver.RequestSave();
+            if (beforeText != null && beforeValue != afterValue) Modules.SettingChangeNotice.OnChanged(this, beforeText, GetString());
             // 開いている設定画面の頁へ、値と出る行の変わりを写す (画面の側で落ちても、値と保存は済んでいる)
             if (!SettingsUI.SettingsPages.Batching) SettingsUI.SettingsPages.RefreshAllSafe();
         }
