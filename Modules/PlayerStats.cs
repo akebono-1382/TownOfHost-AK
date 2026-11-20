@@ -145,13 +145,11 @@ public static class PlayerStats
         else Utils.SendMessageAutoSplit(text, true, GetString("PlayerStats.Title"), sendTo: c.Player.PlayerId);
     }
 
-    // ===== 役職ごとの勝率 (全員の記録を役職で足し合わせる) =====
     // TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/RoleWinStats.cs) を元に、記録は上の戦績から数える
 
     const int MinGamesForRanking = 3;
     const int RankingCount = 5;
 
-    /// <summary>役職ごとの [試合数, 勝ち] を全員の記録から足す</summary>
     static Dictionary<CustomRoles, int[]> RoleTotals()
     {
         var totals = new Dictionary<CustomRoles, int[]>();
@@ -169,14 +167,12 @@ public static class PlayerStats
         return totals;
     }
 
-    /// <summary>その役職の勝率の 1 行 (役職辞典にも出す)。記録が無ければ null</summary>
     public static string RoleWinLine(CustomRoles role)
     {
         if (!RoleTotals().TryGetValue(role, out var t) || t[0] == 0) return null;
         return string.Format(GetString("RoleWinStats.Line"), Utils.GetRoleName(role), t[1] * 100 / t[0], t[1], t[0]);
     }
 
-    /// <summary>/rw: 役職の勝率。引数なしで高い順・低い順の上位、役職の名前を付けるとその役職だけ</summary>
     public static void RoleWinCommand(ChatCommandContext c)
     {
         var query = string.Join(" ", c.Args.Skip(1)).Trim();

@@ -8,10 +8,6 @@ using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Modules;
 
-/// <summary>
-/// ロビーでホストが設定を変えたら、触るのが 5 秒止まった所でまとめてチャットに出す (「キルクール: 25秒 → 30秒」)。
-/// 元に戻した設定は出さない。役職の設定には役職の名前を付ける。
-/// </summary>
 /// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/SettingChangeNotice.cs) を元にした。</remarks>
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
 public static class SettingChangeNotice
@@ -37,7 +33,6 @@ public static class SettingChangeNotice
             .SetGameMode(CustomGameMode.All);
     }
 
-    /// <summary>変わる前の文字を取っておく必要があるか (要らない時は文字を作らずに済ませる)</summary>
     public static bool Wants(OptionItem option)
         => Enabled != null && option != Enabled && Enabled.GetBool() && GameStates.IsLobby
            && AmongUsClient.Instance != null && AmongUsClient.Instance.AmHost
@@ -88,7 +83,6 @@ public static class SettingChangeNotice
 
     static string Clean(string s) => (s ?? "").RemoveHtmlTags().Trim();
 
-    /// <summary>役職の設定は「シェリフのキルクール」のように役職の名前を付ける (「キルクール」だけではどの役職か分からない)</summary>
     static string DisplayName(OptionItem option)
     {
         var name = Clean(option.GetName(disableColor: true));
@@ -96,7 +90,7 @@ public static class SettingChangeNotice
         for (var o = option; o != null; o = o.Parent)
         {
             if (!roleOf.TryGetValue(o, out var role)) continue;
-            if (o == option) return name; // 役職そのものの出る率
+            if (o == option) return name;
             var roleName = Clean(Utils.GetRoleName(role));
             return string.IsNullOrEmpty(roleName) || name.Contains(roleName) ? name : string.Format(GetString("SettingChangeNotice.RoleOf"), roleName, name);
         }

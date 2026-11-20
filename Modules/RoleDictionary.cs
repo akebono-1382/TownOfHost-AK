@@ -10,14 +10,6 @@ using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Modules;
 
-/// <summary>
-/// 役職辞典。全部の役職を陣営ごと・五十音順に並べ、選んだ役職の名前・陣営・出どころ (From)・説明・今の設定を出す。
-/// タイトル画面のボタン、F4 キー、チャットの /dic で開く。どこでも見られる (自分の画面だけ。通信はしない)。
-/// </summary>
-/// <remarks>
-/// 見せ方の案は TownOfHost-hamo の役職の説明画面 (RoleInfoShower) だが、絵は使わず IMGUI で一から描く。
-/// 窓の見た目と OnGUI の扱いは <see cref="HostPanel"/> に合わせる (閉じている間は OnGUI ごと止め、中身の組み直しは選び直した時だけ)。
-/// </remarks>
 public class RoleDictionary : MonoBehaviour
 {
     public RoleDictionary(IntPtr ptr) : base(ptr) { }
@@ -44,7 +36,6 @@ public class RoleDictionary : MonoBehaviour
 
     public void Update()
     {
-        // 閉じている間は Update も回さない (enabled = false)。開いている間の Esc で閉じる (打っている時は打つのをやめるだけ)
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (typing) SetTyping(false);
@@ -65,7 +56,6 @@ public class RoleDictionary : MonoBehaviour
         if (changed) { search = sb.ToString(); listDirty = true; }
     }
 
-    // 探す欄に打っているか。打っている間は本編の移動とキー操作を止める
     static bool typing;
     public static bool Typing => open && typing;
     static void SetTyping(bool value)
@@ -81,7 +71,6 @@ public class RoleDictionary : MonoBehaviour
         public static bool Prefix() => !Typing;
     }
 
-    /// <summary>F4 で開け閉めする。チャットや設定の文字を打っている間は効かせない</summary>
     public static void CheckHotkey()
     {
         if (!Input.GetKeyDown(KeyCode.F4)) return;
@@ -93,7 +82,6 @@ public class RoleDictionary : MonoBehaviour
         Toggle();
     }
 
-    // ── 中身 ────────────────────────────────
 
     enum Tab { All, Crewmate, Impostor, Madmate, Neutral, Unit, AddOn }
     static readonly Tab[] Tabs = (Tab[])Enum.GetValues(typeof(Tab));
@@ -105,8 +93,8 @@ public class RoleDictionary : MonoBehaviour
     sealed class Entry
     {
         public CustomRoles Role;
-        public string Name;      // 色の付いていない名前 (並べる・探す用)
-        public string Shown;     // 一覧に出す名前 (役職の色)
+        public string Name;
+        public string Shown;
         public Tab Team;
         public Color Color;
     }
@@ -144,7 +132,6 @@ public class RoleDictionary : MonoBehaviour
             }
             catch (Exception ex) { Logger.Warn($"役職辞典に {role} を入れられませんでした: {ex.Message}", nameof(RoleDictionary)); }
         }
-        // 五十音順 (ひらがなとカタカナ・全角と半角は同じに見る)。並べ方が使えない時は文字の順
         Comparison<Entry> cmp = ja != null
             ? (a, b) => ja.Compare(a.Name, b.Name, CompareOptions.IgnoreKanaType | CompareOptions.IgnoreWidth | CompareOptions.IgnoreCase)
             : (a, b) => string.CompareOrdinal(a.Name, b.Name);
@@ -243,13 +230,10 @@ public class RoleDictionary : MonoBehaviour
         }
         catch { }
         sb.Append('\n');
-        // 短い説明
         if (Translator.HasString(role + "Info")) sb.Append("<b>").Append(Rich(GetString(role + "Info"))).Append("</b>\n\n");
-        // 長い説明 (From の行は上に出したので付けない)
         var info = Translator.HasString(role + "InfoLong") ? GetString(role + "InfoLong") : "";
         if (info.Length > 0) sb.Append(Rich(info)).Append('\n');
 
-        // 今の設定
         try
         {
             if (Options.CustomRoleSpawnChances.TryGetValue(role, out var opt) && opt.Children.Count > 0)
@@ -267,14 +251,12 @@ public class RoleDictionary : MonoBehaviour
         detailScroll = 0f;
     }
 
-    // ── 文字の形を IMGUI 向けに ─────────────────────────
 
     static readonly Regex HexTag = new(@"<#([0-9a-fA-F]{6,8})>", RegexOptions.Compiled);
     static readonly Regex ColorEq = new(@"<color=#([0-9a-fA-F]{6,8})>", RegexOptions.Compiled);
     static readonly Regex Unsupported = new(@"</?(size|line-height|line-indent|voffset|font|mark|sprite|align|alpha|cspace|indent|margin|mspace|nobr|noparse|pos|rotate|s|u|sub|sup|width|link|uppercase|lowercase|smallcaps|style|gradient)(=[^>]*)?>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     static readonly Regex AnyTag = new("<[^>]+>", RegexOptions.Compiled);
 
-    /// <summary>TMP の色の書き方 (&lt;#rrggbb&gt;) を IMGUI の書き方へ直し、IMGUI に無い印は外す。暗い色は読めるように明るくする</summary>
     static string Rich(string s)
     {
         if (string.IsNullOrEmpty(s)) return "";
@@ -293,7 +275,6 @@ public class RoleDictionary : MonoBehaviour
         return ColorUtility.ToHtmlStringRGB(Readable(c));
     }
 
-    /// <summary>紺の背景で読めるように、暗すぎる色だけ明るくする</summary>
     static Color Readable(Color c)
     {
         var l = c.r * 0.3f + c.g * 0.59f + c.b * 0.11f;
@@ -302,7 +283,6 @@ public class RoleDictionary : MonoBehaviour
         return new Color(Mathf.Min(1f, c.r * k + 0.15f), Mathf.Min(1f, c.g * k + 0.15f), Mathf.Min(1f, c.b * k + 0.15f));
     }
 
-    // ── 描く ────────────────────────────────
 
     static float sw, sh, scale = -1f;
     static float Scale => sw / 1920f;
@@ -328,8 +308,7 @@ public class RoleDictionary : MonoBehaviour
         if (wx < 0 || type == EventType.Layout && (wx + ww > sw || wy + wh > sh)) { wx = (sw - ww) / 2f; wy = (sh - wh) / 2f; }
 
         var titleH = 56f * Scale;
-        // 題の帯をつかんで動かす
-        if (type == EventType.MouseDown && e.button == 0 && Inside(e.mousePosition, wx, wy, ww - titleH, titleH)) { dragging = true; dragDx = e.mousePosition.x - wx; dragDy = e.mousePosition.y - wy; e.Use(); }
+        if (type == EventType.MouseDown && e.button == 0 && Inside(e.mousePosition, wx, wy, ww * 0.22f, titleH)) { dragging = true; dragDx = e.mousePosition.x - wx; dragDy = e.mousePosition.y - wy; e.Use(); }
         else if (type == EventType.MouseDrag && dragging) { wx = e.mousePosition.x - dragDx; wy = e.mousePosition.y - dragDy; e.Use(); }
         else if (type == EventType.MouseUp) dragging = false;
         wx = Mathf.Clamp(wx, 0f, Mathf.Max(0f, sw - ww));
@@ -340,12 +319,10 @@ public class RoleDictionary : MonoBehaviour
         var cs = titleH * 0.7f;
         if (GUI.Button(new Rect(wx + ww - cs - Pad * 1.5f, wy + (titleH - cs) / 2f, cs, cs), "×", sClose)) { SetOpen(false); return; }
 
-        // 探す欄と「入っている役職だけ」
         var fw = ww * 0.24f;
         var fx = wx + ww - cs - Pad * 3f - fw;
         var fh = titleH * 0.62f;
         GUI.Label(new Rect(fx - 70f * Scale, wy + (titleH - fh) / 2f, 70f * Scale, fh), GetString("RoleDictionary.Search"), sSmall);
-        // GUI.TextField はこの本編では中身が削られていて使えないので、押すと打てる欄を自分で描く (字は Update で Input.inputString から足す)
         var fieldRect = new Rect(fx, wy + (titleH - fh) / 2f, fw, fh);
         if (type == EventType.MouseDown && e.button == 0)
         {
@@ -360,8 +337,18 @@ public class RoleDictionary : MonoBehaviour
         var ow = 230f * Scale;
         var ox = fx - 80f * Scale - ow;
         if (GUI.Button(new Rect(ox, wy + (titleH - fh) / 2f, ow, fh), (onlyEnabled ? "☑ " : "☐ ") + GetString("RoleDictionary.OnlyEnabled"), onlyEnabled ? sTabOn : sTab)) { onlyEnabled = !onlyEnabled; listDirty = true; }
+        if (FreePlayRole.Available && selected != CustomRoles.NotAssigned)
+        {
+            var pw = 220f * Scale;
+            if (GUI.Button(new Rect(ox - Pad - pw, wy + (titleH - fh) / 2f, pw, fh), "▶ " + GetString("RoleDictionary.PlayAs"), sTabOn))
+            {
+                var role = selected;
+                SetOpen(false);
+                FreePlayRole.Become(role);
+                return;
+            }
+        }
 
-        // 陣営のタブ
         var ty = wy + titleH;
         var th = 40f * Scale;
         var tw = (ww - Pad * 2f) / Tabs.Length;
@@ -375,7 +362,6 @@ public class RoleDictionary : MonoBehaviour
         if (all == null || builtLang != (TranslationController.InstanceExists ? TranslationController.Instance.currentLanguage?.languageID.ToString() : "")) { all = null; listDirty = true; detailDirty = true; }
         if (listDirty) BuildList();
 
-        // 左: 一覧
         var top = ty + th + Pad;
         var bodyH = wy + wh - top - Pad;
         var lx = wx + Pad; var lw = ww * 0.30f;
@@ -397,7 +383,6 @@ public class RoleDictionary : MonoBehaviour
         }
         if (shown.Count == 0) GUI.Label(new Rect(lx + Pad, top + Pad, lw - Pad * 2, RowH), GetString("RoleDictionary.None"), sSmall);
 
-        // 右: 説明
         var dx = lx + lw + Pad; var dw = wx + ww - Pad - dx;
         GUI.Box(new Rect(dx, top, dw, bodyH), GUIContent.none, sPanel);
         var textW = dw - Pad * 3f - 16f * Scale;
@@ -406,7 +391,6 @@ public class RoleDictionary : MonoBehaviour
         if (type == EventType.ScrollWheel && Inside(e.mousePosition, dx, top, dw, bodyH)) { detailScroll += e.delta.y * RowH; e.Use(); }
         detailScroll = Mathf.Clamp(detailScroll, 0f, maxD);
         if (maxD > 0f) detailScroll = GUI.VerticalScrollbar(new Rect(dx + dw - 16f * Scale, top, 16f * Scale, bodyH), detailScroll, bodyH, 0f, detailHeight + Pad * 2f);
-        // 枠の外へはみ出す分は GUI のグループで切る
         GUI.BeginGroup(new Rect(dx + Pad, top + Pad, textW, bodyH - Pad * 2f));
         GUI.Label(new Rect(0, -detailScroll, textW, detailHeight + 4f), detailContent, sDetail);
         GUI.EndGroup();

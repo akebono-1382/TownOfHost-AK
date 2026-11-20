@@ -2,8 +2,6 @@
 
 namespace TownOfHostL.Roles.Core;
 
-/// <summary>役職の出どころ (どの MOD で生まれた役職か)。役職の説明の最後に「From:」で出す。</summary>
-/// <remarks>並びと色は TownOfHost-hamo の From に合わせる。</remarks>
 public enum From
 {
     None,
@@ -36,11 +34,6 @@ public enum From
 
 public static class RoleFrom
 {
-    /// <summary>
-    /// 役職ごとの出どころ。TownOfHost-hamo にある役職は hamo の From をそのまま使い、
-    /// hamo に無い役職は TownOfHost_Y (L のフォーク元) の分け方 (TOH / Y / Default) から決めた。
-    /// 表に無い役職 (L で生まれた役職など) は出さない。
-    /// </summary>
     static readonly Dictionary<CustomRoles, From> Table = new()
     {
         [CustomRoles.Administer] = From.TownOfHost_Y,
@@ -252,14 +245,11 @@ public static class RoleFrom
         [CustomRoles.Witch] = From.TheOtherRoles,
         [CustomRoles.Workaholic] = From.TownOfHost_Y,
         [CustomRoles.Zombie] = From.TownOfHost_hamo,
-        // 属性
         [CustomRoles.Lovers] = From.Love_Couple_Mod,
     };
 
     public static From Get(CustomRoles role) => Table.TryGetValue(role, out var from) ? from : From.None;
 
-    /// <summary>「From:〇〇」の文字 (MOD の名前はその MOD の色)。出どころが無ければ空。</summary>
-    /// <param name="dark">明るい背景に出す時は true (「From:」を黒にする)</param>
     public static string GetText(CustomRoles role, bool dark = false) => GetText(Get(role), dark);
 
     public static string GetText(From from, bool dark = false)

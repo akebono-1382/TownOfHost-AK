@@ -81,7 +81,6 @@ internal sealed class VanillaMenuOpt : MenuOpt
     private readonly int _count;
     private int _index;
 
-    /// <summary>本編の設定の名前 (インポスター数などを見分ける)</summary>
     public StringNames SettingTitle => _setting != null ? _setting.Title : default;
 
     private VanillaMenuOpt(string label, BaseGameSetting s, FloatGameSetting f, IntGameSetting i, CheckboxGameSetting c, StringGameSetting str) : base(null)
@@ -117,7 +116,6 @@ internal sealed class VanillaMenuOpt : MenuOpt
         _count = Math.Max(_count, 1);
     }
 
-    // 本編の範囲より広く選べるようにしている設定 (タスクの数・キルのクールダウン・インポスター数)
     private static (float min, float max) Range(StringNames title, float min, float max)
     {
         switch (title)
@@ -129,13 +127,11 @@ internal sealed class VanillaMenuOpt : MenuOpt
             case StringNames.GameKillCooldown:
                 return (0f, 180f);
             case StringNames.GameNumImpostors:
-                // hamo と同じく、インポスターを 0 人や 4 人以上にもできる (本編は 1〜3 人)
                 return (0f, 15f);
         }
         return (min, max);
     }
 
-    // hamo と同じ刻み (キルのクールダウンは 0.5 秒、会議と投票の時間・緊急会議のクールダウンは 1 秒)
     private static float Step(StringNames title, float step) => title switch
     {
         StringNames.GameKillCooldown => 0.5f,

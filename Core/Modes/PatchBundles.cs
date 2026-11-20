@@ -7,10 +7,8 @@ using HarmonyLib;
 
 namespace TownOfHostL.Core.Modes;
 
-/// <summary>
 /// TOHL のパッチの束。モードは <see cref="GameMode.LiveBundles"/> で、どの束を当てておくかを宣言する。
 /// 束を付けていないパッチは <see cref="Standard"/> に入る。
-/// </summary>
 [Flags]
 public enum PatchBundles
 {
@@ -57,7 +55,6 @@ public static class PatchBundleSet
         foreach (var type in AccessTools.GetTypesFromAssembly(typeof(Main).Assembly))
         {
             // パッチではないクラス (数千個) は Harmony に渡さない。渡すだけで起動が遅くなる (TownOfHost-hamo の DeferredPatcher を元にした)。
-            // クラスに [HarmonyPatch] が無く、メソッドにだけ付けている物もパッチなので残す (落とすと部屋を立てた所で止まった)
             if (!IsPatchClass(type)) continue;
             var bundle = BundleOf(type);
             if (!types.TryGetValue(bundle, out var list))
@@ -74,7 +71,7 @@ public static class PatchBundleSet
             foreach (var m in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly))
                 if (m.IsDefined(typeof(HarmonyAttribute), false)) return true;
         }
-        catch { return true; } // 調べられない時は Harmony に任せる
+        catch { return true; }
         return false;
     }
 
@@ -90,7 +87,6 @@ public static class PatchBundleSet
     {
         target &= PatchBundles.All;
         if (target == Live) return;
-        // 後回しにしたパッチが残っていたら先に当てる (束の外し・当て直しの前に揃えておく)
         DeferredPatches.FinishNow();
         var sw = Stopwatch.StartNew();
         if ((target & ~Live) != 0)
@@ -119,18 +115,11 @@ public static class PatchBundleSet
     }
 }
 
-/// <summary>
-/// 起動を速くする: タイトル画面では使わない試合用のパッチ (PlayerControl・MeetingHud など) は起動の時に当てず、
-/// タイトル画面が出てから 1 フレームに少しずつ当てる。部屋を作る・入る・フリープレイの前には残りを全部当てるので、
-/// 試合やロビーではいつも全部のパッチが効いている。
-/// </summary>
 /// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/DeferredPatcher.cs) を元に、L の束 (<see cref="PatchBundleSet"/>) に合わせた。</remarks>
 public static class DeferredPatches
 {
-    /// <summary>起動の 1 回目の <see cref="PatchBundleSet.Apply"/> の間だけ true にする</summary>
     public static bool Enabled;
 
-    // タイトル画面では動かない、試合・ロビー用の本編の型
     static readonly HashSet<string> DeferredTargets = new()
     {
         "PlayerControl", "MeetingHud", "LobbyBehaviour", "HudManager", "ChatController", "ShipStatus",
@@ -145,7 +134,6 @@ public static class DeferredPatches
         "RoleManager", "SabotageSystemType", "RolesSettingsMenu", "TutorialManager",
     };
 
-    // AmongUsClient・InnerNetClient のうち、部屋の中でしか呼ばれないもの (OnGameJoined は入る時に使うので今すぐ当てる)
     static readonly HashSet<string> RoomOnlyClientMethods = new()
     {
         "OnGameEnd", "OnPlayerJoined", "OnPlayerLeft", "StartGame", "CoStartGame", "KickPlayer", "CreatePlayer",
@@ -159,7 +147,6 @@ public static class DeferredPatches
 
     public static int PendingCount => pending.Count;
 
-    /// <summary>後回しにできるパッチなら控えて true を返す</summary>
     public static bool TryDefer(Harmony harmony, Type type)
     {
         if (!Enabled || !IsDeferred(type)) return false;
@@ -183,7 +170,6 @@ public static class DeferredPatches
         catch { return false; }
     }
 
-    /// <summary>タイトル画面が出たら、1 フレームに 12ms までずつ当てていく</summary>
     public static void Tick()
     {
         if (pending.Count == 0) return;
@@ -193,7 +179,6 @@ public static class DeferredPatches
         if (pending.Count == 0) Logger.Info($"後回しのパッチを当て終えました ({total} クラス・{totalWatch.ElapsedMilliseconds}ms)", "DeferredPatches");
     }
 
-    /// <summary>残りを今すぐ全部当てる。部屋・試合・フリープレイへ進む前に呼ぶ</summary>
     public static void FinishNow()
     {
         if (pending.Count == 0) return;
@@ -216,7 +201,6 @@ public static class DeferredPatches
         public static void Postfix() => Tick();
     }
 
-    // 部屋・試合・フリープレイへ進む前に、残りを全部当てる
     [PatchBundle(PatchBundles.Core)]
     [HarmonyPatch(typeof(MainMenuManager))]
     static class MainMenuFinishPatch
@@ -227,7 +211,6 @@ public static class DeferredPatches
         public static void Prefix() => FinishNow();
     }
 
-    // 招待や部屋の立て直しなど、メニューのボタンを通らずに部屋へ入る時も
     [PatchBundle(PatchBundles.Core)]
     [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnGameJoined))]
     static class GameJoinedPatch
@@ -236,7 +219,6 @@ public static class DeferredPatches
         public static void Prefix() => FinishNow();
     }
 
-    // フリープレイなど、場面が変わる時も
     [PatchBundle(PatchBundles.Core)]
     [HarmonyPatch(typeof(SceneChanger), nameof(SceneChanger.ChangeScene), typeof(string))]
     static class ChangeScenePatch

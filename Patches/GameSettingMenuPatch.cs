@@ -71,7 +71,6 @@ public class GameSettingMenuPatch
     const int CatFitCount = 7;
     // 区分の絵: ボタンの高さに対する絵の高さ・選んだ時の大きさ
     const float CatArtHeight = 1.05f, CatArtPicked = 1.15f;
-    // 検索欄は板の上の縁より上・右上の本編のボタンの列に掛からない所。右に「項目へ移動」のボタンを並べる
     static readonly Vector2 SearchBoxPosition = new(-2.3f, 2.6f);
     const float SearchBoxWidth = 2.1f;
     static readonly Vector2 JumpButtonPosition = new(-0.47f, 2.6f);

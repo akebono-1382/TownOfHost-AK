@@ -4,8 +4,6 @@ using UnityEngine;
 
 namespace TownOfHostL.SettingsUI;
 
-// 設定画面の上 (検索欄の右) の「項目へ移動」ボタン。押すと、今出している頁 (ゲーム・全般) の節の一覧が下に開き、
-// 節を押すとその見出しへ飛ぶ。役職やプリセットの頁を出している間はボタンを出さない
 internal static class JumpMenu
 {
     private const float BtnW = 1.35f, BtnH = 0.42f;
@@ -17,7 +15,7 @@ internal static class JumpMenu
     private static readonly Color Ink = new(0.88f, 0.9f, 0.94f, 1f);
 
     private static UiScreen _button, _panel;
-    private static SectionPage _open; // 一覧を開いている頁 (閉じていれば null)
+    private static SectionPage _open;
 
     public static void Create(Transform parent, Vector3 pos, int layer)
     {
@@ -37,7 +35,6 @@ internal static class JumpMenu
             Fill = Fill,
         });
 
-        // 一覧はボタンの左下の角から下へ (設定の画面より手前に描く)
         var p = Widget.Node("Tohl_JumpPanel", parent, layer);
         p.transform.localPosition = pos + new Vector3(-BtnW / 2f, -BtnH / 2f - 0.06f, -5f);
         p.AddComponent<UnityEngine.Rendering.SortingGroup>().sortingOrder = 30;
@@ -58,7 +55,6 @@ internal static class JumpMenu
     private static SectionPage Current =>
         SettingsPages.Game.Visible ? SettingsPages.Game : SettingsPages.General.Visible ? SettingsPages.General : null;
 
-    // 毎フレーム: 出している頁が無ければボタンを隠し、頁が替わったら一覧を閉じる
     public static void Tick()
     {
         if (_button == null || !_button.Alive) return;
@@ -76,7 +72,6 @@ internal static class JumpMenu
         var items = page.Sections();
         if (items.Count == 0) return;
         _open = page;
-        // 頁より手前に置く (本編のボタンの管理役は手前の物から押させる。後ろの頁の行が先に押されないように)
         var pos = _panel.Root.position;
         _panel.Root.position = new Vector3(pos.x, pos.y, Mathf.Min(pos.z, page.RootZ - 5f));
 

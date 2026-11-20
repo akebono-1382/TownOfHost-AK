@@ -17,7 +17,6 @@ namespace TownOfHostL
         {
             if (!Input.anyKeyDown) return;
             if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing || RoleDictionary.Typing) return;
-            // 役職辞典 (F4)
             RoleDictionary.CheckHotkey();
             //解像度変更
             if (Input.GetKeyDown(KeyCode.F11))

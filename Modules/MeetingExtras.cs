@@ -12,7 +12,6 @@ namespace TownOfHostL.Modules;
 /// 会議と試合の終わりの知らせ (ホストのみ)。
 /// ・投票の残りが 30 秒・10 秒になったらチャットで知らせる
 /// ・試合の終わりに、キル・正しい投票・タスク・勝利・生存から点を付けて MVP をロビーで発表する
-/// ・同じ陣営が続けて勝ったら「〇連勝中」、連勝を止めたら「連勝ストップ」を知らせる (止めた陣営の人は MVP の点が少し増える)
 /// </summary>
 /// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/MeetingTimeAnnounce.cs・MvpAnnouncer.cs・WinStreak.cs) を元にした。</remarks>
 public static class MeetingExtras
@@ -32,9 +31,7 @@ public static class MeetingExtras
             .SetGameMode(CustomGameMode.Standard);
     }
 
-    // ===== 連勝 =====
 
-    /// <summary>連勝を止めた陣営の人に足す MVP の点</summary>
     const float StopperBonus = 3f;
     static CustomWinner lastTeam = CustomWinner.Default;
     static int streak;
@@ -42,7 +39,6 @@ public static class MeetingExtras
 
     static bool StreakOn => AnnounceWinStreak != null && AnnounceWinStreak.GetBool();
 
-    /// <summary>勝った陣営で連勝を数え直し、知らせる。止めた時は true</summary>
     static void CountStreak()
     {
         stoppedThisGame = false;

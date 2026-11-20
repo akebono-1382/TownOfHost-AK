@@ -36,6 +36,7 @@ namespace TownOfHostL
                 // 設定と本編の値はメインスレッドで読んでから渡す (問い合わせはスレッドプールで動く)
                 string betaUrl = Main.BetaBuildURL.Value;
                 var platform = Constants.GetPlatformType();
+                isChecked = true;
                 checkTask = Task.Run(() => CheckRelease(betaUrl, platform));
             }
             if (checkTask == null) ShowUpdateButton();

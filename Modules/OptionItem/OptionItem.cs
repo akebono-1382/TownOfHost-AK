@@ -127,6 +127,8 @@ namespace TownOfHostL
         public OptionItem SetGameMode(CustomGameMode value) => Do(i => i.GameMode = value);
         public OptionItem SetHeader(bool value, string str = "") => Do(i => { i.IsHeader = value; if (str != "") i.IsHeaderName = str; });
         public OptionItem SetHidden(bool value) => Do(i => i.IsHidden = value);
+        public Func<bool> EnabledCondition { get; private set; }
+        public OptionItem SetEnabled(Func<bool> condition) => Do(i => i.EnabledCondition = condition);
         public OptionItem SetFixValue(bool value) => Do(i => i.IsFixValue = value);
         public OptionItem SetText(bool value) => Do(i => i.IsText = value);
         public OptionItem SetReplacementDictionary(Dictionary<string, string> value) => Do(i => i.ReplacementDictionary = value);

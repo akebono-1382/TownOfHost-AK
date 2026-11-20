@@ -320,44 +320,28 @@ public sealed class SchrodingerCat : RoleBase, IAdditionalWinner, IDeathReasonSe
     /// </summary>
     public enum TeamType : byte
     {
-        /// <summary>
         /// どこの陣営にも属していない状態
-        /// </summary>
         None = 0,
 
         // 10-49 シェリフキルオプションを作成しない変化先
 
-        /// <summary>
         /// インポスター陣営に所属する状態
-        /// </summary>
         Mad = 10,
         Impostor,
-        /// <summary>
         /// クルー陣営に所属する状態
-        /// </summary>
         Crew,
 
         // 50- シェリフキルオプションを作成する変化先
 
-        /// <summary>
         /// ジャッカル陣営に所属する状態
-        /// </summary>
         Jackal = 50,
-        /// <summary>
         /// エゴイスト陣営に所属する状態
-        /// </summary>
         Egoist,
-        /// <summary>
         /// ダークハイド陣営に所属する状態
-        /// </summary>
         DarkHide,
-        /// <summary>
         /// 鬼陣営に所属する状態
-        /// </summary>
         Ogre,
-        /// <summary>
         /// パブロフ陣営に所属する状態
-        /// </summary>
         Pavlov,
     }
     public static Color GetCatColor(TeamType catType)

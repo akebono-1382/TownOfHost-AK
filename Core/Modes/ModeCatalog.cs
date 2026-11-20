@@ -34,7 +34,7 @@ public static class ModeCatalog
     public static bool IsCatchCat => Current is CatchCatMode;
 
     /// <summary>設定をメニューや一覧に出すか (どのモードでも隠す設定を含めて見る)。</summary>
-    public static bool IsShown(this OptionItem option) => !option.IsHidden && Current.ShowsOption(option);
+    public static bool IsShown(this OptionItem option) => !option.IsHidden && (option.EnabledCondition?.Invoke() ?? true) && Current.ShowsOption(option);
 }
 
 public sealed class StandardMode : GameMode

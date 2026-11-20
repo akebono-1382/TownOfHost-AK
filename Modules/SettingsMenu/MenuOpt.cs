@@ -80,7 +80,6 @@ public class MenuOpt
     {
         if (!option.IsShown()) return false;
         if (option.Parent == null) return true;
-        // 役職の出現率のすぐ下の設定は、出現率が 0% でも出す (出す前に決めておけるように。前は 0% だと役職の設定が 1 つも出なかった)
         return IsEnabled(option.Parent) && (IsRoleRoot(option.Parent) || option.Parent.GetBool());
     }
 

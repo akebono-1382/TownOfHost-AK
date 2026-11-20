@@ -43,6 +43,7 @@ namespace TownOfHostL
         }
         private static bool PrefixCore()
         {
+            if (GameStates.IsFreePlay) return false;
             if (!AmongUsClient.Instance.AmHost) return true;
 
             //ゲーム終了判定済みなら中断

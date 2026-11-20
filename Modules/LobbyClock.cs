@@ -6,9 +6,6 @@ using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Modules;
 
-// ロビーの右の板の「プライバシー」の欄を、今日の日付と時刻の欄に替える。
-// 部屋は非公開のまま: 公開・非公開を切り替えるボタン (Privacy (Interactive)) は隠して押せないようにし、
-// 押せない方の欄 (Privacy (Not Interactive): 黒い箱に「ローカル」などの字) を出して、字を日時に替える
 public static class LobbyClock
 {
     private const string Root = "AspectSize/GameSettingsButtons/";
@@ -33,7 +30,6 @@ public static class LobbyClock
         if (!pane) return;
         if (!clock && !Build(pane)) return;
 
-        // 本編は部屋の状態に合わせて 2 つの欄を出し直すので、毎回押せない方だけを出す
         var t = pane.transform;
         var interactive = t.Find(Root + "Privacy (Interactive)");
         if (interactive && interactive.gameObject.activeSelf) interactive.gameObject.SetActive(false);
@@ -57,7 +53,6 @@ public static class LobbyClock
         vanillaText = src ? src.GetComponent<TextMeshPro>() : null;
         if (!vanillaText) return false;
 
-        // 本編が書き直さない写しの字を同じ所に重ねる
         var copy = UnityEngine.Object.Instantiate(vanillaText.gameObject, src.parent);
         copy.name = "Tohl_LobbyClock";
         copy.transform.localPosition = src.localPosition;
@@ -69,7 +64,6 @@ public static class LobbyClock
         clock.fontSizeMax = Mathf.Max(vanillaText.fontSize, 1f);
         shownMinute = -1;
 
-        // 見出しの「プライバシー」を「日時」に
         var label = t.Find("AspectSize/PrivacyLabel/Text_TMP");
         if (label)
         {

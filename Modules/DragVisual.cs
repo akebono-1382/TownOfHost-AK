@@ -8,9 +8,6 @@ using UnityEngine;
 namespace TownOfHostL.Modules;
 
 // TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/DragVisual.cs) を元にした (L にはアライグマが無いのでペンギンだけ)。
-// ペンギン・アライグマにつかまった人を、MOD を入れている人の画面では「引きずられている」ように見せる。
-// 動かすのは体の見た目(cosmetics)だけで、プレイヤー本体の位置や通信には触らない。
-// ホストは 3 フレームに 1 回しか位置を合わせないので、そのままだとガクガク重なって見えていた
 public static class DragVisual
 {
     sealed class Pull
@@ -56,7 +53,6 @@ public static class DragVisual
             }
             if (!pulls.TryGetValue(id, out var p)) pulls[id] = p = new Pull();
 
-            // 引っぱる人の背中側。向きを変えた時は、ゆっくり反対側へ回り込む
             var facing = dragger.cosmetics.FlipX ? -1f : 1f;
             p.side = Mathf.MoveTowards(p.side, -facing, Time.deltaTime * 4f);
             var from = dragger.transform.position;
@@ -67,11 +63,9 @@ public static class DragVisual
                 p.baseLocal = cos.transform.localPosition;
                 p.started = true;
             }
-            // 少し遅れて付いてくる
             p.pos = Vector3.Lerp(p.pos, goal, 1f - Mathf.Exp(-Time.deltaTime * 9f));
             cos.transform.position = new Vector3(p.pos.x, p.pos.y, cos.transform.position.z);
 
-            // 足を持たれて寝かされた向きに傾け、動いている間は小さく揺らす
             var moving = dragger.MyPhysics?.body != null && dragger.MyPhysics.body.velocity.sqrMagnitude > 0.01f;
             var wobble = moving ? Mathf.Sin(Time.time * 16f) * 6f : 0f;
             cos.transform.localRotation = Quaternion.Euler(0f, 0f, (p.side >= 0f ? 70f : -70f) + wobble);

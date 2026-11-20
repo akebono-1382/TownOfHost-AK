@@ -84,27 +84,7 @@ namespace TownOfHostL
         class VersionShowerStartPatch
         {
             static string[] mainManuText = {
-                "このコメントは21種類らしい\nなんか増えてる？",
-                "おかえり！\nこれからもたくさん遊んでね",
-                "【今日のおすすめ役職】\nアドミニスター",
-                "【今日のおすすめ属性】\nリヴェラー",
-                "ランダムな文が\n表示されるって\nなんかいいよね",
-                "今日もシェリフ？\nたまにはハンターで使ってみない？",
-                "おまたせ！久しぶりだね！",
-                "復旧にはお手伝いさんが\nめっちゃ頑張ってくれました",
-                "配信者が集まるYumeno-Stream-Ship\nメンバーをいつでも募集中です。",
-                "マッドシェリフなどで自爆する時に\n相手が斬るように見える設定があります",
-                "属性を一つ足すだけで\n一気にゲームが変わります",
-                "ラストインポスターとか\nコンプリートクルーとかって\n使ってる？",
-                "パン屋はパン屋でも\nたまにご飯が好きになったりする",
-                "新しいニュートラル役職を\n考えたいんだけどな、、",
-                "道連れ表記は複数の場合、\nちゃんと複数発生と出ます",
-                "COして良い役職かどうか\nマークを表示させられます",
-                "ひいた役職の陣営がわからない？\n陣営表示機能を使ってね",
-                "シンクロカラーモードという\nカオスなモードがありました",
-                "ジャッカルサイドキックで\nご主人の想いを受け継ぎキルせよ。",
-                "一年も使えない期間があったけど\n元気にしてた？",
-                "TOH_Yのリリース記念日は\n11月2日です",
+                "11/20がLのリリース日らしい",
             };
 
             static TextMeshPro SpecialEventText;
@@ -203,7 +183,7 @@ namespace TownOfHostL
                 else if (CultureInfo.CurrentCulture.Name == "ja-JP")
                 {
                     var num = IRandom.Instance.Next(mainManuText.Length);
-                    SpecialEventText.text = $"★TOH_Yへようこそ！★\n<size=55%>{mainManuText[num]}</size>";
+                    SpecialEventText.text = $"★TOH-Lへようこそ！★\n<size=55%>{mainManuText[num]}</size>";
                     SpecialEventText.color = Color.yellow;
                 }
             }

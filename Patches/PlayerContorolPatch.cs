@@ -659,9 +659,6 @@ partial class ReportDeadBodyPatch
             if (buttonState != null && buttonState.NumberOfRemainingButtons > 0) buttonState.NumberOfRemainingButtons--;
         }
 
-    //=============================================
-    //以下、ボタンが押されることが確定したものとする。
-    //=============================================
     confirmed:
         MeetingStates.MeetingCalled = true;
 

@@ -46,6 +46,11 @@ namespace TownOfHostL
 
                 var player = __instance;
 
+                if (Modules.CustomSpawn.CustomSpawnEditor.Editing)
+                {
+                    Modules.CustomSpawn.CustomSpawnEditor.FixedUpdate(player);
+                    return;
+                }
                 if (!GameStates.IsModHost) return;
 
                 TargetArrow.OnFixedUpdate(player);
@@ -82,7 +87,6 @@ namespace TownOfHostL
 
                     if (__instance.AmOwner)
                     {
-                        // 名前の組み立ては 0.5 秒に 1 回で足りる (毎フレームだと 1 秒に 50 回、文字列を作り直していた)
                         SuffixTimer -= Time.fixedDeltaTime;
                         if (SuffixTimer <= 0f) { SuffixTimer = 0.5f; Utils.ApplySuffix(); }
                         PeriodicSendDirtyGameOptions();

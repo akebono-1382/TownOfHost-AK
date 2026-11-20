@@ -69,6 +69,5 @@ public interface IKiller
         return false;
     }
 
-    /// <summary>キルをしなかった (ガードされた等) 時に呼ばれる</summary>
     public void OnCheckMurderDontKill(MurderInfo info) { }
 }

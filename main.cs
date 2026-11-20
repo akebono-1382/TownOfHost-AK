@@ -201,7 +201,9 @@ public partial class Main : BasePlugin
         LastKillCooldown = Config.Bind("Other", "LastKillCooldown", (float)30);
         LastShapeshifterCooldown = Config.Bind("Other", "LastShapeshifterCooldown", (float)30);
 
+        var bootWatch = System.Diagnostics.Stopwatch.StartNew();
         PluginModuleInitializerAttribute.InitializeAll();
+        long bootInit = bootWatch.ElapsedMilliseconds;
 
         IRandom.SetInstance(new NetRandomWrapper());
 
@@ -228,6 +230,7 @@ public partial class Main : BasePlugin
         }
         // 役職の分類の表は、全役職クラスの RoleInfo が揃ってから組む (登録で重複が出ても組む)
         TownOfHostL.Core.RoleCatalog.Build();
+        long bootRoles = bootWatch.ElapsedMilliseconds;
         TownOfHostL.Logger.Info($"{Application.version}", "AmongUs Version");
 
         var handler = TownOfHostL.Logger.Handler("GitVersion");
@@ -254,10 +257,10 @@ public partial class Main : BasePlugin
         TownOfHostL.Modules.Watchdog.Init();
         AddComponent<TownOfHostL.Modules.Watchdog>();
         TownOfHostL.Core.Modes.PatchBundleSet.Init(Harmony);
-        // 試合用のパッチは後回しにして、タイトル画面が出てから当てる (起動を速くする)
         TownOfHostL.Core.Modes.DeferredPatches.Enabled = true;
         TownOfHostL.Core.Modes.PatchBundleSet.Apply(TownOfHostL.Core.Modes.ModeCatalog.Standard.LiveBundles);
         TownOfHostL.Core.Modes.DeferredPatches.Enabled = false;
+        TownOfHostL.Logger.Info($"init={bootInit}ms roles={bootRoles - bootInit}ms rest={bootWatch.ElapsedMilliseconds - bootRoles}ms", "BootTime");
         Application.quitting += new Action(Utils.SaveNowLog);
         // まとめて保存する設定を、終了前に書き切る
         Application.quitting += new Action(TownOfHostL.Modules.OptionSaver.Flush);

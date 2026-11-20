@@ -24,11 +24,9 @@ internal sealed class SectionPage
     private static readonly float ListW = (float)Math.Round(W * 0.65f, 2), SideW = W - ListW - 0.15f;
     internal static float RowW => ListW - 0.24f;
     private const float HeadH = 0.4f, BarH = 0.4f, RowPad = OptEditor.PlatePad;
-    // 節の見出しの色 (どの節も同じ)
     private static readonly Color HeadLine = new(0.45f, 0.62f, 0.8f, 1f);
     private static readonly Color HeadFill = new(0.13f, 0.17f, 0.24f, 1f);
     private static readonly Color HeadText = new(0.9f, 0.95f, 1f, 1f);
-    // 節へ飛ぶボタン
     private static readonly Color SubText = new(0.72f, 0.75f, 0.8f, 1f);
 
     private readonly string _tag;
@@ -136,7 +134,6 @@ internal sealed class SectionPage
             top.Align = Align.Start;
             rows.Add(top);
         }
-        // 出す節と、その行を先に決める (上に節へ飛ぶボタンを並べるため)
         var visible = new List<(Group g, List<MenuOpt> shown, int values)>();
         foreach (var g in _all)
         {
@@ -154,7 +151,6 @@ internal sealed class SectionPage
         foreach (var (g, shown, values) in visible)
         {
             var e = new Entry { Group = g, Changed = AnyChanged(g) };
-            // 見出し: 節ごとに色を変えると見にくいので、どの節も同じ落ち着いた帯にする。前は広めに間を空ける
             if (_entries.Count > 0 || top != null) rows.Add(new Spacer(rowW, 0.16f));
             string title = $"{g.Title}  <size=70%><color=#B8C0CC>{string.Format(Translator.GetString("SettingsUI.Count"), values)}</color></size>";
             e.Head = new Box(new Label(title, 1.65f) { Bold = true, Color = HeadText, Width = rowW - 0.3f, MinFontSize = 1.1f })
@@ -233,7 +229,6 @@ internal sealed class SectionPage
 
     private static string TocText(Entry e) => e.Changed ? e.Group.Title + OptEditor.ChangedMark : e.Group.Title;
 
-    // 飛ぶボタンの字: 幅に入らない名前は後ろを「…」にする (字を小さくしすぎて読めなくしない)
     internal static string JumpText(string title, bool changed, float width, float font)
     {
         string mark = changed ? OptEditor.ChangedMark : "";
@@ -246,7 +241,6 @@ internal sealed class SectionPage
         return title[..1] + "…" + mark;
     }
 
-    // 画面の上の「項目へ移動」から使う: 頁が今見えているか・節の名前と変えた印・その節へ飛ぶ
     public bool Visible => Built && _screen.Root.gameObject.activeInHierarchy;
 
     public List<(string title, bool changed)> Sections()
@@ -258,7 +252,6 @@ internal sealed class SectionPage
 
     public void JumpTo(int n) => Jump(n);
 
-    // 頁の置き場の奥行き (上に重ねる一覧を、頁より手前に置いて先に押されるようにする)
     public float RootZ => _screen.Root.position.z;
 
     private static bool AnyChanged(Group g)
