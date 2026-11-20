@@ -30,6 +30,8 @@ class CheckProtectPatch
         // CNO (客の手元の一覧に残る偽のプレイヤー) は Data がホストの物なので、守るとホストを守ったことになる
         if (Core.CustomNetObject.Is(target) || Core.CustomNetObject.Is(__instance)) return false;
         Logger.Info("CheckProtect発生: " + __instance.GetNameWithRole() + "=>" + target.GetNameWithRole(), "CheckProtect");
+        // 一時的に幽霊になっている人 (役職は守護天使) は守護できない
+        if (TempGhost.IsGhost(__instance)) return false;
         // 本人の画面だけインポスターのクルー・マッドメイト (シェリフ系など) は、死んだ後に守護できない
         var role = __instance.GetCustomRole();
         if (role.GetRoleInfo()?.IsDesyncImpostor == true && (role.IsCrewmate() || role.IsMadmate()))
@@ -143,6 +145,12 @@ class CheckMurderPatch
         if (!target.IsAlive())
         {
             Logger.Info("targetは既に死んでいたため、キルをキャンセルしました。", "CheckMurder");
+            return false;
+        }
+        // 一時的に幽霊になっている人は、キルできず狙われもしない
+        if (TempGhost.IsGhost(killer) || TempGhost.IsGhost(target))
+        {
+            Logger.Info("一時的に幽霊になっている人が関わるため、キルをキャンセルしました。", "CheckMurder");
             return false;
         }
         // 会議中・または会議コール直後のキルでないか
@@ -567,6 +575,8 @@ partial class ReportDeadBodyPatch
         Logger.Info($"{__instance.GetNameWithRole()} => {target?.Object?.GetNameWithRole() ?? "null"}", "ReportDeadBody");
         // 生き返った人の死体 (本編の死体は消せずに残る) は通報できない
         if (target != null && !SpecialMeeting && Revive.WasRevived(target.PlayerId) && !(PlayerState.GetByPlayerId(target.PlayerId)?.IsDead ?? true)) return false;
+        // 一時的に幽霊になっている人は、会議の前に戻す (戻す SetRole が落ち着くまで、下で通報を預かる)
+        if (AmongUsClient.Instance.AmHost) TempGhost.ReturnAllForMeeting();
         // 復活の SetRole が落ち着く前に会議を開くと、本編の客の会議の画面が壊れる。1 件だけ預かり、落ち着いてから通す
         if (AmongUsClient.Instance.AmHost && Revive.HoldReport(__instance, target)) return false;
         // 役職の能力で確認なしに会議を開く

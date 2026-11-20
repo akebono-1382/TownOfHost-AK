@@ -75,6 +75,10 @@ public static class Revive
     /// <summary>復活の SetRole が落ち着くまでの間か。この間に会議を開かない。</summary>
     public static bool IsSettling => Time.realtimeSinceStartup < settlingUntil;
 
+    /// <summary>復活以外で生きている人の役職を SetRole で替えた時に呼ぶ。落ち着くまでの間の通報を預かる</summary>
+    public static void BeginSettling()
+        => settlingUntil = Mathf.Max(settlingUntil, Time.realtimeSinceStartup + SettleTime);
+
     /// <summary>
     /// 落ち着くまでの間に来た通報を預かる。預かれた (この通報は今は通さない) なら true。
     /// 既に 1 件預かっている時は、後の通報は捨てる (同じ死体への重ねた通報で会議が 2 度開かないように)。
