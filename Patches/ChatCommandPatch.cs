@@ -633,6 +633,12 @@ namespace TownOfHostL
         private static void Send(PlayerControl sender, string title, string msg, byte sendTo, int clientId)
         {
             if (sender == null || sender.Data == null) return;
+            // 1 人宛てで接続が引けない時に -1 のまま送ると、耳打ちや本人だけへの返事が全員に届く
+            if (sendTo != byte.MaxValue && clientId < 0)
+            {
+                NoClientWarning.Report(Utils.GetPlayerById(sendTo), "ChatSend");
+                return;
+            }
             if (sender.Data.IsDead && GameStates.IsInGame)
             {
                 SendMessageAsDeadSender(sender, msg, title, sendTo);

@@ -828,6 +828,7 @@ public class RpcSetRoleReplacer
     public static void RpcSetRoleDirect(PlayerControl target, RoleTypes role, PlayerControl sendTo)
     {
         if (target == null || sendTo == null) return;
+        if (sendTo.LacksClient("SetRoleDirect")) return;
         var writer = AmongUsClient.Instance.StartRpcImmediately(target.NetId, (byte)RpcCalls.SetRole, SendOption.Reliable, sendTo.GetClientId());
         writer.Write((ushort)role);
         writer.Write(true);

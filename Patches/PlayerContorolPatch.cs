@@ -488,12 +488,14 @@ public static class PlayerControlCheckVanishPatch
     }
     private static void SendVanishToSelfOnly(PlayerControl phantom)
     {
+        if (phantom.LacksClient("StartVanish")) return;
         var writer = AmongUsClient.Instance.StartRpcImmediately(
             phantom.NetId, (byte)RpcCalls.StartVanish, SendOption.Reliable, phantom.GetClientId());
         AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
     private static void SendAppearToSelfOnly(PlayerControl phantom)
     {
+        if (phantom.LacksClient("StartAppear")) return;
         var writer = AmongUsClient.Instance.StartRpcImmediately(
             phantom.NetId, (byte)RpcCalls.StartAppear, SendOption.Reliable, phantom.GetClientId());
         writer.Write(false);

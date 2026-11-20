@@ -71,6 +71,15 @@ static partial class ExtendedPlayerControl
         var client = player.GetClient();
         return client == null ? -1 : client.Id;
     }
+    /// <summary>
+    /// 1 人宛てに送る前に呼ぶ。接続が引けなければ記録して true。宛先 -1 は全員宛ての意味なので、true の時は送らない
+    /// </summary>
+    public static bool LacksClient(this PlayerControl player, string what)
+    {
+        if (player.GetClientId() >= 0) return false;
+        NoClientWarning.Report(player, what);
+        return true;
+    }
     public static CustomRoles GetCustomRole(this NetworkedPlayerInfo player)
     {
         return player == null || player.Object == null ? CustomRoles.Crewmate : player.Object.GetCustomRole();
@@ -147,6 +156,13 @@ static partial class ExtendedPlayerControl
             player.SetName(name);
             return;
         }
+        // 宛先が引けない時に -1 のまま送ると全員宛てになり、見る人ごとの名前 (役職・仲間の色) が全員に見える
+        if (clientId < 0)
+        {
+            Main.LastNotifyNames.Remove((player.PlayerId, seer.PlayerId));
+            NoClientWarning.Report(seer, "RpcSetNamePrivate");
+            return;
+        }
         NameRpcBatcher.Enqueue(clientId, player.NetId, player.Data.NetId, name, DontShowOnModdedClient);
     }
     public static void RpcSetRoleDesync(this PlayerControl player, RoleTypes role, int clientId, bool canOverrideRole = false)
@@ -154,6 +170,12 @@ static partial class ExtendedPlayerControl
         //player: 名前の変更対象
 
         if (player == null) return;
+        // -1 は全員宛てになり、見る人ごとの役職 (デシンク) が全員に効いてしまう
+        if (clientId < 0)
+        {
+            NoClientWarning.Report(player, $"RpcSetRoleDesync({role})");
+            return;
+        }
         RoleView.RecordByClientId(clientId, player, role);
         if (AmongUsClient.Instance.ClientId == clientId)
         {
@@ -250,6 +272,7 @@ static partial class ExtendedPlayerControl
         }
         else
         {
+            if (killer.LacksClient("MurderPlayer")) return;
             MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.Reliable, killer.GetClientId());
             messageWriter.WriteNetObject(target);
             messageWriter.Write((int)SucceededFlags);
@@ -263,6 +286,7 @@ static partial class ExtendedPlayerControl
         {
             killer.ProtectPlayer(target, colorId);
         }
+        if (killer.LacksClient("ProtectPlayer")) return;
         MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.Reliable, killer.GetClientId());
         messageWriter.WriteNetObject(target);
         messageWriter.Write(colorId);
@@ -292,6 +316,7 @@ static partial class ExtendedPlayerControl
         else
         {
             //targetがホスト以外だった場合
+            if (target.LacksClient("ResetAbilityCooldown")) return;
             MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(target.NetId, (byte)RpcCalls.ProtectPlayer, SendOption.Reliable, target.GetClientId());
             writer.WriteNetObject(target);
             writer.Write(0);
@@ -312,6 +337,7 @@ static partial class ExtendedPlayerControl
             player.Shapeshift(target, shouldAnimate);
             return;
         }
+        if (player.LacksClient("Shapeshift")) return;
         MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Shapeshift, SendOption.Reliable, player.GetClientId());
         messageWriter.WriteNetObject(target);
         messageWriter.Write(shouldAnimate);
@@ -324,6 +350,7 @@ static partial class ExtendedPlayerControl
         {
             if (seer != player)
             {
+                if (seer.LacksClient("RejectShapeshift")) continue;
                 MessageWriter msg = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.RejectShapeshift, SendOption.Reliable, seer.GetClientId());
                 AmongUsClient.Instance.FinishRpcImmediately(msg);
             }
@@ -335,6 +362,7 @@ static partial class ExtendedPlayerControl
     }
     public static void RpcDesyncUpdateSystem(this PlayerControl target, SystemTypes systemType, int amount)
     {
+        if (target.LacksClient("UpdateSystem")) return;
         MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(ShipStatus.Instance.NetId, (byte)RpcCalls.UpdateSystem, SendOption.Reliable, target.GetClientId());
         messageWriter.Write((byte)systemType);
         messageWriter.WriteNetObject(target);
@@ -576,6 +604,7 @@ static partial class ExtendedPlayerControl
         // Other Clients
         if (killer.PlayerId != 0)
         {
+            if (killer.LacksClient("MurderPlayer(FailedProtected)")) return;
             var writer = AmongUsClient.Instance.StartRpcImmediately(killer.NetId, (byte)RpcCalls.MurderPlayer, SendOption.Reliable, killer.GetClientId());
             writer.WriteNetObject(target);
             writer.Write((int)MurderResultFlags.FailedProtected);
@@ -755,6 +784,7 @@ static partial class ExtendedPlayerControl
         if (!force && !Modules.Net.SnapToBudget.CanSend()) return false;
         var net = pc.NetTransform;
         var num = (ushort)(net.lastSequenceId + 2);
+        if (target.LacksClient("SnapTo")) return false;
         MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(net.NetId, (byte)RpcCalls.SnapTo, SendOption.None, target.GetClientId());
         NetHelpers.WriteVector2(position, messageWriter);
         messageWriter.Write(num);

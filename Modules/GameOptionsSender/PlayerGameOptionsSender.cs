@@ -85,6 +85,8 @@ namespace TownOfHostL.Modules
 
         public override void SendOptionsArray(Il2CppStructArray<byte> optionArray)
         {
+            // 宛先 -1 は全員宛てになり、この人の設定 (視界・クールなど) が全員に効いてしまう
+            if (player.LacksClient("GameOptions")) return;
             for (byte i = 0; i < GameManager.Instance.LogicComponents.Count; i++)
             {
                 if (GameManager.Instance.LogicComponents[i].TryCast<LogicOptions>(out _))
