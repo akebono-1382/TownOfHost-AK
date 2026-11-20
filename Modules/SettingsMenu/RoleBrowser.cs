@@ -840,6 +840,10 @@ internal sealed class RoleBrowser
 
         var col = new Stack(false) { Gap = 0.05f, Width = SideW };
         col.Add(Hero(SideW, e, tools));
+        // 何をする役職かの 1 行を見出しのすぐ下に (長い説明は設定の行の後ろ)。1 行に収まるよう縮める
+        const float blurbH = 0.2f;
+        bool blurb = e.Blurb.Length > 0;
+        if (blurb) col.Add(new Label(e.Blurb, 1.2f) { Color = SubText, Width = SideW, NoWrap = true, MinFontSize = 0.8f, Align = Align.Start });
 
         // 項目の行 (多い時はこの中だけスクロール)。出現率と人数は役職の色の枠にまとめ、0% / 100% のボタンを添える
         float rowW = SideW - 0.18f;
@@ -899,7 +903,7 @@ internal sealed class RoleBrowser
             bar.Add(_resetBtn).Add(_undoBtn);
         }
 
-        float used = SectionPage.HeroH + 0.05f + (edit ? barH + 0.1f : 0f);
+        float used = SectionPage.HeroH + 0.05f + (edit ? barH + 0.1f : 0f) + (blurb ? blurbH + 0.05f : 0f);
         // 値を変えて作り直しても同じ所を見せる (欄ごとの位置)
         _sideList = new ScrollView(new Vector2(SideW, Math.Max(_sideH - used, 1f)), rows) { Tag = _tag + ":side:" + (e.Root?.Name ?? e.Title) };
         col.Add(_sideList);
