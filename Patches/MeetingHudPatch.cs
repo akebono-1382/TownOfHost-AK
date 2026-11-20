@@ -426,21 +426,23 @@ public static partial class MeetingHudPatch
 
                         // 会議の前の見え方 (役職の能力で変えた物も含む) に戻す。覚えていなければ規則どおり
                         var baseRole = RoleView.Living(pc, pc);
+                        // 暗転対策の身代わりのインポスターとして見せている画面には、追放の演出の後で AntiBlackout が戻す
                         if (roleInfo?.IsDesyncImpostor == true)
                         {
-                            pc.RpcSetRoleDesync(baseRole, pc.GetClientId());
+                            if (!AntiBlackout.IsPendingDummy(pc, pc.GetClientId())) pc.RpcSetRoleDesync(baseRole, pc.GetClientId());
                             foreach (var viewer in Main.AllPlayerControls)
                             {
                                 if (viewer.PlayerId == pc.PlayerId) continue;
                                 int viewerClientId = viewer.GetClientId();
                                 if (viewerClientId == -1) continue;
                                 if (viewer.PlayerId == PlayerControl.LocalPlayer.PlayerId) continue;
+                                if (AntiBlackout.IsPendingDummy(pc, viewerClientId)) continue;
                                 pc.RpcSetRoleDesync(RoleView.Living(pc, viewer), viewerClientId);
                             }
                             continue;
                         }
 
-                        pc.RpcSetRoleDesync(baseRole, pc.GetClientId());
+                        if (!AntiBlackout.IsPendingDummy(pc, pc.GetClientId())) pc.RpcSetRoleDesync(baseRole, pc.GetClientId());
                         Logger.Info($"AfterMeeting baseRole: {pc.GetNameWithRole()} -> {baseRole}", "AfterMeeting_RoleSync");
                     }
 

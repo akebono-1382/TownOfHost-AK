@@ -159,10 +159,11 @@ public static partial class AntiBlackout
                     .Write(true)
                     .EndRpc();
                 count++;
-                if (desync && pc.IsAlive())
+                // デシンクの人の画面と、デシンクの役職の身代わり (会議明けの配り直しが見え方へ戻してしまう) は、演出の後で戻す
+                if ((desync && pc.IsAlive()) || dummy.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true)
                 {
                     if (!desyncDummies.TryGetValue(clientId, out var sent)) desyncDummies[clientId] = sent = (pc, new());
-                    sent.dummies.Add(dummy);
+                    if (!sent.dummies.Contains(dummy)) sent.dummies.Add(dummy);
                 }
             }
             int lacking = 0;
@@ -212,7 +213,14 @@ public static partial class AntiBlackout
         ExiledPlayerId = -1;
     }
 
-    /// <summary>デシンクの人の画面に送った身代わりのインポスターを、見え方の表 (RoleView) どおりに戻す</summary>
+    /// <summary>
+    /// viewer の画面に dummy を身代わりのインポスターとして見せていて、追放の演出の後まで戻さない時は true。
+    /// 会議明けの役職の配り直しは、この組を飛ばす (演出の締めより前に戻すと、客の画面の生存インポスターが 0 人になって暗転する)
+    /// </summary>
+    public static bool IsPendingDummy(PlayerControl dummy, int viewerClientId)
+        => desyncDummies.TryGetValue(viewerClientId, out var sent) && sent.dummies.Contains(dummy);
+
+    /// <summary>身代わりのインポスターとして送った人を、見え方の表 (RoleView) どおりに戻す</summary>
     private static void RevertDesyncDummies()
     {
         if (desyncDummies.Count == 0) return;
@@ -226,7 +234,7 @@ public static partial class AntiBlackout
                 int count = 0;
                 foreach (var dummy in dummies)
                 {
-                    if (dummy == null || dummy.Data == null || dummy.Data.Disconnected) continue;
+                    if (dummy == null || dummy.Data == null || dummy.Data.Disconnected || !dummy.IsAlive()) continue;
                     sender.StartRpc(dummy.NetId, RpcCalls.SetRole)
                         .Write((ushort)RoleView.Living(dummy, seer))
                         .Write(true)
@@ -235,7 +243,7 @@ public static partial class AntiBlackout
                 }
                 if (count > 0) { sender.EndMessage(); sender.SendMessage(); }
                 else sender.stream.Recycle();
-                logger.Info($"デシンクの人の画面の身代わりを戻した: {seer.name} ({count} 人)");
+                logger.Info($"身代わりを見え方へ戻した: {seer.name} の画面 ({count} 人)");
             }
         }
         desyncDummies.Clear();
