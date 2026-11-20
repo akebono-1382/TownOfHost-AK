@@ -79,7 +79,24 @@ public class MenuOpt
     public static bool IsEnabled(OptionItem option)
     {
         if (!option.IsShown()) return false;
-        return option.Parent == null || (IsEnabled(option.Parent) && option.Parent.GetBool());
+        if (option.Parent == null) return true;
+        // 役職の出現率のすぐ下の設定は、出現率が 0% でも出す (出す前に決めておけるように。前は 0% だと役職の設定が 1 つも出なかった)
+        return IsEnabled(option.Parent) && (IsRoleRoot(option.Parent) || option.Parent.GetBool());
+    }
+
+    private static readonly System.Collections.Generic.HashSet<OptionItem> RoleRoots = new();
+    private static int _roleRootCount = -1;
+
+    private static bool IsRoleRoot(OptionItem option)
+    {
+        var all = Options.CustomRoleSpawnChances;
+        if (all.Count != _roleRootCount)
+        {
+            RoleRoots.Clear();
+            foreach (var o in all.Values) RoleRoots.Add(o);
+            _roleRootCount = all.Count;
+        }
+        return RoleRoots.Contains(option);
     }
 
     // 親の深さ (行の字下げ)

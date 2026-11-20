@@ -865,6 +865,8 @@ DSchrodingerCatInfo,You are now on Team Darkhide,ダークハイドの味方に�
 "TeamMax.NeutralInfoLong","","1 試合に出る第三陣営の役職の人数の上限。割り当て方が固定でもランダムでも効く。"
 "TeamMax.CrewmateInfoLong","","1 試合に出る役職のあるクルーの人数の上限。残りの人は役職の無いクルーになる。"
 "SettingsUI.Jump","Jump to","項目へ移動"
+"LobbyClock.Label","Date","日時"
+"LobbyClock.Weekdays","Sun,Mon,Tue,Wed,Thu,Fri,Sat","日,月,火,水,木,金,土"
 "Head.MapCommon","Map Setting : Map Common","マップ設定:マップ共通"
 "Head.Sabotage","Sabotage Setting : Map Common","サボタージュ設定:マップ共通"
 "Head.Meeting","Meeting Setting","会議設定"
