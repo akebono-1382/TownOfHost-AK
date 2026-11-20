@@ -5,7 +5,7 @@ using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Roles.Crewmate;
 
-// バスカー: ベントに入ると、決めた時間だけ幽霊になる。時間が来るか会議が始まると元に戻る。タスクで使える回数が増える。
+// バスカー: ベント (設定でペットにもできる) で、決めた時間だけ幽霊になる。時間が来るか会議が始まると元に戻る。タスクで使える回数が増える。
 // 役職の元: Endless Host Roles のアストラル (案は SuperNewRoles のバスカー)
 public sealed class Busker : RoleBase
 {
@@ -14,7 +14,7 @@ public sealed class Busker : RoleBase
             typeof(Busker),
             player => new Busker(player),
             CustomRoles.Busker,
-            () => RoleTypes.Engineer,
+            () => OptionUsePet?.GetBool() == true ? RoleTypes.Crewmate : RoleTypes.Engineer,
             CustomRoleTypes.Crewmate,
             (int)Options.offsetId.CrewPorted + 0,
             SetupOptionItem,
@@ -30,9 +30,11 @@ public sealed class Busker : RoleBase
         duration = OptionDuration.GetFloat();
         tasksPerUse = OptionTasksPerUse.GetInt();
         uses = OptionUseCount.GetInt();
+        if (OptionUsePet.GetBool()) pet = new BuskerPet(player, cooldown, TryBecomeGhost);
     }
 
     private static OptionItem OptionCooldown;
+    private static OptionItem OptionUsePet;
     private static OptionItem OptionDuration;
     private static OptionItem OptionUseCount;
     private static OptionItem OptionTasksPerUse;
@@ -43,25 +45,27 @@ public sealed class Busker : RoleBase
         BuskerUseCount,
         BuskerTasksPerUse,
         BuskerKillsPerUse,
+        BuskerUsePet,
     }
     private static float cooldown;
     private static float duration;
     private static int tasksPerUse;
 
     private int uses;
+    private readonly BuskerPet pet;
     // ベントから押し出してから幽霊にするまでの間 (ベントの中で役職を替えると出られなくなる)。
     // 押し出された客がベントから出ても、ホストの手元の inVent は立ったまま残るので、出たかどうかは見ずに時間で待つ
     private const float AfterBootDelay = 1.5f;
 
     private static void SetupOptionItem()
     {
-        CreateGhostOptions(RoleInfo, out OptionCooldown, out OptionDuration, out OptionUseCount, 1);
+        CreateGhostOptions(RoleInfo, out OptionCooldown, out OptionDuration, out OptionUseCount, out OptionUsePet, 1);
         OptionTasksPerUse = IntegerOptionItem.Create(RoleInfo, OptionName.BuskerTasksPerUse, new(0, 10, 1), 3, false)
             .SetValueFormat(OptionFormat.Pieces);
     }
 
-    /// <summary>バスカー系で共通の設定 (能力のクール・幽霊でいる時間・使える回数)</summary>
-    public static void CreateGhostOptions(SimpleRoleInfo info, out OptionItem cooldown, out OptionItem duration, out OptionItem useCount, int defaultUses)
+    /// <summary>バスカー系で共通の設定 (能力のクール・幽霊でいる時間・使える回数・ペットで発動するか)</summary>
+    public static void CreateGhostOptions(SimpleRoleInfo info, out OptionItem cooldown, out OptionItem duration, out OptionItem useCount, out OptionItem usePet, int defaultUses)
     {
         cooldown = FloatOptionItem.Create(info, GeneralOption.Cooldown, new(0f, 120f, 2.5f), 15f, false)
             .SetValueFormat(OptionFormat.Seconds);
@@ -69,6 +73,7 @@ public sealed class Busker : RoleBase
             .SetValueFormat(OptionFormat.Seconds);
         useCount = IntegerOptionItem.Create(info, OptionName.BuskerUseCount, new(0, 20, 1), defaultUses, false)
             .SetValueFormat(OptionFormat.Times);
+        usePet = BooleanOptionItem.Create(info, OptionName.BuskerUsePet, false, false);
     }
 
     /// <summary>本人の名前の下に出す「あと何秒で戻るか」</summary>
@@ -77,6 +82,17 @@ public sealed class Busker : RoleBase
         seen ??= seer;
         if (isForMeeting || seer != owner || seen != owner || !TempGhost.IsGhost(owner)) return "";
         return string.Format(GetString("BuskerCountdown"), TempGhost.RemainingSeconds(owner.PlayerId));
+    }
+
+    public override void Add() => pet?.Register();
+    public override void OnDestroy() => pet?.Unregister();
+    public override void AfterMeetingTasks() => pet?.Restart();
+
+    private bool TryBecomeGhost(System.Action<PlayerControl> onReturned)
+    {
+        if (uses <= 0 || !TempGhost.Begin(Player, duration, onReturned)) return false;
+        uses--;
+        return true;
     }
 
     public override void ApplyGameOptions(IGameOptions opt)
@@ -88,7 +104,7 @@ public sealed class Busker : RoleBase
 
     public override bool OnEnterVent(PlayerPhysics physics, int ventId)
     {
-        if (uses <= 0 || !TempGhost.CanBeginIgnoringVent(Player)) return true;
+        if (pet != null || uses <= 0 || !TempGhost.CanBeginIgnoringVent(Player)) return true;
         physics.RpcBootFromVent(ventId);
         _ = new LateTask(() =>
         {

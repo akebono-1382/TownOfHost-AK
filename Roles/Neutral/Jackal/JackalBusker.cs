@@ -17,7 +17,7 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
             typeof(JackalBusker),
             player => new JackalBusker(player),
             CustomRoles.JackalBusker,
-            () => RoleTypes.Phantom,
+            () => OptionUsePet?.GetBool() == true ? RoleTypes.Impostor : RoleTypes.Phantom,
             CustomRoleTypes.Neutral,
             (int)Options.offsetId.NeuJackal + 300,
             SetupOptionItem,
@@ -44,6 +44,7 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
         duration = OptionDuration.GetFloat();
         killsPerUse = OptionKillsPerUse.GetInt();
         uses = OptionUseCount.GetInt();
+        if (OptionUsePet.GetBool()) pet = new Crewmate.BuskerPet(player, cooldown, TryBecomeGhost);
     }
 
     private static OptionItem OptionKillCooldown;
@@ -53,6 +54,7 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
     private static OptionItem OptionCooldown;
     private static OptionItem OptionDuration;
     private static OptionItem OptionUseCount;
+    private static OptionItem OptionUsePet;
     private static OptionItem OptionKillsPerUse;
     private static float killCooldown;
     private static bool canVent;
@@ -64,6 +66,7 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
 
     private int uses;
     private int killsTowardUse;
+    private readonly Crewmate.BuskerPet pet;
 
     public SchrodingerCat.TeamType SchrodingerCatChangeTo => SchrodingerCat.TeamType.Jackal;
 
@@ -74,7 +77,7 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
         OptionCanVent = BooleanOptionItem.Create(RoleInfo, GeneralOption.CanVent, true, false);
         OptionCanUseSabotage = BooleanOptionItem.Create(RoleInfo, GeneralOption.CanUseSabotage, true, false);
         OptionHasImpostorVision = BooleanOptionItem.Create(RoleInfo, GeneralOption.ImpostorVision, true, false);
-        Crewmate.Busker.CreateGhostOptions(RoleInfo, out OptionCooldown, out OptionDuration, out OptionUseCount, 2);
+        Crewmate.Busker.CreateGhostOptions(RoleInfo, out OptionCooldown, out OptionDuration, out OptionUseCount, out OptionUsePet, 2);
         OptionKillsPerUse = IntegerOptionItem.Create(RoleInfo, Crewmate.Busker.OptionName.BuskerKillsPerUse, new(0, 10, 1), 3, false)
             .SetValueFormat(OptionFormat.Times);
     }
@@ -93,10 +96,20 @@ public sealed class JackalBusker : RoleBase, ILNKiller, IUsePhantomButton, ISchr
 
     public override bool CanUseAbilityButton() => true;
 
+    public override void Add() => pet?.Register();
+    public override void OnDestroy() => pet?.Unregister();
+    public override void AfterMeetingTasks() => pet?.Restart();
+
+    private bool TryBecomeGhost(System.Action<PlayerControl> onReturned)
+    {
+        if (uses <= 0 || !TempGhost.Begin(Player, duration, onReturned)) return false;
+        uses--;
+        return true;
+    }
+
     public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
-        if (uses <= 0 || !TempGhost.Begin(Player, duration)) return;
-        uses--;
+        if (pet != null || !TryBecomeGhost(null)) return;
         // 戻った時にキルと能力のクールを立て直すので、ここでは役職の送り直しもクールの調整もしない
         AdjustKillCooldown = false;
         ResetCooldown = null;

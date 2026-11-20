@@ -16,7 +16,7 @@ public sealed class EvilBusker : RoleBase, IImpostor, IUsePhantomButton
             typeof(EvilBusker),
             player => new EvilBusker(player),
             CustomRoles.EvilBusker,
-            () => RoleTypes.Phantom,
+            () => OptionUsePet?.GetBool() == true ? RoleTypes.Impostor : RoleTypes.Phantom,
             CustomRoleTypes.Impostor,
             (int)Options.offsetId.ImpPorted + 0,
             SetupOptionItem,
@@ -31,12 +31,14 @@ public sealed class EvilBusker : RoleBase, IImpostor, IUsePhantomButton
         duration = OptionDuration.GetFloat();
         killsPerUse = OptionKillsPerUse.GetInt();
         uses = OptionUseCount.GetInt();
+        if (OptionUsePet.GetBool()) pet = new BuskerPet(player, cooldown, TryBecomeGhost);
     }
 
     private static OptionItem OptionKillCooldown;
     private static OptionItem OptionCooldown;
     private static OptionItem OptionDuration;
     private static OptionItem OptionUseCount;
+    private static OptionItem OptionUsePet;
     private static OptionItem OptionKillsPerUse;
     private static float killCooldown;
     private static float cooldown;
@@ -45,12 +47,13 @@ public sealed class EvilBusker : RoleBase, IImpostor, IUsePhantomButton
 
     private int uses;
     private int killsTowardUse;
+    private readonly BuskerPet pet;
 
     private static void SetupOptionItem()
     {
         OptionKillCooldown = FloatOptionItem.Create(RoleInfo, GeneralOption.KillCooldown, new(2.5f, 180f, 2.5f), 25f, false)
             .SetValueFormat(OptionFormat.Seconds);
-        Busker.CreateGhostOptions(RoleInfo, out OptionCooldown, out OptionDuration, out OptionUseCount, 2);
+        Busker.CreateGhostOptions(RoleInfo, out OptionCooldown, out OptionDuration, out OptionUseCount, out OptionUsePet, 2);
         OptionKillsPerUse = IntegerOptionItem.Create(RoleInfo, Busker.OptionName.BuskerKillsPerUse, new(0, 10, 1), 3, false)
             .SetValueFormat(OptionFormat.Times);
     }
@@ -62,10 +65,20 @@ public sealed class EvilBusker : RoleBase, IImpostor, IUsePhantomButton
         AURoleOptions.GuardianAngelCooldown = TempGhost.LockedGuardianAngelCooldown;
     }
 
+    public override void Add() => pet?.Register();
+    public override void OnDestroy() => pet?.Unregister();
+    public override void AfterMeetingTasks() => pet?.Restart();
+
+    private bool TryBecomeGhost(System.Action<PlayerControl> onReturned)
+    {
+        if (uses <= 0 || !TempGhost.Begin(Player, duration, onReturned)) return false;
+        uses--;
+        return true;
+    }
+
     public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
-        if (uses <= 0 || !TempGhost.Begin(Player, duration)) return;
-        uses--;
+        if (pet != null || !TryBecomeGhost(null)) return;
         // 戻った時にキルと能力のクールを立て直すので、ここでは役職の送り直しもクールの調整もしない
         AdjustKillCooldown = false;
         ResetCooldown = null;
