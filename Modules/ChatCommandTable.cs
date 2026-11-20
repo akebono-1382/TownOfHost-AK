@@ -218,7 +218,6 @@ public static class ChatCommandTable
         },
         // 自分の戦績 (ホストの手元に記録した分)
         new("/me", "/stats") { Restrictable = true, Host = Modules.PlayerStats.Command, Remote = Modules.PlayerStats.Command },
-        // 役職ごとの勝率 (ホストの手元の戦績から)
         new("/rw", "/rolewin") { Restrictable = true, Usage = "CommandUsage.RoleWin", Host = Modules.PlayerStats.RoleWinCommand, Remote = Modules.PlayerStats.RoleWinCommand },
         new("/m", "/myrole") { Restrictable = true, Host = ShowMyRole, Remote = ShowMyRole },
         // マッドマジックの変身先を選ぶ (会議で自投票した後)
@@ -307,6 +306,27 @@ public static class ChatCommandTable
             Hidden = true,
             Host = Modules.TeamChat.LoversCommand,
             Remote = Modules.TeamChat.LoversCommand,
+        },
+        new("/jc", "/jackalchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.JackalCommand,
+            Remote = Modules.TeamChat.JackalCommand,
+        },
+        new("/pc", "/pavlovchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.PavlovCommand,
+            Remote = Modules.TeamChat.PavlovCommand,
+        },
+        new("/sc", "/standchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.StandCommand,
+            Remote = Modules.TeamChat.StandCommand,
         },
         new("/brackout", "/bo")
         {

@@ -573,7 +573,6 @@ public class MurderInfo
     public bool IsGuard = false;
     public int KillPower = 1;
     public int GuardPower = 0;
-    /// <summary>true なら相手の役職の能力を使わせない</summary>
     public bool? DontRoleAbility = false;
     public UnityEngine.Vector2 killerpos;
     public CustomDeathReason DeathReason;

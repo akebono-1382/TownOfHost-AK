@@ -68,11 +68,33 @@ namespace TownOfHostL
         {
             public virtual void RandomTeleport(PlayerControl player)
             {
-                var location = GetLocation();
+                var location = PickCustom(out var custom) ? custom : GetLocation();
                 Logger.Info($"{player.Data.PlayerName}:{location}", "RandomSpawn");
                 TP(player.NetTransform, location);
             }
             public abstract Vector2 GetLocation();
+            public abstract int PoolSize { get; }
+
+            private bool PickCustom(out Vector2 location)
+            {
+                location = default;
+                int mapId = Main.NormalOptions.MapId;
+                var (on, only) = mapId switch
+                {
+                    0 => (Options.CustomSpawn_Skeld, Options.CustomSpawnOnly_Skeld),
+                    1 => (Options.CustomSpawn_MiraHQ, Options.CustomSpawnOnly_MiraHQ),
+                    2 => (Options.CustomSpawn_Polus, Options.CustomSpawnOnly_Polus),
+                    4 => (Options.CustomSpawn_Airship, Options.CustomSpawnOnly_Airship),
+                    5 => (Options.CustomSpawn_Fungle, Options.CustomSpawnOnly_Fungle),
+                    _ => (null, null),
+                };
+                if (on == null || !on.GetBool()) return false;
+                var points = Modules.CustomSpawn.CustomSpawnManager.GetPoints(mapId);
+                if (points == null || points.Count == 0) return false;
+                if (!only.GetBool() && IRandom.Instance.Next(points.Count + PoolSize) >= points.Count) return false;
+                location = points[IRandom.Instance.Next(points.Count)].Position;
+                return true;
+            }
         }
 
         public class SkeldSpawnMap : SpawnMap
@@ -94,6 +116,7 @@ namespace TownOfHostL
                 ["Security"] = new(-13.5f, -5.5f),
                 ["Reactor"] = new(-20.5f, -5.5f)
             };
+            public override int PoolSize => positions.Count;
             public override Vector2 GetLocation()
             {
                 if (Options.DisableNearButton_Skeld.GetBool())
@@ -129,6 +152,7 @@ namespace TownOfHostL
                 ["Office"] = new(15.0f, 19.0f),
                 ["Greenhouse"] = new(17.8f, 23.0f)
             };
+            public override int PoolSize => positions.Count;
             public override Vector2 GetLocation()
             {
                 if (Options.DisableNearButton_MiraHQ.GetBool())
@@ -165,6 +189,7 @@ namespace TownOfHostL
                 ["Toilet"] = new(34.0f, -10.0f),
                 ["SpecimenRoom"] = new(36.5f, -22.0f)
             };
+            public override int PoolSize => positions.Count;
             public override Vector2 GetLocation()
             {
                 if (Options.DisableNearButton_Polus.GetBool())
@@ -205,6 +230,7 @@ namespace TownOfHostL
                 ["Toilet"] = new(30.9f, 6.8f),
                 ["Showers"] = new(21.2f, -0.8f)
             };
+            public override int PoolSize => positions.Count;
             public override Vector2 GetLocation()
             {
                 if (Options.DisableNearButton_Airship.GetBool())
@@ -245,6 +271,7 @@ namespace TownOfHostL
                 ["MiningPit"] = new(12.5f, 9.5f),
                 ["UpperEngine"] = new(21.7f, 2.6f)
             };
+            public override int PoolSize => positions.Count;
             public override Vector2 GetLocation()
             {
                 if (Options.DisableNearButton_Fungle.GetBool())

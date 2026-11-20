@@ -71,7 +71,6 @@ public class GameSettingMenuPatch
     const int CatFitCount = 7;
     // 区分の絵: ボタンの高さに対する絵の高さ・選んだ時の大きさ
     const float CatArtHeight = 1.05f, CatArtPicked = 1.15f;
-    // 検索欄は板の上の縁より上・右上の本編のボタンの列に掛からない所。右に「項目へ移動」のボタンを並べる
     static readonly Vector2 SearchBoxPosition = new(-2.3f, 2.6f);
     const float SearchBoxWidth = 2.1f;
     static readonly Vector2 JumpButtonPosition = new(-0.47f, 2.6f);
@@ -245,7 +244,6 @@ public class GameSettingMenuPatch
         if (m > 0f) label.margin = new Vector4(m, 0f, 0f, 0f);
     }
 
-    // 説明の字 (区分の説明と、行に当てた時の長い説明) を左の列の下から板の下の縁までに置く。長い時は字を小さくする
     static void PlaceDescription(GameSettingMenu menu)
     {
         var desc = menu.MenuDescriptionText;
@@ -254,49 +252,59 @@ public class GameSettingMenuPatch
         var panel = menu.transform.FindChild("PanelSprite");
         var panelSr = panel != null ? panel.GetComponent<SpriteRenderer>() : null;
         if (desc == null || col == null || panelSr == null) return;
-        var b = col.bounds;
-        float top = b.min.y - b.size.y * 0.3f;
-        float bottom = panelSr.bounds.min.y + b.size.y * 0.5f;
+        var parent = last.transform.parent;
+        descParent = parent;
+        var cMin = parent.InverseTransformPoint(col.bounds.min);
+        var cMax = parent.InverseTransformPoint(col.bounds.max);
+        float lowest = cMin.y;
+        foreach (var r in last.GetComponentsInChildren<Renderer>(true))
+        {
+            if (!r || !r.enabled || !r.gameObject.activeInHierarchy) continue;
+            lowest = Mathf.Min(lowest, parent.InverseTransformPoint(r.bounds.min).y);
+        }
+        float h = cMax.y - cMin.y;
+        float top = lowest - h * 0.35f;
+        float bottom = parent.InverseTransformPoint(panelSr.bounds.min).y + h * 0.5f;
         if (top <= bottom) return;
         descTop = top;
         descBottom = bottom;
+        descLeft = cMin.x;
+        descWidth = cMax.x - cMin.x;
 
         desc.DestroyTranslator();
         var t = desc.transform;
-        t.SetParent(last.transform.parent, true);
+        t.SetParent(parent, false);
         var rt = desc.rectTransform;
         rt.pivot = new Vector2(0f, 1f);
-        t.position = new Vector3(b.min.x, top, t.position.z);
-        var ls = t.lossyScale;
-        if (ls.x > 0f && ls.y > 0f) rt.sizeDelta = new Vector2(b.size.x / ls.x, (top - bottom) / ls.y);
         desc.alignment = TextAlignmentOptions.TopLeft;
         desc.enableWordWrapping = true;
-        // TMP の自動縮小はこの字では効かなかったので、字を書くたびに高さを測って縮める (FitDescription)
         desc.enableAutoSizing = false;
-        // 画面は開き直しても使い回されるので、元の大きさは最初の 1 回だけ控える (縮めた後の大きさを控えない)
         if (DescBaseSize <= 0f) DescBaseSize = desc.fontSize;
+        LayoutDescription(desc, 0f);
         desc.gameObject.SetActive(true);
+        FitDescription(desc);
     }
 
-    // 説明の置き場の上端と下端 (世界の座標・置けなかった時は上端 <= 下端)
-    static float descTop, descBottom;
+    static Transform descParent;
+    static float descTop, descBottom, descLeft, descWidth;
 
-    // below = 説明の上に空ける高さ (役職の区分では左の列の下に絞り込みの札が入る)
+    static void LayoutDescription(TextMeshPro desc, float below)
+    {
+        if (descTop <= descBottom || !descParent || desc.transform.parent != descParent) return;
+        var t = desc.transform;
+        float top = descTop - below;
+        desc.gameObject.SetActive(top - descBottom >= 0.35f);
+        t.localPosition = new Vector3(descLeft, top, t.localPosition.z);
+        var ls = t.localScale;
+        if (ls.x > 0f && ls.y > 0f) desc.rectTransform.sizeDelta = new Vector2(descWidth / ls.x, (top - descBottom) / ls.y);
+    }
+
     static void SetDescription(GameSettingMenu menu, string text, float below = 0f)
     {
         var desc = menu.MenuDescriptionText;
         if (desc == null) return;
         desc.DestroyTranslator();
-        if (descTop > descBottom)
-        {
-            // 札の下に字が入る高さが残らない時は説明を出さない (板の外へはみ出さないように)
-            float top = descTop - below;
-            desc.gameObject.SetActive(top - descBottom >= 0.35f);
-            var t = desc.transform;
-            t.position = new Vector3(t.position.x, top, t.position.z);
-            var ls = t.lossyScale;
-            if (ls.y > 0f) desc.rectTransform.sizeDelta = new Vector2(desc.rectTransform.sizeDelta.x, (top - descBottom) / ls.y);
-        }
+        LayoutDescription(desc, below);
         desc.text = text + (PresetChanged ? PresetChangedWarning : "");
         FitDescription(desc);
     }
@@ -307,13 +315,11 @@ public class GameSettingMenuPatch
     static void FitDescription(TextMeshPro desc)
     {
         if (DescBaseSize <= 0f) return;
-        var size = desc.rectTransform.sizeDelta;
-        desc.fontSize = DescBaseSize;
-        for (int i = 0; i < 12 && desc.fontSize > 0.8f; i++)
-        {
-            if (desc.GetPreferredValues(desc.text, size.x, 0f).y <= size.y) break;
-            desc.fontSize *= 0.9f;
-        }
+        desc.enableAutoSizing = true;
+        desc.fontSizeMax = DescBaseSize;
+        desc.fontSizeMin = DescBaseSize * 0.3f;
+        desc.overflowMode = TextOverflowModes.Truncate;
+        desc.ForceMeshUpdate();
     }
 
     // 今のタブに当たるボタンだけを選んだ見た目に (検索の間はどれも選ばない)。選んだ区分のクルーは少し大きく持ち上げる

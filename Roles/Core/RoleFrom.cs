@@ -258,8 +258,6 @@ public static class RoleFrom
 
     public static From Get(CustomRoles role) => Table.TryGetValue(role, out var from) ? from : From.None;
 
-    /// <summary>「From:〇〇」の文字 (MOD の名前はその MOD の色)。出どころが無ければ空。</summary>
-    /// <param name="dark">明るい背景に出す時は true (「From:」を黒にする)</param>
     public static string GetText(CustomRoles role, bool dark = false) => GetText(Get(role), dark);
 
     public static string GetText(From from, bool dark = false)
@@ -287,7 +285,7 @@ public static class RoleFrom
             From.Speyrp => "<#ffffff>Speyrp</color>",
             From.RevolutionaryHostRoles => "<#3cb371>RevolutionaryHostRoles</color>",
             From.Love_Couple_Mod => "<#ff6be4>Love Couple Mod</color>",
-            From.TownOfHost_hamo => "<#8fd3ff>TownOfHost-hamo</color>",
+            From.TownOfHost_hamo => "<#fb85ff>TownOfHost-hamo</color>",
             From.TownOfHost_Temp => "<#b4b4b4>TownOfHost_Temp</color>",
             From.UchuAddon => "<#7b68ee>UchuAddon</color>",
             From.EndlessHostRoles => "<#ff8c8c>EndlessHostRoles</color>",

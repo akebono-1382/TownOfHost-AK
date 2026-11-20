@@ -521,7 +521,6 @@ public static partial class Utils
         return roleInfoLong + FromLine(role);
     }
 
-    /// <summary>役職の説明の最後に付ける「From:〇〇」の行 (出どころが分からない役職は空)</summary>
     public static string FromLine(CustomRoles role)
     {
         var from = TownOfHostL.Roles.Core.RoleFrom.GetText(role);

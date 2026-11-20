@@ -91,7 +91,7 @@ class HudManagerPatch
                 player.Collider.offset = new Vector2(0f, -0.3636f);
             }
         }
-        if (GameStates.IsLobby)
+        if (GameStates.IsLobby && !GameStates.IsFreePlay && !GameSettingMenu.Instance)
         {
             optionShowerText.gameObject.SetActive(true);
 

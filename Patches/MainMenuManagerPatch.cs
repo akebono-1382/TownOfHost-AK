@@ -25,7 +25,7 @@ namespace TownOfHostL
             {
                 discordButton = CreateButton(
                     "DiscordButton",
-                    new(-2.45f, -2.7f, 1f),
+                    new(-1.95f, -2.7f, 1f),
                     new(86, 98, 246, byte.MaxValue),
                     new(173, 179, 244, byte.MaxValue),
                     () => Application.OpenURL(Main.DiscordInviteUrl),
@@ -39,7 +39,7 @@ namespace TownOfHostL
             {
                 twitterButton = CreateButton(
                     "TwitterButton",
-                    new(-0.85f, -2.7f, 1f),
+                    new(-0.2f, -2.7f, 1f),
                     new(29, 160, 241, byte.MaxValue),
                     new(169, 215, 242, byte.MaxValue),
                     () => Application.OpenURL("https://twitter.com/yumeno_AmongUs"),
@@ -51,7 +51,7 @@ namespace TownOfHostL
             {
                 wikiwikiButton = CreateButton(
                     "WikiwikiButton",
-                    new(0.75f, -2.7f, 1f),
+                    new(1.55f, -2.7f, 1f),
                     new(255, 142, 168, byte.MaxValue),
                     new(255, 226, 153, byte.MaxValue),
                     () => Application.OpenURL("https://wikiwiki.jp/tohy_amongus"),
@@ -63,7 +63,7 @@ namespace TownOfHostL
             {
                 gitHubButton = CreateButton(
                     "GitHubButton",
-                    new(2.35f, -2.7f, 1f),
+                    new(0.7f, -2.1f, 1f),
                     new(153, 153, 153, byte.MaxValue),
                     new(209, 209, 209, byte.MaxValue),
                     () => Application.OpenURL("https://github.com/haru03741-glitch/TownOfHost_L"),
@@ -71,12 +71,11 @@ namespace TownOfHostL
                     new(1.85f, 0.5f));
             }
 
-            // 役職辞典のボタン (F4 でも開く)
             if (SimpleButton.IsNullOrDestroyed(roleDictionaryButton))
             {
                 roleDictionaryButton = CreateButton(
                     "RoleDictionaryButton",
-                    new(0f, -3.3f, 1f),
+                    new(-1.1f, -2.1f, 1f),
                     new(60, 150, 210, byte.MaxValue),
                     new(150, 215, 255, byte.MaxValue),
                     RoleDictionary.Toggle,
@@ -102,17 +101,34 @@ namespace TownOfHostL
                     isActive: false);
             }
 
-#if RELEASE
-            // フリープレイの無効化
-            var howToPlayButton = __instance.howToPlayButton;
-            var freeplayButton = howToPlayButton.transform.parent.Find("FreePlayButton");
-            if (freeplayButton != null)
-            {
-                freeplayButton.gameObject.SetActive(false);
-            }
-            // フリープレイが消えるのでHowToPlayをセンタリング
-            howToPlayButton.transform.SetLocalX(0);
-#endif
+            SetupFreePlayButtons(__instance);
+        }
+
+        private static GameObject customSpawnButton;
+
+        private static void SetupFreePlayButtons(MainMenuManager menu)
+        {
+            var freeplay = menu.howToPlayButton?.transform.parent?.Find("FreePlayButton");
+            if (freeplay == null) return;
+            var freeplayButton = freeplay.GetComponent<PassiveButton>();
+            freeplayButton?.OnClick.AddListener((Action)(() => Modules.CustomSpawn.CustomSpawnEditor.ActiveEditMode = false));
+            if (customSpawnButton) return;
+
+            customSpawnButton = UnityEngine.Object.Instantiate(freeplay.gameObject, freeplay.parent);
+            customSpawnButton.name = "Tohl_CustomSpawnButton";
+            var how = menu.howToPlayButton.transform;
+            var basePos = freeplay.localPosition;
+            var howPos = how.localPosition;
+            float mid = (basePos.x + howPos.x) / 2f;
+            float step = (basePos.x - howPos.x) * 0.8f;
+            how.localPosition = new Vector3(mid - step, howPos.y, howPos.z);
+            freeplay.localPosition = new Vector3(mid, basePos.y, basePos.z);
+            customSpawnButton.transform.localPosition = new Vector3(mid + step, basePos.y, basePos.z);
+            foreach (var t in new[] { how, freeplay, customSpawnButton.transform }) t.localScale = t.localScale * 0.75f;
+            foreach (var tr in customSpawnButton.GetComponentsInChildren<TextTranslatorTMP>(true)) UnityEngine.Object.DestroyImmediate(tr);
+            foreach (var tmp in customSpawnButton.GetComponentsInChildren<TMPro.TextMeshPro>(true)) tmp.text = Translator.GetString("EditCSp");
+            var button = customSpawnButton.GetComponent<PassiveButton>();
+            button?.OnClick.AddListener((Action)(() => Modules.CustomSpawn.CustomSpawnEditor.ActiveEditMode = true));
         }
         /// <summary>TOHロゴの子としてボタンを生成</summary>
         /// <param name="name">オブジェクト名</param>
@@ -166,6 +182,7 @@ namespace TownOfHostL
         [HarmonyPatch(nameof(MainMenuManager.OpenOnlineMenu)), HarmonyPostfix]
         public static void OpenOnlineMenuPrefix(MainMenuManager __instance)
         {
+            if (__instance.findGameButton) __instance.findGameButton.gameObject.SetActive(false);
             if (VersionChecker.IsSupported && Main.AllowPublicRoom && Main.IsPublicAvailableOnThisVersion) return;
 
             // 部屋作成ボタン

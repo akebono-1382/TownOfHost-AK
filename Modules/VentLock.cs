@@ -5,10 +5,6 @@ using UnityEngine;
 
 namespace TownOfHostL.Modules;
 
-/// <summary>
-/// ミラHQ のベントのつながりを区切る (設定で ON の時)。行けないベントは、その人にだけ「掃除中」と見せて通れなくする。
-/// Mod 無しの人には本編の掃除中の情報を 1 人ずつ送り、Mod を入れた人の画面では矢印に掃除中の印を付けて押しても動かない。
-/// </summary>
 /// <remarks>TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Patches/VentLockPatch.cs) を元にした。hamo ではいつも ON だが、L では設定で選べるようにした。</remarks>
 public static class VentLock
 {
@@ -21,25 +17,22 @@ public static class VentLock
             .SetGameMode(CustomGameMode.Standard);
     }
 
-    // 通れなくするベントの組み合わせ (両方向)
     static readonly (int, int)[] BlockedPairs =
     {
-        (6, 7),   // 管理室 ⇔ 温室
-        (6, 5),   // 管理室 ⇔ オフィス
-        (5, 4),   // オフィス ⇔ 研究室
-        (4, 3),   // 研究室 ⇔ 原子炉
-        (3, 9),   // 原子炉 ⇔ 除染室
-        (9, 10),  // 除染室 ⇔ ロッカールーム
-        (10, 11), // ロッカールーム ⇔ 発射台
-        (10, 8),  // ロッカールーム ⇔ 医務室
-        (1, 2),   // バルコニー ⇔ 廊下
+        (6, 7),
+        (6, 5),
+        (5, 4),
+        (4, 3),
+        (3, 9),
+        (9, 10),
+        (10, 11),
+        (10, 8),
+        (1, 2),
     };
-    // 最後にその人へ送った「掃除中に見せたベント」
     static readonly Dictionary<byte, string> LastSent = new();
     static float nextRefresh;
     public static bool ResendAll;
 
-    /// <summary>設定が ON で、ミラHQ (マップ番号 1) の試合か</summary>
     public static bool IsActive() =>
         enabled != null && enabled.GetBool() && Options.CurrentGameMode == CustomGameMode.Standard
         && GameOptionsManager.Instance != null && GameOptionsManager.Instance.CurrentGameOptions.MapId == 1;
@@ -57,7 +50,6 @@ public static class VentLock
         nextRefresh = 0f;
     }
 
-    // 毎フレーム: その人が今いるベントから行けないベントを、その人にだけ「掃除中」と送る
     public static void Update()
     {
         if (!ShipStatus.Instance.Systems.TryGetValue(SystemTypes.Ventilation, out ISystemType sys)) return;
@@ -88,13 +80,11 @@ public static class VentLock
         }
     }
 
-    // その人にだけ、ベントの情報 (掃除中のベント + ベントの中にいる人) を送る
     static void Send(VentilationSystem vs, PlayerControl target, List<byte> fake)
     {
         Dictionary<byte, byte> cleaning = new();
         foreach (var kv in vs.PlayersCleaningVents) cleaning[kv.Key] = kv.Value;
 
-        // 「掃除している人」の番号は、空いている番号を借りる (本人以外)
         byte id = 250;
         foreach (var vent in fake)
         {
@@ -103,7 +93,7 @@ public static class VentLock
         }
 
         var w = MessageWriter.Get(SendOption.Reliable);
-        w.StartMessage(6); // 特定の 1 人にだけ送る
+        w.StartMessage(6);
         w.Write(AmongUsClient.Instance.GameId);
         w.WritePacked(target.OwnerId);
         w.StartMessage(1);
@@ -120,21 +110,18 @@ public static class VentLock
         w.Recycle();
     }
 
-    // 試合が始まったら最初から
     [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.Start))]
     static class ResetPatch
     {
         public static void Postfix() => Reset();
     }
 
-    // 本当のベントの情報が全員に送られたら、送り直す
     [HarmonyPatch(typeof(VentilationSystem), nameof(VentilationSystem.Serialize))]
     static class SerializePatch
     {
         public static void Postfix() => ResendAll = true;
     }
 
-    // 毎フレーム (ホストだけ・ミラHQ だけ)
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.FixedUpdate))]
     static class UpdatePatch
     {
@@ -146,7 +133,6 @@ public static class VentLock
         }
     }
 
-    // 自分の画面: 行けない矢印に掃除中の印を付ける
     [HarmonyPatch(typeof(Vent), nameof(Vent.UpdateArrows))]
     static class ArrowPatch
     {
@@ -161,7 +147,6 @@ public static class VentLock
         }
     }
 
-    // 自分の画面: 行けない矢印を押しても動かない
     [HarmonyPatch(typeof(Vent), nameof(Vent.TryMoveToVent))]
     static class MovePatch
     {

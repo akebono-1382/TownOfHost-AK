@@ -34,9 +34,7 @@ public class MeetingVoteManager
         TieBreaker.OnStartMeeting();
     }
 
-    /// <summary>
     /// 投票を初期状態にします
-    /// </summary>
     public void ClearVotes()
     {
         foreach (var voteArea in meetingHud.playerStates)
@@ -45,9 +43,7 @@ public class MeetingVoteManager
             allVotes[playerId] = new(playerId);
         }
     }
-    /// <summary>
     /// 今までに行われた投票をすべて削除し，特定の投票先に1票投じられた状態で会議を強制終了します
-    /// </summary>
     /// <param name="voter">投票を行う人</param>
     /// <param name="exiled">追放先</param>
     public void ClearAndExile(byte voter, byte exiled, bool isAntiComp = false)
@@ -62,9 +58,7 @@ public class MeetingVoteManager
         try { EndMeeting(false, antiCompId); }
         finally { RoleHooks.InClearAndExile = false; }
     }
-    /// <summary>
     /// 今までの投票をすべて消し，複数人が同じ相手へ 1 票ずつ投じた状態で会議を終える
-    /// </summary>
     public void ClearAndExiles(byte[] voters, byte exiled)
     {
         logger.Info($"ClearAndExilesにより、{GetVoteName(exiled)} が追放されます");
@@ -90,9 +84,7 @@ public class MeetingVoteManager
     }
     /// <summary>会議の結果として出す文 (役職が書き換える)</summary>
     public static string Voteresult = "";
-    /// <summary>
     /// 投票を行います．投票者が既に投票している場合は票を上書きします
-    /// </summary>
     /// <param name="voter">投票者</param>
     /// <param name="voteFor">投票先</param>
     /// <param name="numVotes">票数</param>
@@ -153,9 +145,7 @@ public class MeetingVoteManager
             vote.DoVote(voteFor, numVotes);
         }
     }
-    /// <summary>
     /// 議論時間が終わってる or 全員が投票を終えていれば会議を終了します
-    /// </summary>
     public void CheckAndEndMeeting()
     {
         bool timeExpired = meetingHud.discussionTimer - (float)Main.NormalOptions.DiscussionTime >= Main.NormalOptions.VotingTime;
@@ -165,9 +155,7 @@ public class MeetingVoteManager
             EndMeeting();
         }
     }
-    /// <summary>
     /// 無条件で会議を終了します
-    /// </summary>
     /// <param name="applyVoteMode">スキップと同数投票の設定を適用するかどうか</param>
     public void EndMeeting(bool applyVoteMode = true, byte antiCompId = byte.MaxValue)
     {
@@ -229,9 +217,7 @@ public class MeetingVoteManager
         }
         Destroy();
     }
-    /// <summary>
     /// <see cref="AllVotes"/>から投票をカウントします
-    /// </summary>
     /// <param name="applyVoteMode">スキップと同数投票の設定を適用するかどうか</param>
     /// <returns>([Key: 投票先,Value: 票数]の辞書, 追放される人, 同数投票かどうか)</returns>
     public VoteResult CountVotes(bool applyVoteMode, bool isAntiComp = false)
@@ -285,9 +271,7 @@ public class MeetingVoteManager
 
         return new VoteResult(votes, isAntiComp, overrideExiled, overruleNonce);
     }
-    /// <summary>
     /// スキップモードと無投票モードに応じて，投票を上書きしたりプレイヤーを死亡させたりします
-    /// </summary>
     private void ApplySkipAndNoVoteMode()
     {
         var ignoreSkipModeDueToFirstMeeting = MeetingStates.FirstMeeting && Options.WhenSkipVoteIgnoreFirstMeeting.GetBool();
@@ -336,9 +320,7 @@ public class MeetingVoteManager
             }
         }
     }
-    /// <summary>
     /// GameModeで投票を強制的にスキップ
-    /// </summary>
     private void ChangeSkipByGameMode()
     {
         foreach (var voteData in AllVotes)
@@ -504,9 +486,7 @@ public class MeetingVoteManager
     public const byte Skip = 253;
     public const byte NoVote = 254;
 
-    /// <summary>
     /// 会議中に killtargetid を死なせ，その人への投票を取り消す (会議中キル)
-    /// </summary>
     public static void ResetVoteManager(byte killtargetid)
     {
         PlayerControl pc = Utils.GetPlayerById(killtargetid);

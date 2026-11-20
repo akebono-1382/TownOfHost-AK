@@ -31,14 +31,28 @@ namespace TownOfHostL
             static SimpleRoleInfo[] rolesWithLobbyWarning;
             static PingTracker aspectOwner;
             static AspectPosition aspect;
+            static bool aspectSaved;
+            static AspectPosition.EdgeAlignments baseAlign;
             static void Postfix(PingTracker __instance)
             {
-                __instance.text.alignment = TextAlignmentOptions.TopRight;
+                bool inMenu = !AmongUsClient.Instance || AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.NotJoined;
+                __instance.text.alignment = inMenu ? TextAlignmentOptions.BottomRight : TextAlignmentOptions.TopRight;
 
                 // 位置調整
                 // 毎フレーム通るので、部品は PingTracker が替わった時だけ引き直す
                 if (aspectOwner != __instance) { aspectOwner = __instance; aspect = __instance.GetComponent<AspectPosition>(); nextBuildAt = 0f; }
-                if (aspect) aspect.DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
+                if (aspect)
+                {
+                    if (!aspectSaved) { aspectSaved = true; baseAlign = aspect.Alignment; }
+                    var align = inMenu ? AspectPosition.EdgeAlignments.RightBottom : baseAlign;
+                    var dist = inMenu ? new Vector3(0.35f, 0.12f, 0f) : new Vector3(1.8f, 6.0f, 0f);
+                    if (aspect.Alignment != align || aspect.DistanceFromEdge != dist)
+                    {
+                        aspect.Alignment = align;
+                        aspect.DistanceFromEdge = dist;
+                        aspect.AdjustPosition();
+                    }
+                }
 
                 // 本編は毎フレーム Ping の字を書き直すので、足す字も毎フレーム付ける。足す字の中身は設定や状態が変わった時にしか変わらないので、組み直すのは 0.25 秒ごと
                 float now = Time.unscaledTime;
@@ -84,27 +98,7 @@ namespace TownOfHostL
         class VersionShowerStartPatch
         {
             static string[] mainManuText = {
-                "このコメントは21種類らしい\nなんか増えてる？",
-                "おかえり！\nこれからもたくさん遊んでね",
-                "【今日のおすすめ役職】\nアドミニスター",
-                "【今日のおすすめ属性】\nリヴェラー",
-                "ランダムな文が\n表示されるって\nなんかいいよね",
-                "今日もシェリフ？\nたまにはハンターで使ってみない？",
-                "おまたせ！久しぶりだね！",
-                "復旧にはお手伝いさんが\nめっちゃ頑張ってくれました",
-                "配信者が集まるYumeno-Stream-Ship\nメンバーをいつでも募集中です。",
-                "マッドシェリフなどで自爆する時に\n相手が斬るように見える設定があります",
-                "属性を一つ足すだけで\n一気にゲームが変わります",
-                "ラストインポスターとか\nコンプリートクルーとかって\n使ってる？",
-                "パン屋はパン屋でも\nたまにご飯が好きになったりする",
-                "新しいニュートラル役職を\n考えたいんだけどな、、",
-                "道連れ表記は複数の場合、\nちゃんと複数発生と出ます",
-                "COして良い役職かどうか\nマークを表示させられます",
-                "ひいた役職の陣営がわからない？\n陣営表示機能を使ってね",
-                "シンクロカラーモードという\nカオスなモードがありました",
-                "ジャッカルサイドキックで\nご主人の想いを受け継ぎキルせよ。",
-                "一年も使えない期間があったけど\n元気にしてた？",
-                "TOH_Yのリリース記念日は\n11月2日です",
+                "11/20がLのリリース日らしい",
             };
 
             static TextMeshPro SpecialEventText;
@@ -126,11 +120,13 @@ namespace TownOfHostL
 #endif
                 var credentials = TMPTemplate.Create(
                     "TOHCredentialsText",
-                    Main.credentialsText,
-                    fontSize: 2f,
-                    alignment: TextAlignmentOptions.Right,
+                    Main.credentialsText.Replace("\r\n", "  "),
+                    fontSize: 1.6f,
+                    alignment: TextAlignmentOptions.Left,
                     setActive: true);
-                credentials.transform.position = new Vector3(1f, 2.65f, -2f);
+                credentials.rectTransform.pivot = new Vector2(0f, 0.5f);
+                credentials.rectTransform.sizeDelta = new Vector2(8f, 0.3f);
+                credentials.transform.position = new Vector3(-1.45f, -2.87f, -2f);
 
                 ErrorText.Create(__instance.text);
                 if (Main.hasArgumentException && ErrorText.Instance != null)
@@ -203,7 +199,7 @@ namespace TownOfHostL
                 else if (CultureInfo.CurrentCulture.Name == "ja-JP")
                 {
                     var num = IRandom.Instance.Next(mainManuText.Length);
-                    SpecialEventText.text = $"★TOH_Yへようこそ！★\n<size=55%>{mainManuText[num]}</size>";
+                    SpecialEventText.text = $"★TOH-Lへようこそ！★\n<size=55%>{mainManuText[num]}</size>";
                     SpecialEventText.color = Color.yellow;
                 }
             }

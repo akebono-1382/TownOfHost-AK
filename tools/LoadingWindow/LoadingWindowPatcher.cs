@@ -8,14 +8,6 @@ using BepInEx.Preloader.Core.Patching;
 
 namespace LoadingWindow;
 
-/// <summary>
-/// 起動時に、今どこまで読み込んだかを別の窓で見せる。
-/// 窓は PowerShell (WinForms) で出し、この DLL は状態ファイルへ書くだけ。
-///   S &lt;段階&gt; start|done &lt;起動からのミリ秒&gt;
-///   M &lt;今の状態の文&gt;
-/// 段階: 0 環境とBepInExの初期化 / 1 パッチャー / 2 MOD (プラグイン) / 3 ゲームの開始
-/// 3 の done は MOD 側 (TOH_L のタイトル画面) が書く。
-/// </summary>
 [PatcherPluginInfo("haru.loadingwindow", "LoadingWindow", "1.0.0")]
 public class LoadingWindowPatcher : BasePatcher
 {
@@ -65,11 +57,10 @@ public class LoadingWindowPatcher : BasePatcher
 
     static void StartWindow()
     {
-        // 窓の中身 (PowerShell の台本) を書き出して、隠した PowerShell から開く
         var script = Path.Combine(Paths.CachePath, "loading_window.ps1");
         using (var s = typeof(LoadingWindowPatcher).Assembly.GetManifestResourceStream("loader.ps1"))
         using (var r = new StreamReader(s, Encoding.UTF8))
-            File.WriteAllText(script, r.ReadToEnd(), new UTF8Encoding(true)); // PowerShell 5.1 は BOM が無いと日本語を読めない
+            File.WriteAllText(script, r.ReadToEnd(), new UTF8Encoding(true));
 
         var pid = Process.GetCurrentProcess().Id;
         var psi = new ProcessStartInfo

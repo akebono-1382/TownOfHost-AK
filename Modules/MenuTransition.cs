@@ -7,9 +7,6 @@ using UnityEngine;
 namespace TownOfHostL.Modules;
 
 // TownOfHost-hamo (rar006/TownOfHost-hamo@f7b00a9e Modules/MenuTransition.cs) を元にした。
-// ホーム画面で別の画面を開いた時に、いきなり切り替わらず、少し右から滑り込みながら浮かび上がるようにする。
-// 画面ごとにボタンの処理を書き換えず、見張っている画面が「見えていない→見えた」になった瞬間に動きを付ける。
-// 後ろを暗くする幕(screenTint)も、ぱっと出さずにゆっくり暗くする。
 [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
 [HarmonyPatch(typeof(MainMenuManager), nameof(MainMenuManager.LateUpdate))]
 public static class MenuTransition
@@ -49,7 +46,6 @@ public static class MenuTransition
     private static void Tick(MainMenuManager mm)
     {
         if (mm == null) return;
-        // ホーム画面が作り直されたら、前の記録は使えない
         var id = mm.GetInstanceID();
         if (id != lastMenuId) { Reset(); lastMenuId = id; }
 
@@ -76,11 +72,8 @@ public static class MenuTransition
 
     private static void Begin(Transform t, int key, float now)
     {
-        // 外側の画面がもう動いているなら、そちらに任せる(二重に透かすと消えたままになる)
         foreach (var other in anims.Values)
             if (other.Target != null && other.Target != t && t.IsChildOf(other.Target)) return;
-        // 内側の画面や、動いている途中の同じ画面は、いったん元どおりにしてから取り直す
-        // (途中の透明度を元の値として覚えると、薄いまま残ってしまう)
         finished.Clear();
         foreach (var (k, other) in anims)
             if (other.Target != null && other.Target.IsChildOf(t)) { Apply(other, 1f); if (k != key) finished.Add(k); }
@@ -111,7 +104,6 @@ public static class MenuTransition
         foreach (var key in finished) anims.Remove(key);
     }
 
-    // e = 0 で消えて右にずれた状態、1 で元どおり。色は透明度だけ変える(マウスを乗せた時の色はそのまま)
     private static void Apply(Anim anim, float e)
     {
         anim.Target.localPosition = anim.Base + new Vector3(SlideX * (1f - e), 0f, 0f);
