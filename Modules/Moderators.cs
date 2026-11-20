@@ -82,8 +82,7 @@ public static class Moderators
             added = true;
         }
         Save();
-        // ロビーでは名前の表 (Main.AllPlayerNames) がまだ無いことがある
-        var name = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(pc.PlayerId, out var n) ? n : client.PlayerName;
+        var name = pc.GetPlainName() ?? client.PlayerName;
         Utils.SendMessageAutoSplit(string.Format(GetString(added ? "Moderator.Added" : "Moderator.Removed"), name), true);
         return added;
     }

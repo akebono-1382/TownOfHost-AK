@@ -77,7 +77,7 @@ public static class ChatMute
         if (c.Args.Length < 2)
         {
             var list = Main.AllPlayerControls.Where(IsMuted)
-                .Select(pc => $"{pc.PlayerId}: {ChatPushOut.Escape(pc.Data?.PlayerName ?? "")} ({Mathf.CeilToInt(Remaining(pc))}s)").ToArray();
+                .Select(pc => $"{pc.PlayerId}: {ChatPushOut.Escape(pc.GetPlainName() ?? "")} ({Mathf.CeilToInt(Remaining(pc))}s)").ToArray();
             Reply(list.Length == 0 ? GetString("Mute.None") : string.Join("\n", list));
             return;
         }
@@ -93,7 +93,7 @@ public static class ChatMute
         until[target.OwnerId] = Time.realtimeSinceStartup + minutes * 60f;
         noticedAt.Remove(target.OwnerId);
         Logger.Info($"ミュート: {target.Data?.PlayerName} {minutes} 分", "ChatMute");
-        Reply(string.Format(GetString("Mute.Done"), ChatPushOut.Escape(target.Data?.PlayerName ?? ""), minutes));
+        Reply(string.Format(GetString("Mute.Done"), ChatPushOut.Escape(target.GetPlainName() ?? ""), minutes));
         Utils.SendMessageAutoSplit(string.Format(GetString("Mute.Notice"), minutes * 60), true, sendTo: target.PlayerId);
     }
 
@@ -102,7 +102,7 @@ public static class ChatMute
     {
         if (target == null || target.AmOwner || !AmongUsClient.Instance.AmHost) return;
         noticedAt.Remove(target.OwnerId);
-        var name = ChatPushOut.Escape(target.Data?.PlayerName ?? "");
+        var name = ChatPushOut.Escape(target.GetPlainName() ?? "");
         if (IsMuted(target))
         {
             until.Remove(target.OwnerId);
@@ -133,7 +133,7 @@ public static class ChatMute
         if (target == null) return;
         until.Remove(target.OwnerId);
         noticedAt.Remove(target.OwnerId);
-        Reply(string.Format(GetString("Mute.Lifted"), ChatPushOut.Escape(target.Data?.PlayerName ?? "")));
+        Reply(string.Format(GetString("Mute.Lifted"), ChatPushOut.Escape(target.GetPlainName() ?? "")));
         Utils.SendMessageAutoSplit(GetString("Mute.LiftedNotice"), true, sendTo: target.PlayerId);
     }
 

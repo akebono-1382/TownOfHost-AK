@@ -328,11 +328,14 @@ namespace TownOfHostL
         /// </summary>
         internal static PlayerControl FindPlayer(string name, bool exactOnly = false)
         {
-            var exact = Main.AllPlayerControls.FirstOrDefault(pc => String.Compare(pc?.Data?.PlayerName, name, true) == 0);
+            var exact = Main.AllPlayerControls.FirstOrDefault(pc => String.Compare(RealName(pc), name, true) == 0);
             if (exact != null || exactOnly) return exact;
-            var partial = Main.AllPlayerControls.Where(pc => pc?.Data?.PlayerName?.Contains(name, StringComparison.OrdinalIgnoreCase) == true).Take(2).ToList();
+            var partial = Main.AllPlayerControls.Where(pc => RealName(pc)?.Contains(name, StringComparison.OrdinalIgnoreCase) == true).Take(2).ToList();
             return partial.Count == 1 ? partial[0] : null;
         }
+
+        // 試合中、ホストの手元の Data.PlayerName はホストから見た表示に書き換わっているので、本当の名前で探す
+        private static string RealName(PlayerControl pc) => pc?.GetPlainName();
 
         /// <summary>
         /// /kick 相手・/ban 相手: 相手は ID の数字か名前 (/ban は名前の完全一致だけ)。BAN は本編の BAN と同じく BanList に残る (ClientPatch の KickPlayer の前置き)。

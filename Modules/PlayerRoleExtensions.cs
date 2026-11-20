@@ -70,7 +70,7 @@ public static class PlayerRoleExtensions
     public static string ColoredName(this PlayerControl player)
     {
         if (player == null) return "";
-        var name = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(player.PlayerId, out var n) ? n : player.Data?.PlayerName;
+        var name = player.GetPlainName();
         return Utils.ColorString(Main.PlayerColors.TryGetValue(player.PlayerId, out var c) ? (Color)c : Color.white, $"{name}");
     }
     public static string ColoredName(this byte playerId) => Utils.GetPlayerById(playerId)?.ColoredName() ?? "";

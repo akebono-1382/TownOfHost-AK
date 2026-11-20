@@ -265,7 +265,7 @@ public static class ChatCommandTable
                 // モデレーターが打った時は、その人の名前を題にする
                 var title = c.Player == null || c.Player.AmOwner
                     ? $"<color=#ff0000>{GetString("MessageFromTheHost")}</color>"
-                    : $"<color=#ffaa00>{string.Format(GetString("MessageFromModerator"), c.Player.Data?.PlayerName)}</color>";
+                    : $"<color=#ffaa00>{string.Format(GetString("MessageFromModerator"), c.Player.GetPlainName())}</color>";
                 Utils.SendMessageAutoSplit(c.Args.Skip(1).Join(delimiter: " "), true, title);
             },
         },
@@ -327,7 +327,7 @@ public static class ChatCommandTable
         => string.Join("\n", Main.AllPlayerControls
             .Where(pc => pc != null && pc.Data != null)
             .OrderBy(pc => pc.PlayerId)
-            .Select(pc => $"{pc.PlayerId}: {pc.Data.PlayerName}"));
+            .Select(pc => $"{pc.PlayerId}: {pc.GetPlainName()}"));
 
     /// <summary>
     /// /start: 開始のカウントダウンを始める。/start 秒数 で残りをその秒数 (60 秒まで) に、/start c でカウントダウンを取りやめる (ロビーだけ)

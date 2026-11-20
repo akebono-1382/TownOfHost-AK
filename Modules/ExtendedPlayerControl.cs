@@ -453,6 +453,20 @@ static partial class ExtendedPlayerControl
         }, FlashDuration + delay, "Fix Desync Reactor");
     }
 
+    /// <summary>
+    /// 本当の名前 (名前の変え方の設定に関係なく)。人を名前で探す時や客へ返す文にはこれを使う。
+    /// 試合中、ホストの手元の Data.PlayerName はホストから見た表示 (役職名・タスク数など) に書き換わっているので、試合の始めに覚えた名前を使う。
+    /// ロビーでは覚えた名前を使わない (ロビーに戻ると PlayerId が振り直され、前の試合の別の人の名前になる)。
+    /// ロビーのホストの Data.PlayerName は名前の飾りを含むので、ホストは素の名前を使う
+    /// </summary>
+    public static string GetPlainName(this PlayerControl player)
+    {
+        if (!TownOfHostL.Core.NativeObject.IsAlive(player)) return null;
+        if (GameStates.IsInGame)
+            return Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(player.PlayerId, out var n) ? n : player.Data?.PlayerName;
+        if (player.AmOwner) return Main.nickName != "" ? Main.nickName : DataManager.player.Customization.Name;
+        return player.Data?.PlayerName;
+    }
     public static string GetRealName(this PlayerControl player, bool isMeeting = false)
     {
         try
