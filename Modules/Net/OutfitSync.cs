@@ -24,6 +24,8 @@ public static class OutfitSync
     const float Interval = 0.25f;
     const int PerInterval = 2;
     static float nextSendAt;
+    // 本編がまだ届いていない外見の ID に入れておく値 (PlayerOutfit.MISSING_COSMETIC_ID)
+    const string MissingCosmeticId = "missing";
 
     [GameModuleInitializer]
     public static void Init()
@@ -39,8 +41,12 @@ public static class OutfitSync
         var data = target.Data;
         var current = data?.DefaultOutfit;
         if (current == null) return false;
-        // ネームプレートは渡された物が空でない時だけ写すので、比べるのもその時だけ
-        bool samePlate = string.IsNullOrEmpty(outfit.NamePlateId) || current.NamePlateId == outfit.NamePlateId;
+        // ネームプレートは渡された物がある時だけ写すので、比べるのもその時だけ。
+        // new PlayerOutfit() は ID を "missing" で作り、Set 拡張は空のネームプレートを書かないので、"missing" は渡されていない扱いにする。
+        // "missing" を写すと本編はその人のデータを「欠けている」と見て、後から部屋に入った客がそのデータを待ち続け、
+        // 30 秒で切られる (Timeout while waiting for other player data。2026-11-20 実機で確認)
+        string plate = outfit.NamePlateId is { Length: > 0 } p && p != MissingCosmeticId ? p : null;
+        bool samePlate = plate == null || current.NamePlateId == plate;
         // ペットはペットの能力の押す口なので、生きている人からは外さない (カモフラの外見などはペットが空)
         string petId = PetAbility.KeepPet(target, outfit.PetId);
         if (current.ColorId == outfit.ColorId && current.HatId == outfit.HatId && current.SkinId == outfit.SkinId
@@ -52,7 +58,7 @@ public static class OutfitSync
         current.SkinId = outfit.SkinId ?? "";
         current.VisorId = outfit.VisorId ?? "";
         current.PetId = petId;
-        if (!string.IsNullOrEmpty(outfit.NamePlateId)) current.NamePlateId = outfit.NamePlateId;
+        if (plate != null) current.NamePlateId = plate;
 
         // 変身中の人は、受け手でも変身したままにする。解除した時に本編が既定の外見 (= ここで変えた物) へ戻す
         if (!IsShifted(target)) target.RawSetOutfit(current, PlayerOutfitType.Default);

@@ -144,6 +144,7 @@ public class GameSettingMenuPatch
     internal static bool IsRoleHost(GameOptionsMenu menu) => menu && RoleHost && menu.Pointer == RoleHost.Pointer;
     internal static bool IsModTabMenu(GameOptionsMenu menu) => menu && ModTab && menu.Pointer == ModTab.Pointer;
     internal static bool IsPresetHost(GameOptionsMenu menu) => menu && PresetHost && menu.Pointer == PresetHost.Pointer;
+    internal static bool IsPageHost(GameOptionsMenu menu) => IsRoleHost(menu) || IsModTabMenu(menu) || IsPresetHost(menu);
 
     // 左の列の一番下のボタンのすぐ下 (世界座標の左上と幅)。役職の区分ではここに絞り込みの札を置く
     internal static bool CatFoot(out Vector3 topLeft, out float width)
@@ -446,7 +447,17 @@ public class GameSettingMenuPatch
     [HarmonyPatch(nameof(GameSettingMenu.ChangeTab)), HarmonyPostfix]
     public static void ChangeTabPostfix(GameSettingMenu __instance, int tabNum, [HarmonyArgument(1)] bool previewOnly)
     {
-        if (previewOnly || ModGameOptionsMenu.IsModTab(tabNum) || !TranslationController.Instance) return;
+        if (previewOnly || ModGameOptionsMenu.IsModTab(tabNum)) return;
+        // 本編のタブの組み立て (CreateSettings) の後に頁を作る形だけだと、組み立てが途中で止まった時や
+        // 後から本編の行が出し直された時に本編の行が残る。タブを出すたびに頁があることを確かめる
+        var tab = __instance.GameSettingsTab;
+        if (tabNum == 1 && tab && tab.gameObject.activeInHierarchy)
+        {
+            SettingsUI.SettingsPages.GameTab = tab;
+            try { SettingsUI.SettingsPages.Game.Build(tab); }
+            catch (System.Exception e) { Logger.Exception(e, "GameSettingMenuPatch.GamePage"); }
+        }
+        if (!TranslationController.Instance) return;
         SetDescription(__instance, TranslationController.Instance.GetString(StringNames.GameSettingsDescription)
             + "\n\n" + Translator.GetString("GameSettingHelpText.Page"));
     }

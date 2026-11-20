@@ -27,7 +27,8 @@ public static class GameOptionsMenuPatch
     [HarmonyPatch(nameof(GameOptionsMenu.Initialize)), HarmonyPrefix]
     private static bool InitializePrefix(GameOptionsMenu __instance)
     {
-        if (!ModGameOptionsMenu.IsModTab(ModGameOptionsMenu.TabIndex)) return true;
+        // 頁の置き場かは画面そのもので決める (TabIndex は前に開いた画面の値が残っていることがある)
+        if (!GameSettingMenuPatch.IsPageHost(__instance)) return true;
 
         if (__instance.Children == null || __instance.Children.Count == 0)
         {
@@ -57,7 +58,7 @@ public static class GameOptionsMenuPatch
         var maskArea = __instance.MaskArea.transform;
         maskArea.localScale = new Vector3(6.6f, 5f, 0.56f);
 
-        if (!ModGameOptionsMenu.IsModTab(ModGameOptionsMenu.TabIndex)) return true;
+        if (!GameSettingMenuPatch.IsPageHost(__instance)) return true;
         // 全般と役職・検索の結果は行を並べず、自前の頁にする (この画面は頁の置き場)
         try
         {
@@ -74,7 +75,7 @@ public static class GameOptionsMenuPatch
     [HarmonyPatch(nameof(GameOptionsMenu.CreateSettings)), HarmonyPostfix]
     private static void CreateSettingsPostfix(GameOptionsMenu __instance)
     {
-        if (ModGameOptionsMenu.IsModTab(ModGameOptionsMenu.TabIndex)) return;
+        if (GameSettingMenuPatch.IsPageHost(__instance)) return;
         // 本編の OnEnable を差し替えているので、この時点では GameSettingMenu.Instance がまだ無いことがある
         var menu = GameSettingMenu.Instance ? GameSettingMenu.Instance : __instance.GetComponentInParent<GameSettingMenu>();
         if (!menu || !menu.GameSettingsTab || menu.GameSettingsTab.Pointer != __instance.Pointer) return;
