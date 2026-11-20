@@ -10,23 +10,39 @@ using static TownOfHostL.Translator;
 
 namespace TownOfHostL.Modules;
 
-/// <summary>
-/// 陣営チャット: 会議中に、生きている仲間にだけ文を送る (ホストが仲間へ 1 人ずつ送り直す)。
-/// /tc 文 はインポスターどうし、/lc 文 は恋人どうし。仲間を互いに知っている陣営だけを扱う。
-/// 打った文は他の人に見せないコマンドとして扱う (/cmd を付けずに送られたら、空白で押し出してから送り直す)
-/// </summary>
 public static class TeamChat
 {
     public static OptionItem Enabled;
+    public static OptionItem AllowInTask;
+    private static readonly Dictionary<Team, OptionItem> TeamEnabled = new();
+
+    public enum Team { Impostor, Lovers, Jackal, Pavlov, Stand }
+
+    private static readonly (Team team, string option, string title, string color)[] Teams =
+    {
+        (Team.Impostor, "ImpostorHideChat", "TeamChat.ImpostorTitle", "#ff1919"),
+        (Team.Lovers, "LoversHideChat", "TeamChat.LoversTitle", null),
+        (Team.Jackal, "JackalHideChat", "TeamChat.JackalTitle", "#00b4eb"),
+        (Team.Pavlov, "PavlovHideChat", "TeamChat.PavlovTitle", "#e6ab6c"),
+        (Team.Stand, "StandHideChat", "TeamChat.StandTitle", "#b98bd8"),
+    };
 
     public static void SetupCustomOption()
     {
+        TeamEnabled.Clear();
         Enabled = StringOptionItem.Create("TeamChat", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, false)
             .SetColor(Palette.ImpostorRed)
             .SetGameMode(CustomGameMode.Standard);
+        foreach (var (team, option, _, _) in Teams)
+        {
+            TeamEnabled[team] = StringOptionItem.Create(option, new string[] { "ColoredOff", "ColoredOn" }, 1, TabGroup.ModMainSettings, false)
+                .SetParent(Enabled)
+                .SetGameMode(CustomGameMode.Standard);
+        }
+        AllowInTask = StringOptionItem.Create("GameDisplayHideChat", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, false)
+            .SetParent(Enabled)
+            .SetGameMode(CustomGameMode.Standard);
     }
-
-    public enum Team { Impostor, Lovers }
 
     private static string NameOf(PlayerControl pc)
         => ChatPushOut.Escape(Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(pc.PlayerId, out var n) ? n : pc.Data?.PlayerName ?? "?");
@@ -34,7 +50,9 @@ public static class TeamChat
     private static bool IsImpostorMember(PlayerControl pc)
         => pc != null && pc.GetCustomRole().IsImpostor() && pc.GetCountTypes() == CountTypes.Impostor;
 
-    /// <summary>from を含む、生きている仲間 (from が仲間に入っていなければ空)</summary>
+    private static bool IsCountMember(PlayerControl pc, CountTypes type)
+        => pc != null && pc.GetCountTypes() == type;
+
     private static List<PlayerControl> Members(PlayerControl from, Team team)
     {
         var list = new List<PlayerControl>();
@@ -48,6 +66,16 @@ public static class TeamChat
                 if (!Lovers.playersList.Any(p => p != null && p.PlayerId == from.PlayerId)) return list;
                 list.AddRange(Lovers.playersList.Where(p => p != null && p.IsAlive()));
                 break;
+            default:
+                var type = team switch
+                {
+                    Team.Jackal => CountTypes.Jackal,
+                    Team.Pavlov => CountTypes.Pavlov,
+                    _ => CountTypes.StandMaster,
+                };
+                if (!IsCountMember(from, type)) return list;
+                list.AddRange(Main.AllAlivePlayerControls.Where(p => IsCountMember(p, type)));
+                break;
         }
         return list;
     }
@@ -56,13 +84,16 @@ public static class TeamChat
 
     public static void ImpostorCommand(ChatCommandContext c) => Command(c, Team.Impostor);
     public static void LoversCommand(ChatCommandContext c) => Command(c, Team.Lovers);
+    public static void JackalCommand(ChatCommandContext c) => Command(c, Team.Jackal);
+    public static void PavlovCommand(ChatCommandContext c) => Command(c, Team.Pavlov);
+    public static void StandCommand(ChatCommandContext c) => Command(c, Team.Stand);
 
     private static void Command(ChatCommandContext c, Team team)
     {
         var from = c.Player;
         if (from == null) return;
         string system = $"<color=#aaaaff>{GetString("DefaultSystemMessageTitle")}</color>";
-        if (Enabled == null || !Enabled.GetBool())
+        if (Enabled == null || !Enabled.GetBool() || !TeamEnabled.TryGetValue(team, out var teamOn) || !teamOn.GetBool())
         {
             Tell(from, system, GetString("TeamChat.Disabled"));
             return;
@@ -72,9 +103,10 @@ public static class TeamChat
             Tell(from, system, $"{c.Args[0]} {GetString("CommandUsage.TeamChat")}");
             return;
         }
-        if (!GameStates.IsMeeting || !from.IsAlive())
+        bool inTask = AllowInTask != null && AllowInTask.GetBool();
+        if (!(GameStates.IsMeeting || (inTask && GameStates.IsInTask)) || !from.IsAlive())
         {
-            Tell(from, system, GetString("TeamChat.NotNow"));
+            Tell(from, system, GetString(inTask ? "TeamChat.NotNowAlive" : "TeamChat.NotNow"));
             return;
         }
         var members = Members(from, team);
@@ -83,11 +115,11 @@ public static class TeamChat
             Tell(from, system, GetString("TeamChat.NoTeam"));
             return;
         }
+        var info = Teams.First(t => t.team == team);
         var text = ChatPushOut.Escape(string.Join(" ", c.Args.Skip(1)));
-        var color = team == Team.Impostor ? "#ff1919" : Utils.GetRoleColorCode(CustomRoles.Lovers);
-        var title = $"<color={color}>{string.Format(GetString(team == Team.Impostor ? "TeamChat.ImpostorTitle" : "TeamChat.LoversTitle"), NameOf(from))}</color>";
+        var color = info.color ?? Utils.GetRoleColorCode(CustomRoles.Lovers);
+        var title = $"<color={color}>{string.Format(GetString(info.title), NameOf(from))}</color>";
         Logger.Info($"陣営チャット ({team}): {from.PlayerId} → {members.Count - 1} 人", "TeamChat");
-        // 送った本人にも控えを出す (他の人と同じ順番で出るように、本人宛ても送信待ちの列に積む)
         foreach (var to in members) Tell(to, title, text);
     }
 }

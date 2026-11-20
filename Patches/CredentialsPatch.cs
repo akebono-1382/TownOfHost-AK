@@ -31,14 +31,28 @@ namespace TownOfHostL
             static SimpleRoleInfo[] rolesWithLobbyWarning;
             static PingTracker aspectOwner;
             static AspectPosition aspect;
+            static bool aspectSaved;
+            static AspectPosition.EdgeAlignments baseAlign;
             static void Postfix(PingTracker __instance)
             {
-                __instance.text.alignment = TextAlignmentOptions.TopRight;
+                bool inMenu = !AmongUsClient.Instance || AmongUsClient.Instance.GameState == InnerNet.InnerNetClient.GameStates.NotJoined;
+                __instance.text.alignment = inMenu ? TextAlignmentOptions.BottomRight : TextAlignmentOptions.TopRight;
 
                 // 位置調整
                 // 毎フレーム通るので、部品は PingTracker が替わった時だけ引き直す
                 if (aspectOwner != __instance) { aspectOwner = __instance; aspect = __instance.GetComponent<AspectPosition>(); nextBuildAt = 0f; }
-                if (aspect) aspect.DistanceFromEdge = new Vector3(1.8f, 6.0f, 0f);
+                if (aspect)
+                {
+                    if (!aspectSaved) { aspectSaved = true; baseAlign = aspect.Alignment; }
+                    var align = inMenu ? AspectPosition.EdgeAlignments.RightBottom : baseAlign;
+                    var dist = inMenu ? new Vector3(0.35f, 0.12f, 0f) : new Vector3(1.8f, 6.0f, 0f);
+                    if (aspect.Alignment != align || aspect.DistanceFromEdge != dist)
+                    {
+                        aspect.Alignment = align;
+                        aspect.DistanceFromEdge = dist;
+                        aspect.AdjustPosition();
+                    }
+                }
 
                 // 本編は毎フレーム Ping の字を書き直すので、足す字も毎フレーム付ける。足す字の中身は設定や状態が変わった時にしか変わらないので、組み直すのは 0.25 秒ごと
                 float now = Time.unscaledTime;
@@ -106,11 +120,13 @@ namespace TownOfHostL
 #endif
                 var credentials = TMPTemplate.Create(
                     "TOHCredentialsText",
-                    Main.credentialsText,
-                    fontSize: 2f,
-                    alignment: TextAlignmentOptions.Right,
+                    Main.credentialsText.Replace("\r\n", "  "),
+                    fontSize: 1.6f,
+                    alignment: TextAlignmentOptions.Left,
                     setActive: true);
-                credentials.transform.position = new Vector3(1f, 2.65f, -2f);
+                credentials.rectTransform.pivot = new Vector2(0f, 0.5f);
+                credentials.rectTransform.sizeDelta = new Vector2(8f, 0.3f);
+                credentials.transform.position = new Vector3(-1.45f, -2.87f, -2f);
 
                 ErrorText.Create(__instance.text);
                 if (Main.hasArgumentException && ErrorText.Instance != null)

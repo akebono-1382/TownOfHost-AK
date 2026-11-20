@@ -64,6 +64,18 @@ public class RoleDictionary : MonoBehaviour
         Input.imeCompositionMode = value ? IMECompositionMode.On : IMECompositionMode.Auto;
     }
 
+    [HarmonyLib.HarmonyPatch(typeof(PassiveButtonManager), nameof(PassiveButtonManager.Update))]
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
+    static class BlockButtonsPatch
+    {
+        public static bool Prefix(PassiveButtonManager __instance)
+        {
+            if (!open) return true;
+            __instance.HandleMouseOut();
+            return false;
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
     [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     static class MovePatch

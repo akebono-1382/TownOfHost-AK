@@ -307,6 +307,27 @@ public static class ChatCommandTable
             Host = Modules.TeamChat.LoversCommand,
             Remote = Modules.TeamChat.LoversCommand,
         },
+        new("/jc", "/jackalchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.JackalCommand,
+            Remote = Modules.TeamChat.JackalCommand,
+        },
+        new("/pc", "/pavlovchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.PavlovCommand,
+            Remote = Modules.TeamChat.PavlovCommand,
+        },
+        new("/sc", "/standchat")
+        {
+            Usage = "CommandUsage.TeamChat",
+            Hidden = true,
+            Host = Modules.TeamChat.StandCommand,
+            Remote = Modules.TeamChat.StandCommand,
+        },
         new("/brackout", "/bo")
         {
             Host = _ => { if (GameStates.InGame) Main.AllPlayerControls.Do(pc => pc.KillFlash()); },
