@@ -111,7 +111,7 @@ namespace TownOfHostL
             var freeplay = menu.howToPlayButton?.transform.parent?.Find("FreePlayButton");
             if (freeplay == null) return;
             var freeplayButton = freeplay.GetComponent<PassiveButton>();
-            freeplayButton?.OnClick.AddListener((Action)(() => Modules.CustomSpawn.CustomSpawnEditor.ActiveEditMode = false));
+            freeplayButton?.OnClick.AddListener((Action)(() => Modules.SpawnEditor.TohlSpawnEditor.EditMode = false));
             if (customSpawnButton) return;
 
             customSpawnButton = UnityEngine.Object.Instantiate(freeplay.gameObject, freeplay.parent);
@@ -128,7 +128,7 @@ namespace TownOfHostL
             foreach (var tr in customSpawnButton.GetComponentsInChildren<TextTranslatorTMP>(true)) UnityEngine.Object.DestroyImmediate(tr);
             foreach (var tmp in customSpawnButton.GetComponentsInChildren<TMPro.TextMeshPro>(true)) tmp.text = Translator.GetString("EditCSp");
             var button = customSpawnButton.GetComponent<PassiveButton>();
-            button?.OnClick.AddListener((Action)(() => Modules.CustomSpawn.CustomSpawnEditor.ActiveEditMode = true));
+            button?.OnClick.AddListener((Action)(() => Modules.SpawnEditor.TohlSpawnEditor.EditMode = true));
         }
         /// <summary>TOHロゴの子としてボタンを生成</summary>
         /// <param name="name">オブジェクト名</param>

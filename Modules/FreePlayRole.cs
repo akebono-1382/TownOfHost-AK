@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using TownOfHostL.Attributes;
-using TownOfHostL.Modules.CustomSpawn;
+using TownOfHostL.Modules.SpawnEditor;
 using TownOfHostL.Roles.Core;
 using UnityEngine;
 
@@ -14,7 +14,7 @@ public static class FreePlayRole
     private static bool ready;
 
     public static bool Available =>
-        GameStates.IsFreePlay && !CustomSpawnEditor.ActiveEditMode && PlayerControl.LocalPlayer && ShipStatus.Instance && !MeetingHud.Instance;
+        GameStates.IsFreePlay && !TohlSpawnEditor.EditMode && PlayerControl.LocalPlayer && ShipStatus.Instance && !MeetingHud.Instance;
 
     private static void EnsureInit()
     {

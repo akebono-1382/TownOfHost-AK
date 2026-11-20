@@ -86,6 +86,7 @@ internal sealed class OptEditor
 
     // 狭い欄 (設定画面の右の欄) の行: 字を小さく・「初期値」のボタンは無し (変えた項目は名前の右の点で分かり、戻すのは欄の下のボタン)。
     // 名前が 1 行に入らない時は、名前を上の段 (幅いっぱい)・値を下の段の右に置く
+    private const float ShrinkLimit = 0.78f;
     public const float NarrowFont = 1.35f, NarrowStepW = 0.3f, NarrowValueW = 0.74f, NarrowRowH = 0.34f;
 
     // ON/OFF はスイッチ (編集できない時は字だけ)
@@ -98,9 +99,11 @@ internal sealed class OptEditor
         float controls = opt.IsToggle ? (editable ? Switch.W : NarrowValueW) : NarrowStepW * 2f + NarrowValueW + gap * 2f;
         float infoW = info != null ? InfoW + gap : 0f;
         float nameW = width - indent - controls - gap - infoW;
-        bool twoLines = Label.Measure(opt.Label, NarrowFont, true) > nameW;
+        // 少しだけはみ出す名前は字を縮めて 1 行に収め、それでも入らない時だけ 2 段にする
+        float need = Label.Measure(opt.Label, NarrowFont, true);
+        bool twoLines = need * ShrinkLimit > nameW;
         if (twoLines) nameW = width - indent - infoW;
-        var name = new Label(NameText(opt), NarrowFont) { Width = nameW, NoWrap = !twoLines, Bold = true, Color = nameColor ?? Color.white };
+        var name = new Label(NameText(opt), NarrowFont) { Width = nameW, NoWrap = !twoLines, Bold = true, Color = nameColor ?? Color.white, MinFontSize = twoLines ? 0f : NarrowFont * ShrinkLimit };
         var head = new Stack(true) { Gap = gap, Align = Align.Start };
         if (indent > 0f) head.Add(new Spacer(indent - gap, 0.1f));
         head.Add(name);

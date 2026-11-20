@@ -68,32 +68,28 @@ namespace TownOfHostL
         {
             public virtual void RandomTeleport(PlayerControl player)
             {
-                var location = PickCustom(out var custom) ? custom : GetLocation();
+                var location = Modules.SpawnEditor.TohlSpawnEditor.TryPick(this, out var custom) ? custom : GetLocation();
                 Logger.Info($"{player.Data.PlayerName}:{location}", "RandomSpawn");
                 TP(player.NetTransform, location);
             }
-            public abstract Vector2 GetLocation();
-            public abstract int PoolSize { get; }
+            public abstract int MapId { get; }
+            public abstract Dictionary<string, Vector2> Positions { get; }
+            protected abstract IEnumerable<KeyValuePair<string, Vector2>> DefaultPool();
 
-            private bool PickCustom(out Vector2 location)
+            // 部屋を選ぶ設定が入っていれば選んだ部屋だけ、無ければ元の決まりで選ぶ部屋
+            public IEnumerable<KeyValuePair<string, Vector2>> RoomPool()
             {
-                location = default;
-                int mapId = Main.NormalOptions.MapId;
-                var (on, only) = mapId switch
+                if (Modules.SpawnEditor.SpawnRoomOptions.IsChoosing(MapId))
                 {
-                    0 => (Options.CustomSpawn_Skeld, Options.CustomSpawnOnly_Skeld),
-                    1 => (Options.CustomSpawn_MiraHQ, Options.CustomSpawnOnly_MiraHQ),
-                    2 => (Options.CustomSpawn_Polus, Options.CustomSpawnOnly_Polus),
-                    4 => (Options.CustomSpawn_Airship, Options.CustomSpawnOnly_Airship),
-                    5 => (Options.CustomSpawn_Fungle, Options.CustomSpawnOnly_Fungle),
-                    _ => (null, null),
-                };
-                if (on == null || !on.GetBool()) return false;
-                var points = Modules.CustomSpawn.CustomSpawnManager.GetPoints(mapId);
-                if (points == null || points.Count == 0) return false;
-                if (!only.GetBool() && IRandom.Instance.Next(points.Count + PoolSize) >= points.Count) return false;
-                location = points[IRandom.Instance.Next(points.Count)].Position;
-                return true;
+                    var chosen = Positions.Where(p => Modules.SpawnEditor.SpawnRoomOptions.IsOn(MapId, p.Key)).ToArray();
+                    if (chosen.Length > 0) return chosen;
+                }
+                return DefaultPool();
+            }
+            public Vector2 GetLocation()
+            {
+                var pool = RoomPool().ToArray();
+                return pool[IRandom.Instance.Next(pool.Length)].Value;
             }
         }
 
@@ -116,20 +112,21 @@ namespace TownOfHostL
                 ["Security"] = new(-13.5f, -5.5f),
                 ["Reactor"] = new(-20.5f, -5.5f)
             };
-            public override int PoolSize => positions.Count;
-            public override Vector2 GetLocation()
+            public override int MapId => 0;
+            public override Dictionary<string, Vector2> Positions => positions;
+            protected override IEnumerable<KeyValuePair<string, Vector2>> DefaultPool()
             {
                 if (Options.DisableNearButton_Skeld.GetBool())
                 {
                     return Options.AdditionalSpawn_Skeld.GetBool()
-                        ? positions.ToArray()[4..].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                        : positions.ToArray()[4..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                        ? positions.ToArray()[4..]
+                        : positions.ToArray()[4..8];
                 }
                 else
                 {
                     return Options.AdditionalSpawn_Skeld.GetBool()
-                        ? positions.ToArray().OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                        : positions.ToArray()[3..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                        ? positions.ToArray()
+                        : positions.ToArray()[3..8];
                 }
             }
         }
@@ -152,20 +149,21 @@ namespace TownOfHostL
                 ["Office"] = new(15.0f, 19.0f),
                 ["Greenhouse"] = new(17.8f, 23.0f)
             };
-            public override int PoolSize => positions.Count;
-            public override Vector2 GetLocation()
+            public override int MapId => 1;
+            public override Dictionary<string, Vector2> Positions => positions;
+            protected override IEnumerable<KeyValuePair<string, Vector2>> DefaultPool()
             {
                 if (Options.DisableNearButton_MiraHQ.GetBool())
                 {
                     return Options.AdditionalSpawn_MiraHQ.GetBool()
-                    ? positions.ToArray()[3..].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[3..7].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()[3..]
+                    : positions.ToArray()[3..7];
                 }
                 else
                 {
                     return Options.AdditionalSpawn_MiraHQ.GetBool()
-                    ? positions.ToArray().OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[2..7].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()
+                    : positions.ToArray()[2..7];
                 }
             }
         }
@@ -189,20 +187,21 @@ namespace TownOfHostL
                 ["Toilet"] = new(34.0f, -10.0f),
                 ["SpecimenRoom"] = new(36.5f, -22.0f)
             };
-            public override int PoolSize => positions.Count;
-            public override Vector2 GetLocation()
+            public override int MapId => 2;
+            public override Dictionary<string, Vector2> Positions => positions;
+            protected override IEnumerable<KeyValuePair<string, Vector2>> DefaultPool()
             {
                 if (Options.DisableNearButton_Polus.GetBool())
                 {
                     return Options.AdditionalSpawn_Polus.GetBool()
-                    ? positions.ToArray()[3..].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[3..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()[3..]
+                    : positions.ToArray()[3..8];
                 }
                 else
                 {
                     return Options.AdditionalSpawn_Polus.GetBool()
-                    ? positions.ToArray().OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[2..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()
+                    : positions.ToArray()[2..8];
                 }
             }
         }
@@ -230,24 +229,25 @@ namespace TownOfHostL
                 ["Toilet"] = new(30.9f, 6.8f),
                 ["Showers"] = new(21.2f, -0.8f)
             };
-            public override int PoolSize => positions.Count;
-            public override Vector2 GetLocation()
+            public override int MapId => 4;
+            public override Dictionary<string, Vector2> Positions => positions;
+            protected override IEnumerable<KeyValuePair<string, Vector2>> DefaultPool()
             {
                 if (Options.DisableNearButton_Airship.GetBool())
                 {
                     return Options.AdditionalSpawn_Airship.GetBool()
-                    ? positions.ToArray()[3..].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
+                    ? positions.ToArray()[3..]
                     : Options.AdditionalSpawn_AirshipTAKADA.GetBool()
-                    ? positions.ToArray()[3..11].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[3..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()[3..11]
+                    : positions.ToArray()[3..8];
                 }
                 else
                 {
                     return Options.AdditionalSpawn_Airship.GetBool()
-                    ? positions.ToArray().OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
+                    ? positions.ToArray()
                     : Options.AdditionalSpawn_AirshipTAKADA.GetBool()
-                    ? positions.ToArray()[2..11].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[2..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()[2..11]
+                    : positions.ToArray()[2..8];
                 }
             }
         }
@@ -271,20 +271,21 @@ namespace TownOfHostL
                 ["MiningPit"] = new(12.5f, 9.5f),
                 ["UpperEngine"] = new(21.7f, 2.6f)
             };
-            public override int PoolSize => positions.Count;
-            public override Vector2 GetLocation()
+            public override int MapId => 5;
+            public override Dictionary<string, Vector2> Positions => positions;
+            protected override IEnumerable<KeyValuePair<string, Vector2>> DefaultPool()
             {
                 if (Options.DisableNearButton_Fungle.GetBool())
                 {
                     return Options.AdditionalSpawn_Fungle.GetBool()
-                    ? positions.ToArray()[3..].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[3..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()[3..]
+                    : positions.ToArray()[3..8];
                 }
                 else
                 {
                     return Options.AdditionalSpawn_Fungle.GetBool()
-                    ? positions.ToArray().OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value
-                    : positions.ToArray()[2..8].OrderBy(_ => Guid.NewGuid()).Take(1).FirstOrDefault().Value;
+                    ? positions.ToArray()
+                    : positions.ToArray()[2..8];
                 }
             }
         }
