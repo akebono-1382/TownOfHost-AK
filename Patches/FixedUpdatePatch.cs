@@ -46,9 +46,8 @@ namespace TownOfHostL
 
                 var player = __instance;
 
-                if (Modules.CustomSpawn.CustomSpawnEditor.Editing)
+                if (Modules.SpawnEditor.TohlSpawnEditor.Editing)
                 {
-                    Modules.CustomSpawn.CustomSpawnEditor.FixedUpdate(player);
                     return;
                 }
                 if (!GameStates.IsModHost) return;

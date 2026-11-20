@@ -105,6 +105,7 @@ internal static class SettingsPages
     {
         var list = new List<(SectionPage.Group, OptionItem)>();
         SectionPage.Group cur = null;
+        OptionItem curHead = null;
         foreach (var option in OptionItem.AllOptions)
         {
             if (option.Tab != TabGroup.ModMainSettings) continue;
@@ -112,8 +113,15 @@ internal static class SettingsPages
             if (section || option.IsHeader)
             {
                 cur = new SectionPage.Group { Title = SectionTitle(option), Color = option.NameColor };
+                curHead = option;
                 list.Add((cur, option));
                 if (section) continue;
+            }
+            else if (option.Parent == null && cur != null && SectionStarts.TryGetValue(option.Name, out var startKey))
+            {
+                // 見出しの無い長い並びを、画面の上だけで話題ごとに切る (設定の並びと保存は変えない)
+                cur = new SectionPage.Group { Title = Translator.GetString(startKey), Color = cur.Color };
+                list.Add((cur, curHead));
             }
             if (cur == null)
             {
@@ -124,6 +132,16 @@ internal static class SettingsPages
         }
         return list;
     }
+
+    // 見出しの無い所で次の節を始める設定 (Based on https://github.com/waffle-ful/Aeterna-End-K-not Modules/SettingsUI/SettingsPages.cs SectionStarts, GPL-3.0)
+    private static readonly Dictionary<string, string> SectionStarts = new()
+    {
+        ["AutoDisplayLastResult"] = "SettingsUI.Sec.AfterGame",
+        ["SuffixMode"] = "SettingsUI.Sec.Names",
+        ["AddonShowMode"] = "SettingsUI.Sec.Display",
+        ["AntiCheat"] = "SettingsUI.Sec.Safety",
+        ["TeamChat"] = "SettingsUI.Sec.TeamChat",
+    };
 
     private static bool IsGeneral(OptionItem head) => head != null && GeneralHeads.Contains(head.Name);
 

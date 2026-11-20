@@ -75,6 +75,15 @@ static class DevBridge
                     sb.AppendLine("CLICKED " + PathOf(hit.transform));
                     break;
                 }
+            case "room":
+                SpawnEditorKit.SpawnStore.Host?.ToggleRoom(SpawnEditorKit.SpawnStore.Host.EditMapId, a[1]);
+                sb.AppendLine("ROOM " + a[1]);
+                sb.AppendLine($"choosing={TownOfHostL.Modules.SpawnEditor.SpawnRoomOptions.IsChoosing(0)} on={TownOfHostL.Modules.SpawnEditor.SpawnRoomOptions.IsOn(0, a[1])} pins={string.Join(",", SpawnEditorKit.SpawnStore.Host.RoomPins(0).Select(p => p.Key + ":" + p.On))}");
+                break;
+            case "unchoose":
+                TownOfHostL.Modules.SpawnEditor.SpawnRoomOptions.Reset(int.Parse(a[1]));
+                sb.AppendLine("UNCHOOSE " + a[1]);
+                break;
             case "dict":
                 RoleDictionary.Toggle();
                 sb.AppendLine("DICT");
