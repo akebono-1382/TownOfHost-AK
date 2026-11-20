@@ -29,10 +29,13 @@ internal sealed class SectionPage
     private static readonly Color HeadFill = new(0.13f, 0.17f, 0.24f, 1f);
     private static readonly Color HeadText = new(0.9f, 0.95f, 1f, 1f);
     // 節へ飛ぶボタン
-    private const int JumpCols = 3;
-    private const float JumpH = 0.44f, JumpGap = 0.08f;
-    private static readonly Color JumpLine = new(0.5f, 0.85f, 0.75f, 1f);
-    private static readonly Color JumpFill = new(0.1f, 0.2f, 0.2f, 1f);
+    // 2 列にして、字が 1 行で読める幅を取る。縁は目立たない灰色・中は少し明るい黒 (見出しや値の行より目立たせない)
+    private const int JumpCols = 2;
+    private const float JumpH = 0.36f, JumpGap = 0.06f, JumpFont = 1.25f;
+    private static readonly Color JumpLine = new(0.36f, 0.38f, 0.42f, 1f);
+    private static readonly Color JumpFill = new(0.12f, 0.13f, 0.15f, 1f);
+    private static readonly Color JumpInk = new(0.88f, 0.9f, 0.94f, 1f);
+    private float _jumpTextW;
     private static readonly Color SubText = new(0.72f, 0.75f, 0.8f, 1f);
 
     private readonly string _tag;
@@ -74,15 +77,16 @@ internal sealed class SectionPage
             }
             int n = i;
             var g = visible[i].g;
-            var label = new Label(AnyChanged(g) ? g.Title + OptEditor.ChangedMark : g.Title, 1.3f)
+            _jumpTextW = bw - 0.24f;
+            var label = new Label(JumpText(g.Title, AnyChanged(g), _jumpTextW), JumpFont)
             {
-                Bold = true, Width = bw - 0.16f, NoWrap = true, MinFontSize = 0.8f, TextAlign = TextAlignmentOptions.Center, Color = HeadText,
+                Bold = true, Width = _jumpTextW, NoWrap = true, TextAlign = TextAlignmentOptions.Center, Color = JumpInk,
             };
             _jumpLabels.Add(label);
             line.Add(new Button(label, () => Jump(n))
             {
                 Size = new Vector2(bw, JumpH),
-                Padding = new Vector2(0.08f, 0.02f),
+                Padding = new Vector2(0.12f, 0.02f),
                 Color = JumpLine,
                 Fill = JumpFill,
             });
@@ -280,6 +284,19 @@ internal sealed class SectionPage
 
     private static string TocText(Entry e) => e.Changed ? e.Group.Title + OptEditor.ChangedMark : e.Group.Title;
 
+    // 飛ぶボタンの字: 幅に入らない名前は後ろを「…」にする (字を小さくしすぎて読めなくしない)
+    private static string JumpText(string title, bool changed, float width)
+    {
+        string mark = changed ? OptEditor.ChangedMark : "";
+        if (width <= 0f || Label.Measure(title + mark, JumpFont, true) <= width) return title + mark;
+        for (int len = title.Length - 1; len > 1; len--)
+        {
+            string s = title[..len] + "…" + mark;
+            if (Label.Measure(s, JumpFont, true) <= width) return s;
+        }
+        return title[..1] + "…" + mark;
+    }
+
     private static bool AnyChanged(Group g)
     {
         foreach (var opt in g.Opts)
@@ -361,8 +378,9 @@ internal sealed class SectionPage
         foreach (var e in _entries)
         {
             e.Changed = AnyChanged(e.Group);
-            string s = TocText(e);
-            foreach (var l in new[] { e.TocLabel, e.JumpLabel })
+            string toc = TocText(e);
+            string jump = JumpText(e.Group.Title, e.Changed, _jumpTextW);
+            foreach (var (l, s) in new[] { (e.TocLabel, toc), (e.JumpLabel, jump) })
             {
                 var t = l?.Built;
                 if (!t) continue;
