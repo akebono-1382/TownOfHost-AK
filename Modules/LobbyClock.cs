@@ -7,12 +7,14 @@ using static TownOfHostL.Translator;
 namespace TownOfHostL.Modules;
 
 // ロビーの右の板の「プライバシー」の欄を、今日の日付と時刻の欄に替える。
-// 部屋は非公開のまま: 公開・非公開を切り替えるボタンは隠して押せないようにする
+// 部屋は非公開のまま: 公開・非公開を切り替えるボタン (Privacy (Interactive)) は隠して押せないようにし、
+// 押せない方の欄 (Privacy (Not Interactive): 黒い箱に「ローカル」などの字) を出して、字を日時に替える
 public static class LobbyClock
 {
-    private const string Name = "Tohl_LobbyClock";
+    private const string Root = "AspectSize/GameSettingsButtons/";
 
-    private static TextMeshPro text;
+    private static TextMeshPro clock;
+    private static TextMeshPro vanillaText;
     private static int shownMinute = -1;
 
     [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
@@ -29,18 +31,15 @@ public static class LobbyClock
     private static void Apply(LobbyInfoPane pane)
     {
         if (!pane) return;
-        // 本編は公開・非公開のボタンを状態に合わせて出し直すので、毎回隠す
-        var anchor = Hide(pane.HostPrivateButton);
-        var other = Hide(pane.HostPublicButton);
-        anchor ??= other;
+        if (!clock && !Build(pane)) return;
 
-        if (!text)
-        {
-            if (anchor == null) return;
-            Build(pane, anchor);
-            if (!text) return;
-            shownMinute = -1;
-        }
+        // 本編は部屋の状態に合わせて 2 つの欄を出し直すので、毎回押せない方だけを出す
+        var t = pane.transform;
+        var interactive = t.Find(Root + "Privacy (Interactive)");
+        if (interactive && interactive.gameObject.activeSelf) interactive.gameObject.SetActive(false);
+        var fixedBox = clock.transform.parent;
+        if (fixedBox && !fixedBox.gameObject.activeSelf) fixedBox.gameObject.SetActive(true);
+        if (vanillaText && vanillaText.enabled) vanillaText.enabled = false;
 
         var now = DateTime.Now;
         int minute = now.Hour * 60 + now.Minute;
@@ -48,42 +47,36 @@ public static class LobbyClock
         shownMinute = minute;
         var days = GetString("LobbyClock.Weekdays").Split(',');
         string day = days.Length == 7 ? days[(int)now.DayOfWeek] : now.DayOfWeek.ToString()[..3];
-        text.text = $"{now.Month}/{now.Day}({day}) {now:HH:mm}";
+        clock.text = $"{now.Month}/{now.Day}({day}) {now:HH:mm}";
     }
 
-    // ボタンを隠して、隠す前の置き場を返す (無ければ null)
-    private static Transform Hide(UiElement button)
+    private static bool Build(LobbyInfoPane pane)
     {
-        if (!button) return null;
-        var go = button.gameObject;
-        if (go.activeSelf) go.SetActive(false);
-        return go.transform;
-    }
+        var t = pane.transform;
+        var src = t.Find(Root + "Privacy (Not Interactive)/PrivacyText");
+        vanillaText = src ? src.GetComponent<TextMeshPro>() : null;
+        if (!vanillaText) return false;
 
-    // プリセットの値の箱 (黒い箱に白い字) を写して、ボタンの所に置く。見出しの「プライバシー」は「日時」に書き換える
-    private static void Build(LobbyInfoPane pane, Transform anchor)
-    {
-        var box = pane.transform.Find("AspectSize/ModeValue");
-        if (!box) return;
-        var copy = UnityEngine.Object.Instantiate(box.gameObject, box.parent);
-        copy.name = Name;
-        copy.transform.position = new Vector3(box.position.x, anchor.position.y, box.position.z);
-        foreach (var t in copy.GetComponentsInChildren<TextTranslatorTMP>(true)) UnityEngine.Object.Destroy(t);
-        foreach (var b in copy.GetComponentsInChildren<Collider2D>(true)) b.enabled = false;
-        text = copy.GetComponentInChildren<TextMeshPro>(true);
-        if (text)
-        {
-            text.enableAutoSizing = true;
-            text.fontSizeMin = 1f;
-            text.fontSizeMax = 3.1f;
-        }
+        // 本編が書き直さない写しの字を同じ所に重ねる
+        var copy = UnityEngine.Object.Instantiate(vanillaText.gameObject, src.parent);
+        copy.name = "Tohl_LobbyClock";
+        copy.transform.localPosition = src.localPosition;
+        foreach (var tr in copy.GetComponentsInChildren<TextTranslatorTMP>(true)) UnityEngine.Object.Destroy(tr);
+        clock = copy.GetComponent<TextMeshPro>();
+        clock.enabled = true;
+        clock.enableAutoSizing = true;
+        clock.fontSizeMin = 1f;
+        clock.fontSizeMax = Mathf.Max(vanillaText.fontSize, 1f);
+        shownMinute = -1;
 
-        foreach (var label in pane.GetComponentsInChildren<TextTranslatorTMP>(true))
+        // 見出しの「プライバシー」を「日時」に
+        var label = t.Find("AspectSize/PrivacyLabel/Text_TMP");
+        if (label)
         {
-            if (label.TargetText != StringNames.PrivacyLabel) continue;
+            foreach (var tr in label.GetComponents<TextTranslatorTMP>()) UnityEngine.Object.Destroy(tr);
             var tmp = label.GetComponent<TextMeshPro>();
-            UnityEngine.Object.Destroy(label);
             if (tmp) tmp.text = GetString("LobbyClock.Label");
         }
+        return true;
     }
 }
