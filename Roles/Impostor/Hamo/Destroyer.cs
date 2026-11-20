@@ -120,7 +120,7 @@ public sealed class Destroyer : RoleBase, IImpostor
     {
         try
         {
-            PetActionManager.EnsureDefaultPet(Player.PlayerId);
+            PetAbility.EnsurePet(Player);
             var pet = Player.cosmetics?.CurrentPet;
             var pos = Player.GetTruePosition();
             var petPos = pet != null ? (Vector2)pet.transform.position : pos + (Player.cosmetics.FlipX ? Vector2.left : Vector2.right) * 0.5f;

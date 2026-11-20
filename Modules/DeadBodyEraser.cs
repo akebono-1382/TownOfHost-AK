@@ -168,6 +168,6 @@ public static class DeadBodyEraser
     {
         if (pc == null || !AmongUsClient.Instance.AmHost) return;
         if (!(Options.ErasedBodyRemovePet?.GetBool() ?? true)) return;
-        PetsHelper.RemovePet(pc);
+        PetAbility.RemovePet(pc);
     }
 }

@@ -20,7 +20,7 @@ namespace TownOfHostL.Roles.Crewmate;
 
 
 
-public sealed class Sage : RoleBase
+public sealed class Sage : RoleBase, IUsePetButton
 
 {
 
@@ -83,7 +83,6 @@ public sealed class Sage : RoleBase
 
 
 
-    private const string DefaultPetId = "pet_crewmate";
 
 
 
@@ -115,82 +114,11 @@ public sealed class Sage : RoleBase
 
 
 
-    public override void Add()
-
-    {
-
-        PetActionManager.Register(Player.PlayerId, ActivateBarrier);
-
-
-
-        if (!AmongUsClient.Instance.AmHost) return;
-
-        if (!PetActionManager.AutoGrantPetEnabled) return;
-
-
-
-        for (int i = 1; i <= 3; i++)
-
-        {
-
-            int delay = i;
-
-            _ = new LateTask(() =>
-
-            {
-
-                try
-
-                {
-
-                    if (!PetActionManager.AutoGrantPetEnabled) return;
-
-                    if (Player == null) return;
-
-
-
-                    string currentPet = Player.Data?.DefaultOutfit?.PetId ?? Player.CurrentOutfit?.PetId ?? "";
-
-
-
-                    bool hasPet = !string.IsNullOrEmpty(currentPet)
-
-                               && currentPet.ToLower() != "pet_none"
-
-                               && currentPet.ToLower() != "none";
-
-                    if (hasPet) return;
-
-
-
-                    Player.RpcSetPet(DefaultPetId);
-
-                    Logger.Info($"{Player.Data?.PlayerName} にペット付与: {DefaultPetId} (試行{delay}回目)", "Sage");
-
-                }
-
-                catch (Exception e)
-
-                {
-
-                    Logger.Error(e.ToString(), "Sage.SetPet");
-
-                }
-
-            }, delay * 1.5f, $"Sage.SetDefaultPet_{i}");
-
-        }
-
-    }
-
-
-
     public override void OnDestroy()
 
     {
         TownOfHostL.Modules.PlayerSpeed.Remove(Player.PlayerId, nameof(Sage));
 
-        PetActionManager.Unregister(Player.PlayerId);
 
 
 
@@ -232,6 +160,7 @@ public sealed class Sage : RoleBase
 
 
 
+    void IUsePetButton.OnPet() => ActivateBarrier();
     public void ActivateBarrier()
 
     {

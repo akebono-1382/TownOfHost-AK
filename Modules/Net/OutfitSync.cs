@@ -41,14 +41,17 @@ public static class OutfitSync
         if (current == null) return false;
         // ネームプレートは渡された物が空でない時だけ写すので、比べるのもその時だけ
         bool samePlate = string.IsNullOrEmpty(outfit.NamePlateId) || current.NamePlateId == outfit.NamePlateId;
-        if (outfit.Compare(current) && samePlate) return false;
+        // ペットはペットの能力の押す口なので、生きている人からは外さない (カモフラの外見などはペットが空)
+        string petId = PetAbility.KeepPet(target, outfit.PetId);
+        if (current.ColorId == outfit.ColorId && current.HatId == outfit.HatId && current.SkinId == outfit.SkinId
+            && current.VisorId == outfit.VisorId && current.PetId == petId && samePlate) return false;
 
         // 渡された outfit を差し替えずに中身を写す。CamouflageOutfit のような共有の 1 つを全員の Data に入れないため
         current.ColorId = outfit.ColorId;
         current.HatId = outfit.HatId ?? "";
         current.SkinId = outfit.SkinId ?? "";
         current.VisorId = outfit.VisorId ?? "";
-        current.PetId = outfit.PetId ?? "";
+        current.PetId = petId;
         if (!string.IsNullOrEmpty(outfit.NamePlateId)) current.NamePlateId = outfit.NamePlateId;
 
         // 変身中の人は、受け手でも変身したままにする。解除した時に本編が既定の外見 (= ここで変えた物) へ戻す

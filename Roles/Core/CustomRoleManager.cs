@@ -314,7 +314,11 @@ public static partial class CustomRoleManager
             var roleClass = roleInfo.CreateInstance(player);
             roleClass.Add();
             // 試合の途中で付いた役職・自投票・部屋タスク
-            if (Main.introDestroyed && GameStates.IsInGame && roleClass != null) roleClass.OnAddedMidGame();
+            if (Main.introDestroyed && GameStates.IsInGame && roleClass != null)
+            {
+                roleClass.OnAddedMidGame();
+                if (roleClass is TownOfHostL.Roles.Core.Interfaces.IUsePetButton) TownOfHostL.Modules.PetAbility.EnsurePet(player);
+            }
             if (roleClass is TownOfHostL.Roles.Core.Interfaces.ISelfVoter selfVoter) selfVoter.AddSelfVoter(player);
             if (roleClass is TownOfHostL.Roles.Core.Interfaces.IRoomTasker roomTasker) roomTasker.AddRoomTaker(player.PlayerId);
         }

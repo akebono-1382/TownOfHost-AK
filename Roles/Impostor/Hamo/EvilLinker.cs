@@ -20,7 +20,7 @@ namespace TownOfHostL.Roles.Impostor;
 
 
 
-public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
+public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton, IUsePetButton
 
 {
 
@@ -219,7 +219,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
         warpCooldowns.Clear();
 
-        PetActionManager.Register(Player.PlayerId, OnPetAction);
 
     }
 
@@ -237,15 +236,6 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
 
 
-    public override void OnDestroy()
-
-    {
-
-        PetActionManager.Unregister(Player.PlayerId);
-
-    }
-
-
 
     public override void ApplyGameOptions(IGameOptions opt)
 
@@ -257,6 +247,7 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton
 
 
 
+    void IUsePetButton.OnPet() => OnPetAction();
     void OnPetAction()
 
     {

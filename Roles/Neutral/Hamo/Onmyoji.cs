@@ -33,7 +33,7 @@ namespace TownOfHostL.Roles.Neutral;
 
 
 
-public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
+public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter, IUsePetButton
 
 {
     public override bool NeedsSeenNames => Player.IsAlive();
@@ -261,7 +261,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
         lastCDDisplay = -1;
 
-        PetActionManager.Register(Player.PlayerId, OnPetUsed);
 
     }
 
@@ -270,8 +269,6 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
     public override void OnDestroy()
 
     {
-
-        PetActionManager.Unregister(Player.PlayerId);
 
         NameColorManager.RemoveAll(Player.PlayerId);
 
@@ -283,6 +280,7 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
 
 
+    void IUsePetButton.OnPet() => OnPetUsed();
     private void OnPetUsed()
 
     {
@@ -1190,7 +1188,7 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter
 
 
 
-public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
+public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable, IUsePetButton
 
 {
 
@@ -1221,12 +1219,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
     float unresolvedOwnerGraceTimer;
 
-    bool petActionRegistered;
-
-    bool wasPetting;
-
-    float petInputDebounceTimer;
-
     readonly Dictionary<byte, Vector2> deadBodyPositions;
 
 
@@ -1247,15 +1239,7 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
         unresolvedOwnerGraceTimer = 1.5f;
 
-        petActionRegistered = false;
-
-        wasPetting = false;
-
-        petInputDebounceTimer = 0f;
-
         deadBodyPositions = new();
-
-        EnsurePetActionRegistered();
 
     }
 
@@ -1281,13 +1265,7 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
             unresolvedOwnerGraceTimer = 1.5f;
 
-            petActionRegistered = false;
-
-            wasPetting = false;
-
-            petInputDebounceTimer = 0f;
-
-            deadBodyPositions.Clear();
+                        deadBodyPositions.Clear();
 
         }
 
@@ -1296,8 +1274,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
         IUsePhantomButton.IPPlayerKillCooldown[Player.PlayerId] = 0f;
 
         Player.RpcResetAbilityCooldown();
-
-        EnsurePetActionRegistered();
 
         if (OwnerId != byte.MaxValue) TargetArrow.Add(Player.PlayerId, OwnerId);
 
@@ -1308,8 +1284,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
     public override void OnDestroy()
 
     {
-
-        if (petActionRegistered) { PetActionManager.Unregister(Player.PlayerId); petActionRegistered = false; }
 
         ClearDeadBodyArrows();
 
@@ -1328,8 +1302,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
         OwnerId = ownerId;
 
         unresolvedOwnerGraceTimer = 0f;
-
-        EnsurePetActionRegistered();
 
         TargetArrow.Add(Player.PlayerId, OwnerId);
 
@@ -1354,8 +1326,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
     {
 
-        EnsurePetActionRegistered();
-
         if (OwnerId != byte.MaxValue) TargetArrow.Add(Player.PlayerId, OwnerId);
 
         if (!AmongUsClient.Instance.AmHost) return;
@@ -1378,7 +1348,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
         if (ShouldFollowOwnerDeath()) { FollowOwnerDeath(); return; }
 
-        HandlePetFallback();
 
         if (suicideCooldownTimer > 0f) suicideCooldownTimer = Mathf.Max(0f, suicideCooldownTimer - Time.fixedDeltaTime);
 
@@ -1404,6 +1373,7 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
 
 
+    void IUsePetButton.OnPet() => OnPet();
     void OnPet()
 
     {
@@ -1426,25 +1396,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
 
 
-    internal void HandlePetAction() => OnPet();
-
-
-
-    void HandlePetFallback()
-
-    {
-
-        if (GameStates.IsLobby || GameStates.IsMeeting) { wasPetting = Player.petting; return; }
-
-        if (petInputDebounceTimer > 0f) petInputDebounceTimer = Mathf.Max(0f, petInputDebounceTimer - Time.fixedDeltaTime);
-
-        var pettingNow = Player.petting;
-
-        if (pettingNow && !wasPetting && petInputDebounceTimer <= 0f) { petInputDebounceTimer = 0.35f; OnPet(); }
-
-        wasPetting = pettingNow;
-
-    }
 
 
 
@@ -1584,15 +1535,6 @@ public sealed class Shikigami : RoleBase, IUsePhantomButton, IKillFlashSeeable
 
 
 
-    void EnsurePetActionRegistered()
-
-    {
-
-        if (AmongUsClient.Instance == null || !AmongUsClient.Instance.AmHost || petActionRegistered || Player == null) return;
-
-        PetActionManager.Register(Player.PlayerId, OnPet); petActionRegistered = true;
-
-    }
 
 
 

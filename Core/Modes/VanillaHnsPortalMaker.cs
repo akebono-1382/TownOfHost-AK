@@ -23,12 +23,10 @@ public static class VanillaHnsPortalMaker
     private const float MinPortalDistance = 4f;
     private const float EnterRange = 1f;
     private const float TeleportCooldown = 5f;
-    private const float PetThrottle = 1f;
     private const float CheckInterval = 0.1f;
 
     private static readonly List<CustomNetObject> portals = new();
     private static readonly Dictionary<byte, float> lastTeleportAt = new();
-    private static readonly Dictionary<byte, float> lastPetAt = new();
     // 印の上に立っていて、降りるまで飛ばさない人
     private static readonly HashSet<byte> mustStepOff = new();
     private static float nextCheckAt;
@@ -38,21 +36,14 @@ public static class VanillaHnsPortalMaker
         // CNO は試合の終わりに CustomNetObject の側で消える。ここは参照を捨てるだけ
         portals.Clear();
         lastTeleportAt.Clear();
-        lastPetAt.Clear();
         mustStepOff.Clear();
     }
 
-    private static void OnPet(PlayerControl pc)
+    /// <summary>ペットをかわいがった時 (ホストのみ)。入口と連打の間引きは Modules/PetAbility</summary>
+    internal static void OnPet(PlayerControl pc)
     {
         if (!pc || pc.Data == null || pc.Data.IsDead || CustomNetObject.Is(pc)) return;
         if (VanillaHideAndSeekRoles.RoleOf(pc.PlayerId) != CustomRoles.HASPortalMaker) return;
-        float now = Time.realtimeSinceStartup;
-        if (lastPetAt.TryGetValue(pc.PlayerId, out var last) && now - last < PetThrottle) return;
-        lastPetAt[pc.PlayerId] = now;
-        // かわいがりはホストから止めない。本人がボタンを離すか歩くと本編が自分で止めて、次の電文が来る。
-        // 押している間にホストが止めると、離した時の本編の解除 (PlayerPhysics.CheckCancelPetting) が走らず、
-        // ペットのボタンが押せないまま残る (2026-11-08 実機で確認)
-
         if (portals.Count >= 2) return;
         Vector2 pos = pc.GetTruePosition();
         if (portals.Count == 1 && Vector2.Distance(portals[0].Position, pos) < MinPortalDistance) return;
@@ -92,30 +83,6 @@ public static class VanillaHnsPortalMaker
             lastTeleportAt[pc.PlayerId] = now;
             mustStepOff.Add(pc.PlayerId);
             Logger.Info($"{pc.Data.PlayerName} が印 {near + 1} から印 {2 - near} へ飛びました", "VanillaHnsPortalMaker");
-        }
-    }
-
-    // 客がペットをかわいがった電文
-    [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.HandleRpc))]
-    private static class RemotePetPatch
-    {
-        public static void Prefix(PlayerPhysics __instance, [HarmonyArgument(0)] byte callId)
-        {
-            if (callId != (byte)RpcCalls.Pet || !AmongUsClient.Instance.AmHost) return;
-            try { OnPet(__instance.myPlayer); }
-            catch (Exception ex) { Logger.Exception(ex, "VanillaHnsPortalMaker"); }
-        }
-    }
-
-    // ホスト自身がかわいがった時 (自分の操作は電文を経ない)
-    [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.TryPet))]
-    private static class LocalPetPatch
-    {
-        public static void Prefix(PlayerControl __instance)
-        {
-            if (!AmongUsClient.Instance.AmHost || __instance != PlayerControl.LocalPlayer) return;
-            try { OnPet(__instance); }
-            catch (Exception ex) { Logger.Exception(ex, "VanillaHnsPortalMaker"); }
         }
     }
 

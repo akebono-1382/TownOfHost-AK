@@ -182,6 +182,7 @@ public static class TempGhost
             pc.RpcResetAbilityCooldown();
             try { entry.OnReturned?.Invoke(pc); }
             catch (Exception ex) { Logger.Exception(ex, "TempGhost"); }
+            PetAbility.EnsurePet(pc);
             Utils.NotifyRoles(SpecifySeer: pc);
         }, AfterReturnPoll, "TempGhost_AfterReturn");
     }
@@ -301,6 +302,8 @@ public static class TempGhost
                 Logger.Info($"会議を持ち越した幽霊を戻す: {pc.GetNameWithRole()}", "TempGhost");
                 RoleView.Replay(pc);
                 RestoreHostView(pc);
+                // 本編の客は幽霊の間にペットを外している。PlayerInfo は SetRole の後に届くよう間を空けて付け直す
+                _ = new LateTask(() => PetAbility.EnsurePet(pc), AfterReturnPoll, "TempGhost_AfterMeetingPet");
             }
             Revive.BeginSettling();
         }, AfterMeetingReplayDelay, "TempGhost_AfterMeeting");

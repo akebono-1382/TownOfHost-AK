@@ -955,7 +955,7 @@ public static class PlayerControlDiePatch
         if (AmongUsClient.Instance.AmHost)
         {
             // 死者の最終位置にペットが残るバグ対応
-            __instance.RpcSetPet("");
+            PetAbility.RemovePet(__instance);
         }
     }
 }

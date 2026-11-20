@@ -25,7 +25,7 @@ namespace TownOfHostL.Roles.Crewmate;
 
 
 
-public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
+public sealed class VillageChief : RoleBase, IKiller, ISelfVoter, IUsePetButton
 
 {
 
@@ -327,22 +327,13 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter
 
         LastCooltime = -1;
 
-        PetActionManager.Register(Player.PlayerId, OnPetUsed);
 
     }
 
 
 
-    public override void OnDestroy()
 
-    {
-
-        PetActionManager.Unregister(Player.PlayerId);
-
-    }
-
-
-
+    void IUsePetButton.OnPet() => OnPetUsed();
     private void OnPetUsed()
 
     {
