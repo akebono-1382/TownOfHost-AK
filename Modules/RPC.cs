@@ -61,6 +61,15 @@ namespace TownOfHostL
                     Logger.Info($"{__instance.GetNameWithRole()}:{text}", "SendChat");
                     ChatCommands.OnReceiveChat(__instance, text);
                     break;
+                case RpcCalls.CheckVanish:
+                    // 本人の画面だけファントムの役職 (デシンク) は、ホストの手元ではファントムでないので、本編が確認を捨てる。
+                    // ホストの判定 (PlayerControlCheckVanishPatch) へ直接回す
+                    if (AmongUsClient.Instance.AmHost && __instance.Data?.Role?.Role != RoleTypes.Phantom)
+                    {
+                        if (GameStates.IsInTask && !ExileController.Instance && !AntiBlackout.IsCached) __instance.CheckVanish();
+                        return false;
+                    }
+                    break;
                 case RpcCalls.StartMeeting:
                     var p = Utils.GetPlayerById(subReader.ReadByte());
                     Logger.Info($"{__instance.GetNameWithRole()} => {p?.GetNameWithRole() ?? "null"}", "StartMeeting");
