@@ -245,8 +245,13 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         if (NowState is AssassinMeeting.DieWait)
         {
             NowState = AssassinMeeting.EndMeeting;
-            Player.RpcExileV3();
-            MyState.SetDead();
+            // 客の追放の演出の締めより前に死を送ると、暗転対策で合わせた頭数が崩れて暗転しうる
+            AntiBlackout.RunAfterRevert(() =>
+            {
+                if (Player == null) return;
+                Player.RpcExileV3();
+                MyState.SetDead();
+            });
             return;
         }
         if (NowState is AssassinMeeting.Collected or AssassinMeeting.CallMetting)

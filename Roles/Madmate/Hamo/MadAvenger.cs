@@ -119,7 +119,11 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
         if (Skill)
         {
             MyState.DeathReason = CustomDeathReason.Suicide;
-            Player.RpcMurderPlayer(Player);
+            // 客の追放の演出の締めより前に死を送ると、暗転対策で合わせた頭数が崩れて暗転しうる
+            AntiBlackout.RunAfterRevert(() =>
+            {
+                if (Player != null && Player.IsAlive()) Player.RpcMurderPlayer(Player);
+            });
         }
         Skill = false;
     }
