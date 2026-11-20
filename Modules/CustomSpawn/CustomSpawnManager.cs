@@ -49,7 +49,7 @@ public static class CustomSpawnManager
         try
         {
             Directory.CreateDirectory("TOHL_DATA");
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(_data, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
         }
         catch (Exception ex)
         {

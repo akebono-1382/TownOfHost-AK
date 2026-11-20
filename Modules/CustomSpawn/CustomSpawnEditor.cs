@@ -101,7 +101,7 @@ public static class CustomSpawnEditor
             Text.color = c;
             Renderer.color = c;
             if (Renderer.gameObject.layer != LayerMask.NameToLayer("UI"))
-                Renderer.transform.position = new Vector3(Point.Position.x, Point.Position.y, Point.Position.y / 1000f - 0.01f);
+                Renderer.transform.position = new Vector3(Point.Position.x, Point.Position.y, Point.Position.y / 1000f + 0.002f);
         }
     }
 
@@ -195,6 +195,9 @@ public static class CustomSpawnEditor
                 Init();
                 Loaded = true;
             }
+            var me = PlayerControl.LocalPlayer;
+            if (me && me.Data && me.Data.Role && me.Data.Role.Role != RoleTypes.Shapeshifter)
+                RoleManager.Instance.SetRole(me, RoleTypes.Shapeshifter);
             GameObject.Find("Main Camera/ShadowQuad")?.SetActive(false);
             __instance.ReportButton?.Hide();
             __instance.ImpostorVentButton?.Hide();
