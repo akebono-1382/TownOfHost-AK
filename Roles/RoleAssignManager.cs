@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using AmongUs.GameOptions;
@@ -64,30 +64,6 @@ namespace TownOfHostL.Roles
         // 試合の途中で付く属性 (ワークホース・ラストインポスターなど) の、この試合で出すと決まった分。
         // 開始時に配らないよう AssignRoleList には入れず、IsPresent・GetRealCount の数にだけ足す
         private static List<CustomRoles> LaterAddOnList = new();
-        // ===== 陣営の人数 =====
-        // マッドメイト・第三陣営・役職のあるクルーの、1 試合に出る最大の人数。割り当て方 (固定・ランダム) のどちらでも効く。
-        // インポスターの人数は本編の設定 (インポスター数) で、設定画面では同じ節に並べる。
-
-        public static OptionItem TeamCountHead;
-        private static readonly Dictionary<CustomRoleTypes, OptionItem> TeamMax = new();
-        private static readonly CustomRoleTypes[] CappedTypes = { CustomRoleTypes.Madmate, CustomRoleTypes.Neutral, CustomRoleTypes.Crewmate };
-
-        public static void SetupTeamCountOptions()
-        {
-            TeamMax.Clear();
-            TeamCountHead = TextOptionItem.Create("Head.TeamCount", TabGroup.ModMainSettings).SetColor(Palette.LightBlue);
-            foreach (var type in CappedTypes)
-            {
-                TeamMax[type] = IntegerOptionItem.Create($"TeamMax.{type}", new(0, 15, 1), 15, TabGroup.ModMainSettings, false)
-                    .SetValueFormat(OptionFormat.Players)
-                    .SetGameMode(CustomGameMode.Standard);
-            }
-        }
-
-        /// <summary>その陣営に出せる最大の人数 (上限の無い陣営は大きな数)</summary>
-        public static int TeamCap(CustomRoleTypes type) =>
-            TeamMax.TryGetValue(type, out var o) && o != null ? o.GetInt() : int.MaxValue;
-
         public static void SetupOptionItem()
         {
             OptionAssignMode = StringOptionItem.Create("AssignMode", AssignModeSelections, 0, TabGroup.ModMainSettings, false)
@@ -166,8 +142,6 @@ namespace TownOfHostL.Roles
             int numImpostorsLeft = Math.Min(GameData.Instance.PlayerCount, Main.RealOptionsData.GetInt(Int32OptionNames.NumImpostors));
             int numOthersLeft = GameData.Instance.PlayerCount - numImpostorsLeft;
             var rand = IRandom.Instance;
-            // 陣営ごとの今の人数 (陣営の人数の上限を見る)
-            var teamCount = new Dictionary<CustomRoleTypes, int>();
 
             foreach (var role in GetCandidateRoleList(0).OrderBy(x => Guid.NewGuid()))
             {
@@ -186,12 +160,6 @@ namespace TownOfHostL.Roles
                 var numOthersAssign = targetRoles.Length - numImpostorAssign;
                 if (numImpostorAssign > numImpostorsLeft
                 || numOthersAssign > numOthersLeft) continue;
-                if (CappedTypes.Any(type => teamCount.GetValueOrDefault(type) + targetRoles.Count(r => r.GetAssignRoleType() == type) > TeamCap(type))) continue;
-                foreach (var r in targetRoles)
-                {
-                    var t = r.GetAssignRoleType();
-                    teamCount[t] = teamCount.GetValueOrDefault(t) + 1;
-                }
 
                 AssignRoleList.AddRange(targetRoles);
                 numImpostorsLeft -= numImpostorAssign;
@@ -257,7 +225,7 @@ namespace TownOfHostL.Roles
                     AssignCount.Add(roleTypes, impAssignCount);
                 }
                 else
-                    AssignCount.Add(roleTypes, Math.Min(TeamCap(roleTypes), otherRoleTypesList.Count(x => x == roleTypes)));
+                    AssignCount.Add(roleTypes, otherRoleTypesList.Count(x => x == roleTypes));
             }
         }
         ///<summary>

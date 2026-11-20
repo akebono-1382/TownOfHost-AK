@@ -149,24 +149,16 @@ internal static class SettingsPages
         var list = new List<SectionPage.Group>();
         var tohl = TohlSections();
         var rest = new List<SectionPage.Group>();
-        SectionPage.Group team = null;
         foreach (var (g, head) in tohl)
         {
             if (IsGeneral(head)) continue;
             if (head == Options.GameMode) list.Add(g);
-            else if (head != null && head == Roles.RoleAssignManager.TeamCountHead) team = g;
             else rest.Add(g);
         }
-        // 陣営の人数: ゲームモードのすぐ下。本編のインポスター数をここへ移して、陣営ごとの人数を 1 か所で決められるようにする
-        if (team != null) list.Add(team);
         foreach (var sec in VanillaGame.All)
         {
             var g = new SectionPage.Group { Title = sec.Title };
-            foreach (var opt in sec.Opts)
-            {
-                if (team != null && opt.SettingTitle == StringNames.GameNumImpostors) team.Opts.Insert(0, opt);
-                else g.Opts.Add(opt);
-            }
+            g.Opts.AddRange(sec.Opts);
             if (g.Opts.Count > 0) list.Add(g);
         }
         list.AddRange(rest);
