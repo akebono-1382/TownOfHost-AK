@@ -56,13 +56,26 @@ public static class PatchBundleSet
         }
         foreach (var type in AccessTools.GetTypesFromAssembly(typeof(Main).Assembly))
         {
-            // パッチではないクラス (数千個) は Harmony に渡さない。渡すだけで起動が遅くなる (TownOfHost-hamo の DeferredPatcher と同じ)
-            if (!type.IsDefined(typeof(HarmonyAttribute), false)) continue;
+            // パッチではないクラス (数千個) は Harmony に渡さない。渡すだけで起動が遅くなる (TownOfHost-hamo の DeferredPatcher を元にした)。
+            // クラスに [HarmonyPatch] が無く、メソッドにだけ付けている物もパッチなので残す (落とすと部屋を立てた所で止まった)
+            if (!IsPatchClass(type)) continue;
             var bundle = BundleOf(type);
             if (!types.TryGetValue(bundle, out var list))
                 throw new InvalidOperationException($"{type.FullName} の束 {bundle} は 1 つの束ではありません");
             list.Add(type);
         }
+    }
+
+    private static bool IsPatchClass(Type type)
+    {
+        if (type.IsDefined(typeof(HarmonyAttribute), false)) return true;
+        try
+        {
+            foreach (var m in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+                if (m.IsDefined(typeof(HarmonyAttribute), false)) return true;
+        }
+        catch { return true; } // 調べられない時は Harmony に任せる
+        return false;
     }
 
     private static PatchBundles BundleOf(Type type)
