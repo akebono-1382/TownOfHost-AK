@@ -78,16 +78,16 @@ internal sealed class SectionPage
     public void Build(GameOptionsMenu m)
     {
         // 同じ画面を出し直しただけなら、そのまま使う (本編が画面を出すたびに組み立てを呼ぶ)
-        if (Built && m && _menu == m.Pointer) return;
+        // (その間に本編が行を出し直していたら隠し直す)
+        if (Built && m && _menu == m.Pointer)
+        {
+            HideVanilla(m);
+            return;
+        }
         Forget();
         if (!m || !UiAssets.Box) return;
-        // タブの元の中身 (本編の行の一覧・スクロール) は使わない。コントローラーで閉じるボタンだけ残す
-        for (int i = 0; i < m.transform.childCount; i++)
-        {
-            var c = m.transform.GetChild(i);
-            if (c.name != "CloseButton") c.gameObject.SetActive(false);
-        }
-        var root = Widget.Node("Tohl_" + _tag, m.transform, m.gameObject.layer);
+        HideVanilla(m);
+        var root = Widget.Node(RootName, m.transform, m.gameObject.layer);
         root.transform.localPosition = Center;
         root.AddComponent<UnityEngine.Rendering.SortingGroup>().sortingOrder = 5;
         SettingsCover.Add(root);
@@ -95,6 +95,19 @@ internal sealed class SectionPage
         _menu = m.Pointer;
         _built = true;
         Rebuild();
+    }
+
+    private string RootName => "Tohl_" + _tag;
+
+    // タブの元の中身 (本編の行の一覧・スクロール・マップ選び) は使わない。コントローラーで閉じるボタンと頁だけ残す
+    private void HideVanilla(GameOptionsMenu m)
+    {
+        string root = RootName;
+        for (int i = 0; i < m.transform.childCount; i++)
+        {
+            var c = m.transform.GetChild(i);
+            if (c.name != "CloseButton" && c.name != root && c.gameObject.activeSelf) c.gameObject.SetActive(false);
+        }
     }
 
     public void Forget()
