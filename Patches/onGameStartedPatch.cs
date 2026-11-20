@@ -1131,12 +1131,19 @@ public static class StandardIntroHelper
             }
 
 
+            // 基底がファントムの人を、見る人ごとにファントムとして見せる (消える演出を見せるため)。
+            // 全員に送ると、自分の画面でキルを持つ人 (デシンクの役職・イントロの間の第三陣営) にはインポスターの仲間に見えてしまう
             foreach (var pc in Main.AllPlayerControls)
             {
                 if (pc.PlayerId == PlayerControl.LocalPlayer.PlayerId) continue;
                 if (pc.GetClientId() == -1) continue;
                 if (pc.GetCustomRole().GetRoleTypes() != RoleTypes.Phantom) continue;
-                pc.RpcSetRoleNormal(RoleTypes.Phantom, true);
+                foreach (var viewer in Main.AllPlayerControls)
+                {
+                    int viewerClientId = viewer.GetClientId();
+                    if (viewerClientId == -1) continue;
+                    pc.RpcSetRoleDesync(PhantomViewAtIntro(pc, viewer), viewerClientId);
+                }
             }
 
             HudManagerCoShowIntroPatch.Cancel = false;
@@ -1183,10 +1190,41 @@ public static class StandardIntroHelper
 
                 var baseRole = roleInfo?.BaseRoleType?.Invoke() ?? roleType;
                 pc.RpcSetRoleDesync(baseRole, pc.GetClientId());
+
+                // イントロの間だけキルを持たせた第三陣営は、ここでクルーの形に戻ったので、基底がファントムの人をファントムとして見せ直す
+                if (SeesAsKillerAtIntro(pc) && !RoleView.IsKillerRole(baseRole))
+                {
+                    foreach (var phantom in Main.AllPlayerControls)
+                    {
+                        if (phantom.PlayerId == pc.PlayerId || phantom.PlayerId == PlayerControl.LocalPlayer.PlayerId) continue;
+                        if (phantom.GetCustomRole().GetRoleTypes() != RoleTypes.Phantom) continue;
+                        phantom.RpcSetRoleDesync(RoleTypes.Phantom, pc.GetClientId());
+                    }
+                }
             }
         }, 2.2f, "StandardIntro_PostIntroRoleSync");
 
         _ = new LateTask(() => SetRole(), 5.5f, "StandardIntro_SetRole");
+    }
+
+    /// <summary>
+    /// イントロの間、本人の画面でキルを持つ人。デシンクの役職と、イントロを 1 人で見せるために Impostor にしている第三陣営 (上の Intoro)。
+    /// </summary>
+    private static bool SeesAsKillerAtIntro(PlayerControl viewer)
+    {
+        if (viewer.PlayerId == PlayerControl.LocalPlayer.PlayerId) return false; // ホストの手元のデシンクはクルーの形 (上の hostRoleType)
+        var role = viewer.GetCustomRole();
+        return RoleView.IsDesync(viewer) || (role.IsNeutral() && !role.IsImpostor());
+    }
+
+    /// <summary>基底がファントムの phantom を、イントロの時に viewer の画面でどう見せるか</summary>
+    private static RoleTypes PhantomViewAtIntro(PlayerControl phantom, PlayerControl viewer)
+    {
+        if (viewer.PlayerId == phantom.PlayerId || viewer.GetCustomRole().JoinsImpostorTeam() || !SeesAsKillerAtIntro(viewer))
+            return RoleTypes.Phantom;
+        // キルを持つ人の画面では、仲間でなければキルの対象 (Scientist など) にする
+        var role = RoleView.Default(phantom, viewer);
+        return role == RoleTypes.Impostor ? RoleTypes.Phantom : role;
     }
 
 
