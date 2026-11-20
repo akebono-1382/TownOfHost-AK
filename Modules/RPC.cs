@@ -4,6 +4,7 @@ using AmongUs.GameOptions;
 using HarmonyLib;
 using Hazel;
 
+using TownOfHostL.Modules;
 using TownOfHostL.Roles.Core;
 using static TownOfHostL.Translator;
 using TownOfHostL.Core;
@@ -63,10 +64,15 @@ namespace TownOfHostL
                     break;
                 case RpcCalls.CheckVanish:
                     // 本人の画面だけファントムの役職 (デシンク) は、ホストの手元ではファントムでないので、本編が確認を捨てる。
-                    // ホストの判定 (PlayerControlCheckVanishPatch) へ直接回す
+                    // 本人の基底がファントムで生きている人の確認だけ、ホストの判定 (PlayerControlCheckVanishPatch) へ直接回す。
+                    // それ以外 (基底がファントムでない・死んでいる・一時的な幽霊) は本編と同じく捨てる
+                    // (受け取った確認を判定へ回す形は End K not の Modules/RPC.cs を参考にした)
                     if (AmongUsClient.Instance.AmHost && __instance.Data?.Role?.Role != RoleTypes.Phantom)
                     {
-                        if (GameStates.IsInTask && !ExileController.Instance && !AntiBlackout.IsCached) __instance.CheckVanish();
+                        if (GameStates.IsInTask && !ExileController.Instance && !AntiBlackout.IsCached
+                            && __instance.IsAlive() && !TempGhost.IsGhost(__instance)
+                            && RoleView.SelfRole(__instance) == RoleTypes.Phantom)
+                            __instance.CheckVanish();
                         return false;
                     }
                     break;
