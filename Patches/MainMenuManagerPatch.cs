@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using HarmonyLib;
 using TownOfHostL.Modules;
 using TownOfHostL.Templates;
@@ -12,6 +12,7 @@ namespace TownOfHostL
         private static SimpleButton discordButton;
         private static SimpleButton twitterButton;
         private static SimpleButton wikiwikiButton;
+        private static SimpleButton roleDictionaryButton;
         private static SimpleButton gitHubButton;
         public static SimpleButton UpdateButton { get; private set; }
 
@@ -67,6 +68,19 @@ namespace TownOfHostL
                     new(209, 209, 209, byte.MaxValue),
                     () => Application.OpenURL("https://github.com/haru03741-glitch/TownOfHost_L"),
                     "GitHub",
+                    new(1.85f, 0.5f));
+            }
+
+            // 役職辞典のボタン (F4 でも開く)
+            if (SimpleButton.IsNullOrDestroyed(roleDictionaryButton))
+            {
+                roleDictionaryButton = CreateButton(
+                    "RoleDictionaryButton",
+                    new(0f, -3.3f, 1f),
+                    new(60, 150, 210, byte.MaxValue),
+                    new(150, 215, 255, byte.MaxValue),
+                    RoleDictionary.Toggle,
+                    Translator.GetString("RoleDictionary.Title"),
                     new(1.85f, 0.5f));
             }
 

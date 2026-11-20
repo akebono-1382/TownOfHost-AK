@@ -1,0 +1,413 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+using TownOfHostL.Roles.Core;
+using UnityEngine;
+using static TownOfHostL.Translator;
+
+namespace TownOfHostL.Modules;
+
+/// <summary>
+/// 役職辞典。全部の役職を陣営ごと・五十音順に並べ、選んだ役職の名前・陣営・出どころ (From)・説明・今の設定を出す。
+/// タイトル画面のボタン、F4 キー、チャットの /dic で開く。どこでも見られる (自分の画面だけ。通信はしない)。
+/// </summary>
+/// <remarks>
+/// 見せ方の案は TownOfHost-hamo の役職の説明画面 (RoleInfoShower) だが、絵は使わず IMGUI で一から描く。
+/// 窓の見た目と OnGUI の扱いは <see cref="HostPanel"/> に合わせる (閉じている間は OnGUI ごと止め、中身の組み直しは選び直した時だけ)。
+/// </remarks>
+public class RoleDictionary : MonoBehaviour
+{
+    public RoleDictionary(IntPtr ptr) : base(ptr) { }
+
+    public static RoleDictionary Instance;
+    static bool open;
+    public static bool IsOpen => open;
+
+    public static void Toggle() => SetOpen(!open);
+    public static void SetOpen(bool value)
+    {
+        open = value;
+        if (Instance != null) Instance.enabled = value;
+        if (value) { listDirty = true; detailDirty = true; }
+    }
+
+    public void Awake()
+    {
+        Instance = this;
+        useGUILayout = false;
+        enabled = false;
+    }
+
+    public void Update()
+    {
+        // 閉じている間は Update も回さない (enabled = false)。開いている間の Esc で閉じる
+        if (Input.GetKeyDown(KeyCode.Escape)) SetOpen(false);
+    }
+
+    /// <summary>F4 で開け閉めする。チャットや設定の文字を打っている間は効かせない</summary>
+    public static void CheckHotkey()
+    {
+        if (!Input.GetKeyDown(KeyCode.F4)) return;
+        try
+        {
+            if (HudManager.InstanceExists && HudManager.Instance.Chat != null && HudManager.Instance.Chat.IsOpenOrOpening) return;
+        }
+        catch { }
+        Toggle();
+    }
+
+    // ── 中身 ────────────────────────────────
+
+    enum Tab { All, Crewmate, Impostor, Madmate, Neutral, Unit, AddOn }
+    static readonly Tab[] Tabs = (Tab[])Enum.GetValues(typeof(Tab));
+    static Tab tab = Tab.All;
+    static bool onlyEnabled;
+    static string search = "";
+    static CustomRoles selected = CustomRoles.NotAssigned;
+
+    sealed class Entry
+    {
+        public CustomRoles Role;
+        public string Name;      // 色の付いていない名前 (並べる・探す用)
+        public string Shown;     // 一覧に出す名前 (役職の色)
+        public Tab Team;
+        public Color Color;
+    }
+
+    static List<Entry> all;
+    static readonly List<Entry> shown = new();
+    static bool listDirty = true, detailDirty = true;
+    static GUIContent detailContent = GUIContent.none;
+    static float detailHeight;
+    static float listScroll, detailScroll;
+    static string builtLang;
+
+    static void BuildAll()
+    {
+        all = new();
+        CompareInfo ja = null;
+        try { ja = CultureInfo.GetCultureInfo("ja-JP").CompareInfo; } catch { }
+        foreach (var role in Options.CustomRoleSpawnChances.Keys)
+        {
+            try
+            {
+                if (role.IsDontShowOptionRole() && !role.IsVanilla()) continue;
+                if (!Translator.HasString(role.ToString())) continue;
+                var name = Plain(Utils.GetRoleName(role));
+                if (name.Length == 0) continue;
+                var color = Utils.GetRoleColor(role);
+                all.Add(new Entry
+                {
+                    Role = role,
+                    Name = name,
+                    Shown = $"<color=#{ColorUtility.ToHtmlStringRGB(Readable(color))}>{name}</color>",
+                    Team = TeamOf(role),
+                    Color = color,
+                });
+            }
+            catch (Exception ex) { Logger.Warn($"役職辞典に {role} を入れられませんでした: {ex.Message}", nameof(RoleDictionary)); }
+        }
+        // 五十音順 (ひらがなとカタカナ・全角と半角は同じに見る)。並べ方が使えない時は文字の順
+        Comparison<Entry> cmp = ja != null
+            ? (a, b) => ja.Compare(a.Name, b.Name, CompareOptions.IgnoreKanaType | CompareOptions.IgnoreWidth | CompareOptions.IgnoreCase)
+            : (a, b) => string.CompareOrdinal(a.Name, b.Name);
+        all.Sort(cmp);
+        builtLang = TranslationController.InstanceExists ? TranslationController.Instance.currentLanguage?.languageID.ToString() : "";
+    }
+
+    static Tab TeamOf(CustomRoles role)
+    {
+        if (role.IsAddOn() || role.IsOtherAddOn() || role == CustomRoles.Lovers) return Tab.AddOn;
+        return role.GetCustomRoleTypes() switch
+        {
+            CustomRoleTypes.Impostor => Tab.Impostor,
+            CustomRoleTypes.Madmate => Tab.Madmate,
+            CustomRoleTypes.Neutral => Tab.Neutral,
+            CustomRoleTypes.Unit => Tab.Unit,
+            _ => Tab.Crewmate,
+        };
+    }
+
+    static void BuildList()
+    {
+        listDirty = false;
+        if (all == null) BuildAll();
+        shown.Clear();
+        var q = (search ?? "").Trim();
+        foreach (var e in all)
+        {
+            if (tab != Tab.All && e.Team != tab) continue;
+            if (onlyEnabled && !SafeEnabled(e.Role)) continue;
+            if (q.Length > 0 && e.Name.IndexOf(q, StringComparison.OrdinalIgnoreCase) < 0 && e.Role.ToString().IndexOf(q, StringComparison.OrdinalIgnoreCase) < 0) continue;
+            shown.Add(e);
+        }
+        if (shown.Count > 0 && !shown.Any(e => e.Role == selected)) { selected = shown[0].Role; detailDirty = true; }
+        listScroll = Mathf.Min(listScroll, Mathf.Max(0f, shown.Count * RowH - 1f));
+    }
+
+    static bool SafeEnabled(CustomRoles role)
+    {
+        try { return role.IsEnable(); } catch { return false; }
+    }
+
+    static string TeamName(Tab t) => t switch
+    {
+        Tab.All => GetString("RoleDictionary.All"),
+        Tab.Crewmate => GetString("TeamCrewmate"),
+        Tab.Impostor => GetString("TeamImpostor"),
+        Tab.Madmate => GetString("Madmate"),
+        Tab.Neutral => GetString("Neutral"),
+        Tab.Unit => GetString("RoleDictionary.Unit"),
+        Tab.AddOn => GetString("RoleDictionary.AddOn"),
+        _ => "",
+    };
+
+    static Color TeamColor(Tab t) => t switch
+    {
+        Tab.Crewmate => new Color(0.55f, 0.85f, 1f),
+        Tab.Impostor => new Color(1f, 0.35f, 0.35f),
+        Tab.Madmate => new Color(1f, 0.45f, 0.25f),
+        Tab.Neutral => new Color(0.85f, 0.65f, 1f),
+        Tab.Unit => new Color(0.6f, 1f, 0.6f),
+        Tab.AddOn => new Color(1f, 0.85f, 0.4f),
+        _ => Color.white,
+    };
+
+    static void BuildDetail(float width)
+    {
+        detailDirty = false;
+        var role = selected;
+        if (role == CustomRoles.NotAssigned) { detailContent = GUIContent.none; detailHeight = 0; return; }
+        var sb = new StringBuilder();
+        var team = TeamOf(role);
+        var c = Readable(Utils.GetRoleColor(role));
+        sb.Append($"<size={Mathf.RoundToInt(BigFont)}><b><color=#{ColorUtility.ToHtmlStringRGB(c)}>{Plain(Utils.GetRoleName(role))}</color></b></size>\n");
+        sb.Append($"<color=#{ColorUtility.ToHtmlStringRGB(TeamColor(team))}>{TeamName(team)}</color>");
+        var from = RoleFrom.GetText(role);
+        if (from.Length > 0) sb.Append("   ").Append(Rich(from));
+        sb.Append('\n');
+        try
+        {
+            if (Options.CustomRoleSpawnChances.TryGetValue(role, out var opt))
+            {
+                var chance = role.GetChance();
+                var count = role.GetCount();
+                var state = count > 0 && chance > 0
+                    ? $"<color=#7dff9a>{string.Format(GetString("RoleDictionary.On"), chance, count)}</color>"
+                    : $"<color=#9aa3b5>{GetString("RoleDictionary.Off")}</color>";
+                sb.Append(state).Append('\n');
+            }
+        }
+        catch { }
+        sb.Append('\n');
+        // 短い説明
+        if (Translator.HasString(role + "Info")) sb.Append("<b>").Append(Rich(GetString(role + "Info"))).Append("</b>\n\n");
+        // 長い説明 (From の行は上に出したので付けない)
+        var info = Translator.HasString(role + "InfoLong") ? GetString(role + "InfoLong") : "";
+        if (info.Length > 0) sb.Append(Rich(info)).Append('\n');
+
+        // 今の設定
+        try
+        {
+            if (Options.CustomRoleSpawnChances.TryGetValue(role, out var opt) && opt.Children.Count > 0)
+            {
+                var set = new StringBuilder();
+                Utils.ShowChildrenSettings(opt, ref set);
+                if (set.Length > 0)
+                    sb.Append('\n').Append($"<b><color=#9fd7ff>{GetString("RoleDictionary.Settings")}</color></b>\n").Append(Rich(set.ToString()));
+            }
+        }
+        catch { }
+
+        detailContent = new GUIContent(sb.ToString());
+        detailHeight = sDetail.CalcHeight(detailContent, width);
+        detailScroll = 0f;
+    }
+
+    // ── 文字の形を IMGUI 向けに ─────────────────────────
+
+    static readonly Regex HexTag = new(@"<#([0-9a-fA-F]{6,8})>", RegexOptions.Compiled);
+    static readonly Regex ColorEq = new(@"<color=#([0-9a-fA-F]{6,8})>", RegexOptions.Compiled);
+    static readonly Regex Unsupported = new(@"</?(size|line-height|line-indent|voffset|font|mark|sprite|align|alpha|cspace|indent|margin|mspace|nobr|noparse|pos|rotate|s|u|sub|sup|width|link|uppercase|lowercase|smallcaps|style|gradient)(=[^>]*)?>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+    static readonly Regex AnyTag = new("<[^>]+>", RegexOptions.Compiled);
+
+    /// <summary>TMP の色の書き方 (&lt;#rrggbb&gt;) を IMGUI の書き方へ直し、IMGUI に無い印は外す。暗い色は読めるように明るくする</summary>
+    static string Rich(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return "";
+        s = s.Replace("\\n", "\n");
+        s = Unsupported.Replace(s, "");
+        s = HexTag.Replace(s, m => $"<color=#{Lighten(m.Groups[1].Value)}>");
+        s = ColorEq.Replace(s, m => $"<color=#{Lighten(m.Groups[1].Value)}>");
+        return s;
+    }
+
+    static string Plain(string s) => AnyTag.Replace(s ?? "", "").Replace("\\n", " ").Trim();
+
+    static string Lighten(string hex)
+    {
+        if (!ColorUtility.TryParseHtmlString("#" + hex.Substring(0, 6), out var c)) return hex;
+        return ColorUtility.ToHtmlStringRGB(Readable(c));
+    }
+
+    /// <summary>紺の背景で読めるように、暗すぎる色だけ明るくする</summary>
+    static Color Readable(Color c)
+    {
+        var l = c.r * 0.3f + c.g * 0.59f + c.b * 0.11f;
+        if (l >= 0.42f) return c;
+        var k = 0.42f / Mathf.Max(0.05f, l);
+        return new Color(Mathf.Min(1f, c.r * k + 0.15f), Mathf.Min(1f, c.g * k + 0.15f), Mathf.Min(1f, c.b * k + 0.15f));
+    }
+
+    // ── 描く ────────────────────────────────
+
+    static float sw, sh, scale = -1f;
+    static float Scale => sw / 1920f;
+    static int Font => Mathf.Max(12, Mathf.RoundToInt(22f * Scale));
+    static float BigFont => Font * 1.6f;
+    static float RowH => 46f * Scale;
+    static float Pad => 10f * Scale;
+    static GUIStyle sWindow, sTitle, sRow, sRowOn, sTab, sTabOn, sDetail, sField, sSmall, sClose, sPanel;
+    static float wx = -1, wy, ww, wh;
+    static bool dragging;
+    static float dragDx, dragDy;
+
+    public void OnGUI()
+    {
+        sw = Screen.width; sh = Screen.height;
+        if (!open) { enabled = false; return; }
+        if (!Mathf.Approximately(scale, Scale)) BuildStyles();
+        var e = Event.current;
+        var type = e.type;
+
+        ww = Mathf.Min(sw * 0.9f, 1400f * Scale);
+        wh = Mathf.Min(sh * 0.86f, 860f * Scale);
+        if (wx < 0 || type == EventType.Layout && (wx + ww > sw || wy + wh > sh)) { wx = (sw - ww) / 2f; wy = (sh - wh) / 2f; }
+
+        var titleH = 56f * Scale;
+        // 題の帯をつかんで動かす
+        if (type == EventType.MouseDown && e.button == 0 && Inside(e.mousePosition, wx, wy, ww - titleH, titleH)) { dragging = true; dragDx = e.mousePosition.x - wx; dragDy = e.mousePosition.y - wy; e.Use(); }
+        else if (type == EventType.MouseDrag && dragging) { wx = e.mousePosition.x - dragDx; wy = e.mousePosition.y - dragDy; e.Use(); }
+        else if (type == EventType.MouseUp) dragging = false;
+        wx = Mathf.Clamp(wx, 0f, Mathf.Max(0f, sw - ww));
+        wy = Mathf.Clamp(wy, 0f, Mathf.Max(0f, sh - wh));
+
+        GUI.Box(new Rect(wx, wy, ww, wh), GUIContent.none, sWindow);
+        GUI.Label(new Rect(wx + Pad * 2, wy, ww * 0.4f, titleH), GetString("RoleDictionary.Title"), sTitle);
+        var cs = titleH * 0.7f;
+        if (GUI.Button(new Rect(wx + ww - cs - Pad * 1.5f, wy + (titleH - cs) / 2f, cs, cs), "×", sClose)) { SetOpen(false); return; }
+
+        // 探す欄と「入っている役職だけ」
+        var fw = ww * 0.24f;
+        var fx = wx + ww - cs - Pad * 3f - fw;
+        var fh = titleH * 0.62f;
+        GUI.Label(new Rect(fx - 70f * Scale, wy + (titleH - fh) / 2f, 70f * Scale, fh), GetString("RoleDictionary.Search"), sSmall);
+        var ns = GUI.TextField(new Rect(fx, wy + (titleH - fh) / 2f, fw, fh), search ?? "", 30, sField);
+        if (ns != search) { search = ns; listDirty = true; }
+        var ow = 230f * Scale;
+        var ox = fx - 80f * Scale - ow;
+        if (GUI.Button(new Rect(ox, wy + (titleH - fh) / 2f, ow, fh), (onlyEnabled ? "☑ " : "☐ ") + GetString("RoleDictionary.OnlyEnabled"), onlyEnabled ? sTabOn : sTab)) { onlyEnabled = !onlyEnabled; listDirty = true; }
+
+        // 陣営のタブ
+        var ty = wy + titleH;
+        var th = 40f * Scale;
+        var tw = (ww - Pad * 2f) / Tabs.Length;
+        for (var i = 0; i < Tabs.Length; i++)
+        {
+            var t = Tabs[i];
+            var label = $"<color=#{ColorUtility.ToHtmlStringRGB(TeamColor(t))}>{TeamName(t)}</color>";
+            if (GUI.Button(new Rect(wx + Pad + tw * i + 2f, ty, tw - 4f, th), label, t == tab ? sTabOn : sTab)) { tab = t; listDirty = true; listScroll = 0; }
+        }
+
+        if (all == null || builtLang != (TranslationController.InstanceExists ? TranslationController.Instance.currentLanguage?.languageID.ToString() : "")) { all = null; listDirty = true; detailDirty = true; }
+        if (listDirty) BuildList();
+
+        // 左: 一覧
+        var top = ty + th + Pad;
+        var bodyH = wy + wh - top - Pad;
+        var lx = wx + Pad; var lw = ww * 0.30f;
+        GUI.Box(new Rect(lx, top, lw, bodyH), GUIContent.none, sPanel);
+        var listH = shown.Count * RowH;
+        var maxL = Mathf.Max(0f, listH - bodyH + Pad);
+        if (type == EventType.ScrollWheel && Inside(e.mousePosition, lx, top, lw, bodyH)) { listScroll += e.delta.y * RowH; e.Use(); }
+        listScroll = Mathf.Clamp(listScroll, 0f, maxL);
+        if (maxL > 0f) listScroll = GUI.VerticalScrollbar(new Rect(lx + lw - 16f * Scale, top, 16f * Scale, bodyH), listScroll, bodyH, 0f, listH + Pad);
+        var first = Mathf.Max(0, Mathf.FloorToInt(listScroll / RowH));
+        for (var i = first; i < shown.Count; i++)
+        {
+            var y = top + Pad * 0.5f + i * RowH - listScroll;
+            if (y + RowH > top + bodyH) break;
+            var en = shown[i];
+            var r = new Rect(lx + Pad * 0.5f, y, lw - Pad - 18f * Scale, RowH - 4f * Scale);
+            var mark = SafeEnabled(en.Role) ? "● " : "   ";
+            if (GUI.Button(r, mark + en.Shown, en.Role == selected ? sRowOn : sRow)) { selected = en.Role; detailDirty = true; }
+        }
+        if (shown.Count == 0) GUI.Label(new Rect(lx + Pad, top + Pad, lw - Pad * 2, RowH), GetString("RoleDictionary.None"), sSmall);
+
+        // 右: 説明
+        var dx = lx + lw + Pad; var dw = wx + ww - Pad - dx;
+        GUI.Box(new Rect(dx, top, dw, bodyH), GUIContent.none, sPanel);
+        var textW = dw - Pad * 3f - 16f * Scale;
+        if (detailDirty) BuildDetail(textW);
+        var maxD = Mathf.Max(0f, detailHeight - bodyH + Pad * 2f);
+        if (type == EventType.ScrollWheel && Inside(e.mousePosition, dx, top, dw, bodyH)) { detailScroll += e.delta.y * RowH; e.Use(); }
+        detailScroll = Mathf.Clamp(detailScroll, 0f, maxD);
+        if (maxD > 0f) detailScroll = GUI.VerticalScrollbar(new Rect(dx + dw - 16f * Scale, top, 16f * Scale, bodyH), detailScroll, bodyH, 0f, detailHeight + Pad * 2f);
+        // 枠の外へはみ出す分は GUI のグループで切る
+        GUI.BeginGroup(new Rect(dx + Pad, top + Pad, textW, bodyH - Pad * 2f));
+        GUI.Label(new Rect(0, -detailScroll, textW, detailHeight + 4f), detailContent, sDetail);
+        GUI.EndGroup();
+    }
+
+    static bool Inside(Vector2 p, float x, float y, float w, float h) => p.x >= x && p.x <= x + w && p.y >= y && p.y <= y + h;
+
+    static void BuildStyles()
+    {
+        scale = Scale;
+        var k = Mathf.Max(0.5f, scale);
+        var r = Mathf.RoundToInt(10f * k) * 2;
+        var br = Mathf.RoundToInt(6f * k) * 2;
+        sWindow = new GUIStyle { normal = { background = HostPanel.RoundTex(new Color(0.05f, 0.06f, 0.13f, 0.97f), r) }, border = HostPanel.Border(r) };
+        sPanel = new GUIStyle { normal = { background = HostPanel.RoundTex(new Color(0.09f, 0.11f, 0.21f, 1f), br) }, border = HostPanel.Border(br) };
+        sTitle = Text(Font + 6, FontStyle.Bold, TextAnchor.MiddleLeft, new Color(0.45f, 0.92f, 1f));
+        sSmall = Text(Font - 2, FontStyle.Normal, TextAnchor.MiddleLeft, new Color(0.75f, 0.8f, 0.9f));
+        sDetail = Text(Font, FontStyle.Normal, TextAnchor.UpperLeft, Color.white);
+        sDetail.wordWrap = true;
+        sRow = Btn(new Color(0, 0, 0, 0), new Color(0.2f, 0.26f, 0.45f), br, TextAnchor.MiddleLeft);
+        sRowOn = Btn(new Color(0.18f, 0.30f, 0.55f), new Color(0.24f, 0.38f, 0.66f), br, TextAnchor.MiddleLeft);
+        sTab = Btn(new Color(0.12f, 0.15f, 0.28f), new Color(0.2f, 0.26f, 0.45f), br, TextAnchor.MiddleCenter);
+        sTabOn = Btn(new Color(0.20f, 0.33f, 0.58f), new Color(0.26f, 0.40f, 0.68f), br, TextAnchor.MiddleCenter);
+        sClose = Btn(new Color(0.38f, 0.08f, 0.08f), new Color(0.6f, 0.12f, 0.12f), br, TextAnchor.MiddleCenter);
+        sField = new GUIStyle
+        {
+            fontSize = Font - 2,
+            alignment = TextAnchor.MiddleLeft,
+            normal = { background = HostPanel.RoundTex(new Color(0.02f, 0.03f, 0.07f), br), textColor = Color.white },
+            focused = { background = HostPanel.RoundTex(new Color(0.04f, 0.06f, 0.14f), br), textColor = Color.white },
+            border = HostPanel.Border(br),
+            padding = HostPanel.Border(Mathf.Max(4, br / 2)),
+            clipping = TextClipping.Clip,
+        };
+        detailDirty = true;
+    }
+
+    static GUIStyle Text(int size, FontStyle fs, TextAnchor anchor, Color color)
+        => new() { fontSize = size, fontStyle = fs, alignment = anchor, richText = true, normal = { textColor = color } };
+
+    static GUIStyle Btn(Color normal, Color hover, int r, TextAnchor anchor) => new()
+    {
+        fontSize = Font - 1,
+        fontStyle = FontStyle.Bold,
+        alignment = anchor,
+        richText = true,
+        clipping = TextClipping.Clip,
+        border = HostPanel.Border(r),
+        padding = HostPanel.Border(Mathf.Max(4, r / 2)),
+        normal = { background = HostPanel.RoundTex(normal, r), textColor = Color.white },
+        hover = { background = HostPanel.RoundTex(hover, r), textColor = Color.white },
+        active = { background = HostPanel.RoundTex(new Color(normal.r * 0.7f, normal.g * 0.7f, normal.b * 0.7f, Mathf.Max(normal.a, 0.5f)), r), textColor = Color.white },
+    };
+}

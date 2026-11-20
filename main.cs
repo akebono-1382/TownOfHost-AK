@@ -247,6 +247,7 @@ public partial class Main : BasePlugin
         // ホストの操作盤 (左下のボタンから開く)
         AddComponent<TownOfHostL.Modules.HostPanel>();
         AddComponent<TownOfHostL.Modules.HostPanelButton>();
+        AddComponent<TownOfHostL.Modules.RoleDictionary>();
         // 配信の重ね表示 (観客席・コメントの板・マップ投票)
         AddComponent<TownOfHostL.Modules.Streaming.StreamOverlay>();
         // 番犬の心拍と、終了の検知

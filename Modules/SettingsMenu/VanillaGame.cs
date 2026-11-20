@@ -114,7 +114,7 @@ internal sealed class VanillaMenuOpt : MenuOpt
         _count = Math.Max(_count, 1);
     }
 
-    // 本編の範囲より広く選べるようにしている設定 (タスクの数・キルのクールダウン・デバッグ時のインポスター数)
+    // 本編の範囲より広く選べるようにしている設定 (タスクの数・キルのクールダウン・インポスター数)
     private static (float min, float max) Range(StringNames title, float min, float max)
     {
         switch (title)
@@ -126,7 +126,8 @@ internal sealed class VanillaMenuOpt : MenuOpt
             case StringNames.GameKillCooldown:
                 return (0f, 180f);
             case StringNames.GameNumImpostors:
-                return (DebugModeManager.IsDebugMode ? 0f : min, max);
+                // hamo と同じく、インポスターを 0 人や 4 人以上にもできる (本編は 1〜3 人)
+                return (0f, 15f);
         }
         return (min, max);
     }

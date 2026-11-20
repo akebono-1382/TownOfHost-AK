@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 using TownOfHostL.Modules;
@@ -17,6 +17,8 @@ namespace TownOfHostL
         {
             if (!Input.anyKeyDown) return;
             if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing) return;
+            // 役職辞典 (F4)
+            RoleDictionary.CheckHotkey();
             //解像度変更
             if (Input.GetKeyDown(KeyCode.F11))
             {

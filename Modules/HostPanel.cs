@@ -672,7 +672,7 @@ public class HostPanel : MonoBehaviour
         dirty = true;
     }
 
-    static RectOffset Border(int r)
+    internal static RectOffset Border(int r)
     {
         // 4 つの値をとる作り方は interop に無いので、1 つずつ入れる
         var o = new RectOffset();
@@ -700,7 +700,7 @@ public class HostPanel : MonoBehaviour
     static readonly Dictionary<(Color, int), Texture2D> textures = new();
 
     /// <summary>角を丸めた 1 色の絵 (9 分割で引き伸ばす。角の半径 r の外側は透明・縁は 1 画素ぼかす)</summary>
-    static Texture2D RoundTex(Color c, int r)
+    internal static Texture2D RoundTex(Color c, int r)
     {
         r = Mathf.Max(1, r);
         if (textures.TryGetValue((c, r), out var t) && t != null) return t;
