@@ -8,14 +8,15 @@ namespace TownOfHostL.SettingsUI;
 // ゲームの頁の右の欄に出す、本編の設定の意味を見せる動く図。字は使わない。
 // 移動速度 = 本編の速さを値ごとに変えて撮った、止めたカメラの前を同じ距離だけ歩く映像を、撮った時の速さのまま流す (速いほど早く渡り切る) / 視界 = 本編で撮った値ごとの止め絵 (いちばん近い値) /
 // キルのクールダウン = 本編のキルボタンが暗くなって秒を数え (10 秒を 1 秒に縮める)、明けたら本編で撮ったキルの映像を流す /
-// キルの距離 = 本編で撮った、相手が届く距離のすぐ内と外に立つ止め絵を交互に出し、届く範囲の円 (撮った時の縮尺どおり) と本編のキルボタンの点き消えを重ねる。
+// キルの距離 = 本編で撮った、相手が届く距離のすぐ内と外に立つ止め絵を交互に出し、届く範囲の円 (撮った時の縮尺どおり) と本編のキルボタンの点き消えを重ねる /
+// タスクの見た目 = 他の人がスキャンする所を、別の人の画面で撮った映像 (ON ならスキャンの光が見え、OFF なら台に立っているだけ)。
 // 映像が読めない時は自前の図: 移動速度 = 基準 (1 倍・灰) と今の速さのクルーが並んで走る / 視界 = 暗い中のクルーとインポスターの明かりの大きさ (半径は値の平方根) /
-// キルのクールダウン = インポスターの周りの目盛りが埋まる速さ (10 秒で 1 周を 1 秒に縮めて見せる)。
+// キルのクールダウン = インポスターの周りの目盛りが埋まる速さ (10 秒で 1 周を 1 秒に縮めて見せる) / タスクの見た目 = 台に立つクルーの上を光の輪が上下する (OFF なら立っているだけ)。
 // どの図を出すかは、最後に当てた・変えた本編の設定で決める (かくれんぼの設定など図の無い項目では変えない)。
 // 図はすべて作った時に用意しておき、出し入れだけをする (後から作ると描く順が付かないため)。
 internal sealed class GamePreview : Widget
 {
-    private enum Scene { Speed, Vision, KillCooldown, KillRange }
+    private enum Scene { Speed, Vision, KillCooldown, KillRange, VisualTasks }
 
     private static readonly Color Panel = new(0.06f, 0.07f, 0.1f, 1f);
     private static readonly Color Lane = new(0.22f, 0.24f, 0.3f, 1f);
@@ -72,6 +73,12 @@ internal sealed class GamePreview : Widget
     private int _rangeIndex = 1, _rangeFrame = -1;
     private float _rangeT;
 
+    private GameObject _vtaskRoot, _vtaskDrawn;
+    private SpriteRenderer _vtaskFoot, _vtaskBeam;
+    private bool _vtaskOn = true;
+    private int _vtaskFrame = -1;
+    private float _vtaskT;
+
     private float _speed = 1f;
     private float _crewR, _impR, _crewTarget, _impTarget;
     private float _cooldown = 25f;
@@ -95,6 +102,7 @@ internal sealed class GamePreview : Widget
         StringNames.GameCrewLight or StringNames.GameImpostorLight => Scene.Vision,
         StringNames.GameKillCooldown => Scene.KillCooldown,
         StringNames.GameKillDistance => Scene.KillRange,
+        StringNames.GameVisualTasks => Scene.VisualTasks,
         _ => null,
     } : null;
 
@@ -146,6 +154,9 @@ internal sealed class GamePreview : Widget
         var dist = Find(StringNames.GameKillDistance);
         _rangeIndex = dist != null ? Math.Clamp(dist.Index, 0, NormalGameOptionsV12.KillDistances.Length - 1) : 1;
         _rangeFrame = -1;
+        // ON/OFF の切り替え (設定が見つからなければ本編の既定の ON)。変わったら、その方の映像を始めから流す
+        bool vtask = Find(StringNames.GameVisualTasks) is not { } vt || vt.Index != 0;
+        if (vtask != _vtaskOn) { _vtaskOn = vtask; _vtaskFrame = -1; _vtaskT = 0f; }
         LayoutRange();
         ApplyFocusAlpha();
         ShowVisionStill();
@@ -166,9 +177,9 @@ internal sealed class GamePreview : Widget
     // 今の図に映像があれば出し、自前の図を隠す
     private void UseFootage()
     {
-        Footage.KeepOnly(_scene switch { Scene.Speed => "speed", Scene.Vision => "vision", Scene.KillRange => "range", _ => "kill" });
+        Footage.KeepOnly(_scene switch { Scene.Speed => "speed", Scene.Vision => "vision", Scene.KillRange => "range", Scene.VisualTasks => "vtask", _ => "kill" });
         // 捨てた映像のコマを握ったままにしない (次に出す時に今の映像のコマを入れ直す)
-        _speedFrame = _killFrame = _rangeFrame = -1;
+        _speedFrame = _killFrame = _rangeFrame = _vtaskFrame = -1;
         var range = _scene == Scene.KillRange ? Footage.Get("range") : null;
         bool hasRange = range != null && _rangeFoot;
         if (_rangeFoot) _rangeFoot.gameObject.SetActive(hasRange);
@@ -179,6 +190,11 @@ internal sealed class GamePreview : Widget
         if (_speedFoot) _speedFoot.gameObject.SetActive(hasSpeed);
         if (_speedDrawn) _speedDrawn.SetActive(!hasSpeed);
         if (hasSpeed && _speedFrame < 0) { _speedClip = -1; _speedT = 0f; }
+
+        var vtask = _scene == Scene.VisualTasks ? Footage.Get("vtask") : null;
+        bool hasVtask = vtask != null && _vtaskFoot;
+        if (_vtaskFoot) _vtaskFoot.gameObject.SetActive(hasVtask);
+        if (_vtaskDrawn) _vtaskDrawn.SetActive(!hasVtask);
 
         var kill = _scene == Scene.KillCooldown ? Footage.Get("kill") : null;
         // 本編のキルボタンを借りられない時 (ロビーの外で頁を組んだ時など) は、待ち時間を見せられないので自前の図にする
@@ -257,6 +273,17 @@ internal sealed class GamePreview : Widget
         _rangeTarget.flipX = true;
         // ボタンは左下 (右には遠い相手が立つ)
         _rangeBtn = BorrowKillButton(_rangeRoot.transform, ref _rangeMat, "TohlPreviewRangeButton", left: true);
+
+        // タスクの見た目: 映像 (無い時は台に立つクルーと、その上を上下する光の輪)
+        _vtaskRoot = Node("VisualTasks", go.transform, layer);
+        _vtaskFoot = FootagePart(_vtaskRoot.transform);
+        _vtaskDrawn = Node("Drawn", _vtaskRoot.transform, layer);
+        var pad = Part(_vtaskDrawn.transform, "Pad", circle, Lane, 1);
+        pad.transform.localScale = new Vector3(CrewH * 1.6f, CrewH * 0.5f, 1f);
+        pad.transform.localPosition = new Vector3(0f, -CrewH * 0.45f, 0f);
+        Figure(_vtaskDrawn.transform, crew, CrewColor, 0f, 3);
+        _vtaskBeam = Part(_vtaskDrawn.transform, "Beam", Ring, new Color(0.3f, 1f, 0.4f, 0.9f), 4);
+        _vtaskBeam.transform.localScale = new Vector3(CrewH * 1.3f, CrewH * 0.4f, 1f);
 
         // キルのクールダウン: 映像と本編のキルボタン (無い時はインポスターの周りの目盛り・右に狙われるクルー)
         _killRoot = Node("Kill", go.transform, layer);
@@ -387,6 +414,7 @@ internal sealed class GamePreview : Widget
         if (_visionRoot) _visionRoot.SetActive(_scene == Scene.Vision);
         if (_killRoot) _killRoot.SetActive(_scene == Scene.KillCooldown);
         if (_rangeRoot) _rangeRoot.SetActive(_scene == Scene.KillRange);
+        if (_vtaskRoot) _vtaskRoot.SetActive(_scene == Scene.VisualTasks);
         UseFootage();
     }
 
@@ -477,7 +505,29 @@ internal sealed class GamePreview : Widget
             case Scene.Vision: TickVision(dt); break;
             case Scene.KillCooldown: TickKill(now, dt); break;
             case Scene.KillRange: TickRange(dt); break;
+            case Scene.VisualTasks: TickVisualTasks(dt); break;
         }
+    }
+
+    private void TickVisualTasks(float dt)
+    {
+        _vtaskT += dt;
+        // 映像: ON なら他の人がスキャンする所 (光が見える)・OFF なら同じ所で台に立っているだけ。どちらも繰り返す
+        if (_vtaskFoot && _vtaskFoot.gameObject.activeSelf)
+        {
+            var f = Footage.Get("vtask");
+            if (f == null) return;
+            var (start, count) = f.ClipOf(f.Nearest(_vtaskOn ? 1f : 0f));
+            float play = count / Math.Max(f.Fps, 1f);
+            if (_vtaskT >= play) _vtaskT -= play * MathF.Floor(_vtaskT / play);
+            int i = start + Math.Min((int)(_vtaskT * f.Fps), count - 1);
+            if (i != _vtaskFrame) { _vtaskFrame = i; _vtaskFoot.sprite = f.Frame(i); }
+            return;
+        }
+        if (!_vtaskBeam) return;
+        _vtaskBeam.enabled = _vtaskOn;
+        float y = MathF.Sin(_vtaskT * 4f) * CrewH * 0.45f;
+        _vtaskBeam.transform.localPosition = new Vector3(0f, y, 0f);
     }
 
     private void TickSpeed(float now, float dt)

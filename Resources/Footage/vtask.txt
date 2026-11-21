@@ -1,0 +1,7 @@
+w=256
+h=144
+cols=8
+count=47
+fps=10.0
+values=0,1
+starts=0,11
