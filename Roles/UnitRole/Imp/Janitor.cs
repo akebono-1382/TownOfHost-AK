@@ -136,8 +136,8 @@ public sealed class Janitor : RoleBase, IImpostor
         /* 後追い処理 */
         isSuiside = true;
         PlayerState.GetByPlayerId(janitor.PlayerId).DeathReason = CustomDeathReason.FollowingSuicide;
+        janitor.SetRealKiller(godfather);
         janitor.RpcMurderPlayer(janitor);
-        godfather.SetRealKiller(janitor);
         Logger.Info($"{janitor.GetNameWithRole()}の後追い:{godfather.GetNameWithRole()}", "KillFollowingSuicide");
     }
     public static void VoteSuicide(byte deadTargetId)
@@ -148,7 +148,7 @@ public sealed class Janitor : RoleBase, IImpostor
         /* 後追い処理 */
         isSuiside = true;
         MeetingHudPatch.TryAddAfterMeetingDeathPlayers(CustomDeathReason.FollowingSuicide, janitor.PlayerId);
-        godfather.SetRealKiller(janitor);
+        janitor.SetRealKiller(godfather);
         Logger.Info($"{janitor.GetNameWithRole()}の後追い:{godfather.GetNameWithRole()}", "VoteFollowingSuicide");
     }
     /// <summary>
