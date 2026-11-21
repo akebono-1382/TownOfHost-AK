@@ -162,8 +162,8 @@ namespace TownOfHost
                         target.RpcShapeshift(target, false);
                     }
                 }
-                //ペットけすやつ。
-                //target.RpcSetPet("");
+                //ペットけす
+                target.RpcSetPet("");
                 //if (!Camouflager.NowUse) Camouflage.RpcSetSkin(target, ForceRevert: true, RevertToDefault: true);
             }
         }

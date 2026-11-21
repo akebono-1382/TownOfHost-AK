@@ -539,10 +539,10 @@ namespace TownOfHost
             if (RoleAddAddons.GetRoleAddon(seer.GetCustomRole(), out var data, seer, subrole: CustomRoles.Autopsy))
                 if (data.GiveAutopsy.GetBool()) check |= !Utils.IsActive(SystemTypes.Comms) || data.AutopsyCanSeeComms.GetBool();
 
-            // IDeathReasonSeeable未対応役職はこちら
             return check ||
             (seer.Is(CustomRoleTypes.Madmate) && Options.MadmateCanSeeDeathReason.GetBool())
-            || (seer.Is(CustomRoles.Autopsy) && (!Utils.IsActive(SystemTypes.Comms) || Autopsy.CanUseActiveComms.GetBool()));
+            || (seer.Is(CustomRoles.Autopsy) && (!Utils.IsActive(SystemTypes.Comms) || Autopsy.CanUseActiveComms.GetBool())
+            || seen.Is(CustomRoles.Medicalrecord));
         }
         public static string GetRoleDesc(this PlayerControl player, bool InfoLong = false)
         {

@@ -95,6 +95,7 @@ namespace TownOfHost
                 CustomRoles.Absorb or
                 CustomRoles.Notice or
                 CustomRoles.Trapping or
+                CustomRoles.Medicalrecord or
                 //デバフ
                 CustomRoles.NonReport or
                 CustomRoles.Notvoter or
@@ -107,7 +108,6 @@ namespace TownOfHost
                 CustomRoles.SlowStarter or
                 CustomRoles.InfoPoor or
                 CustomRoles.News or
-                CustomRoles.Notice or
                 CustomRoles.Sunglasses
                 ;
         }
@@ -134,6 +134,7 @@ namespace TownOfHost
                 CustomRoles.Powerful or
                 CustomRoles.Absorb or
                 CustomRoles.Notice or
+                CustomRoles.Medicalrecord or
                 CustomRoles.Trapping
                 ;
         }

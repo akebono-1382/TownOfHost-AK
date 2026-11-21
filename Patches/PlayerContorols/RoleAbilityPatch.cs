@@ -139,11 +139,6 @@ namespace TownOfHost
                 logger.Info("変身者が死亡しているため変身をキャンセルします");
                 return false;
             }
-            if (instance.Is(CustomRoles.SKMadmate)/* || instance.Is(CustomRoles.Jackaldoll)*/)
-            {
-                logger.Info("変身者がサイドキックされてるため変身をキャンセルします");
-                return false;
-            }
             // RoleInfoによるdesyncシェイプシフター用の判定を追加
             if (instance.Data.Role.Role != RoleTypes.Shapeshifter && instance.GetCustomRole().GetRoleInfo()?.BaseRoleType?.Invoke() != RoleTypes.Shapeshifter)
             {

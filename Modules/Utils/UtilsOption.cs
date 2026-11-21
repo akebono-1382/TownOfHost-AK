@@ -702,6 +702,7 @@ namespace TownOfHost
             if (player.Is(CustomRoles.Moon)) SendMessage(GetAddonsHelp(CustomRoles.Moon), player.PlayerId, AddRoleInfoTitle);
             if (player.Is(CustomRoles.Notice)) SendMessage(GetAddonsHelp(CustomRoles.Notice), player.PlayerId, AddRoleInfoTitle);
             if (player.Is(CustomRoles.Trapping)) SendMessage(GetAddonsHelp(CustomRoles.Trapping), player.PlayerId, AddRoleInfoTitle);
+            if (player.Is(CustomRoles.Medicalrecord)) SendMessage(GetAddonsHelp(CustomRoles.Medicalrecord), player.PlayerId, AddRoleInfoTitle);
 
             //デバフ
             if (player.Is(CustomRoles.News)) SendMessage(GetAddonsHelp(CustomRoles.News), player.PlayerId, AddRoleInfoTitle);
@@ -767,6 +768,8 @@ namespace TownOfHost
                 CustomRoles.Moon => AddonInfo(role, "э", From.TownOfHost_K),
                 CustomRoles.Notice => AddonInfo(role, "Ｎo", From.TownOfHost_K),
                 CustomRoles.Trapping => AddonInfo(role, "Ｔr"),
+                CustomRoles.Medicalrecord => AddonInfo(role, "Ｍ", From.TownOfHost_Pko),
+
                 //デバフ
                 CustomRoles.Amnesia => AddonInfo(role),
                 CustomRoles.SlowStarter => AddonInfo(role, "Ｓs", From.TownOfHost_K),

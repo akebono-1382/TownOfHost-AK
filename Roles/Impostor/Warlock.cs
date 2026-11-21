@@ -40,7 +40,7 @@ public sealed class Warlock : RoleBase, IImpostor, IUsePhantomButton
         WarlockCantMoveTime,
         WarlockOneClick,
     }
-
+    public float CalculateKillCooldown() => KillCooldown;
     static OptionItem OptionKillCoolDown; static float KillCooldown;
     static OptionItem OptionCantMoveTime; static float CantMoveTime;
     static OptionItem OptionMax; int Max;
@@ -52,10 +52,10 @@ public sealed class Warlock : RoleBase, IImpostor, IUsePhantomButton
     {
         OptionKillCoolDown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, OptionBaseCoolTime, 30f)
             .SetValueFormat(OptionFormat.Seconds);
-        OptionMax = IntegerOptionItem.Create(RoleInfo, 14, GeneralOption.OptionCount, new(1, 99, 1), 4)
+        /*OptionMax = IntegerOptionItem.Create(RoleInfo, 14, GeneralOption.OptionCount, new(1, 99, 1), 4)
             .SetValueFormat(OptionFormat.Times);
         OptionCantMoveTime = FloatOptionItem.Create(RoleInfo, 11, Op.WarlockCantMoveTime, OptionBaseCoolTime, 5f)
-            .SetValueFormat(OptionFormat.Seconds);
+            .SetValueFormat(OptionFormat.Seconds);*/
         OptionOneClick = BooleanOptionItem.Create(RoleInfo, 12, Op.WarlockOneClick, true);
         OptionCoolDown = FloatOptionItem.Create(RoleInfo, 13, GeneralOption.Cooldown, OptionBaseCoolTime, 30f, parent: OptionOneClick)
             .SetValueFormat(OptionFormat.Seconds);

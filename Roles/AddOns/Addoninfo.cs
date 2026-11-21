@@ -34,6 +34,7 @@ class AddondataInfo
                 CustomRoles.Trapping => "Ｔr",
                 CustomRoles.LastImpostor => "ＬＩ",
                 CustomRoles.LastNeutral => "ＬＮ",
+                CustomRoles.Medicalrecord => "Ｍ",
 
                 //デバフ
                 CustomRoles.SlowStarter => "Ｓs",
@@ -100,8 +101,10 @@ class AddondataInfo
                     {CustomRoles.Powerful , "#f08e39"},
                     {CustomRoles.Stack , "#b55f47"},
                     {CustomRoles.Absorb,"#434981"},
-                    {CustomRoles.AntiTeleporter,"#793838"},
+                    {CustomRoles.AntiTeleporter, "#793838"},
                     {CustomRoles.Trapping,"#5a8fd0"},
+                    {CustomRoles.Medicalrecord,"#8D9BA6"},
+
                     //デバフ
                     { CustomRoles.NonReport,"#006666"},
                     {CustomRoles.Notvoter,"#6c848d"},

@@ -174,6 +174,7 @@ namespace TownOfHost
                         case CustomRoles.Trapping: sb.Append(Trapping.SubRoleMark); break;
                         case CustomRoles.LastImpostor: sb.Append(LastImpostor.SubRoleMark); break;
                         case CustomRoles.LastNeutral: sb.Append(LastNeutral.SubRoleMark); break;
+                        case CustomRoles.Medicalrecord: sb.Append(Medicalrecord.SubRoleMark); break;
 
                         //デバフ
                         case CustomRoles.SlowStarter: sb.Append(SlowStarter.SubRoleMark); break;

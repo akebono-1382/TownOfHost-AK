@@ -6,7 +6,7 @@ using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 
 //メモ
-//タゲ視点のTPをDesyncにしたい
+//タゲのTPをDesyncにしたい
 
 namespace TownOfHost.Roles.Impostor
 {
@@ -87,6 +87,7 @@ namespace TownOfHost.Roles.Impostor
             {
                 pc.RpcMurderPlayerDesync(pc, seer);
             }
+            //タゲ視点
             var fake = PlayerCatch.AllPlayerControls.Where(p => !p.IsAlive() && p != pc).FirstOrDefault();
             if (fake != null)
             {

@@ -1072,6 +1072,7 @@ public enum CustomRoles
     MagicHand,
     Absorb,
     Trapping,
+    Medicalrecord,
     //デバフ
     Amnesia,
     Notvoter,

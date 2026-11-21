@@ -33,8 +33,6 @@ public sealed class Timeleaper : RoleBase, IImpostor, IUsePhantomButton
         RecTime = OptionRecTime.GetFloat();
         leapspeed = OptionleapSpeed.GetInt();
 
-        // 重複登録を避けるため、一度外してから追加
-        CustomRoleManager.OnFixedUpdateOthers.Remove(OnFixedUpdateOthers);
         CustomRoleManager.OnFixedUpdateOthers.Add(OnFixedUpdateOthers);
     }
 
@@ -114,7 +112,6 @@ public sealed class Timeleaper : RoleBase, IImpostor, IUsePhantomButton
         savedSpeed.Clear();
         savedSabotages.Clear();
 
-        //今発生しているサボタージュを覚えておく(巻き戻し後に再度起こす)
         foreach (var type in SabotageTypes)
         {
             if (Utils.IsActive(type)) savedSabotages.Add(type);
@@ -171,7 +168,6 @@ public sealed class Timeleaper : RoleBase, IImpostor, IUsePhantomButton
                 break;
 
             case Leapstatus.Leaping:
-                //進行度の管理は録画者のtickで1回だけ行う
                 if (isOwner)
                 {
                     leapIndex -= leapspeed;
