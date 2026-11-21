@@ -60,13 +60,33 @@ public static class ChatSenderName
             Logger.Warn($"チャットのパケットが {stream.Length} バイトで上限 {PacketLimit} を超えています", tag);
     }
 
-    /// <summary>客の画面に戻す名前。ロビーでは今の名前 (名前の飾りを含む) をそのまま戻す</summary>
-    public static string RestoreFor(PlayerControl sender)
+    /// <summary>
+    /// 客の画面に戻す名前。ロビーでは今の名前 (名前の飾りを含む) をそのまま戻す。
+    /// 会議の外では NotifyRoles が他人の名前として送る形に合わせる (変身中は変身先の名前・通信妨害のカモフラ中は隠す)。
+    /// 1 人宛ての時は、その人に最後に送った名前をそのまま戻す
+    /// </summary>
+    public static string RestoreFor(PlayerControl sender, PlayerControl seer = null)
     {
         if (!GameStates.IsInGame) return sender.Data.PlayerName;
         if (GameStates.IsMeeting) return sender.GetRealName(isMeeting: true);
-        return Main.AllPlayerNames.TryGetValue(sender.PlayerId, out var name) ? name : sender.Data.PlayerName;
+        if (seer != null && !seer.AmOwner && Main.LastNotifyNames != null
+            && Main.LastNotifyNames.TryGetValue((sender.PlayerId, seer.PlayerId), out var shown) && shown != null)
+            return shown;
+        var name = Main.AllPlayerNames.TryGetValue(sender.PlayerId, out var realName) ? realName : sender.Data.PlayerName;
+        if (Main.CheckShapeshift.TryGetValue(sender.PlayerId, out var shifted) && shifted
+            && Main.ShapeshiftTarget.TryGetValue(sender.PlayerId, out var shiftTo) && shiftTo != sender.PlayerId
+            && Main.AllPlayerNames.TryGetValue(shiftTo, out var shiftName))
+            name = shiftName;
+        if (NameParts.HideSeenName(false)) name = $"<size=0%>{name}</size>";
+        return name;
     }
+
+    /// <summary>
+    /// 全員宛ての 1 通を、宛先ごとに分けて送るか。キノコカオスで名前を隠した人が居る間は、戻す名前が人によって違い、
+    /// NotifyRoles も止めているので送り直しで隠し直せない
+    /// </summary>
+    public static bool SplitsBroadcast()
+        => GameStates.IsInGame && !GameStates.IsMeeting && MushroomMixupUpdateSystemPatch.HidesNamesForAnyone;
 
     /// <summary>
     /// 戻した名前を、送った名前の覚え書きに写す。clientId が -1 なら全員に戻している。

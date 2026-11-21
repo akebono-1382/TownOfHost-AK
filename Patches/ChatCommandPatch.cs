@@ -216,27 +216,42 @@ namespace TownOfHostL
 
         private static void SendChunk(string SendName, string text, string name, PlayerControl sender)
         {
-            var crs = CustomRpcSender.Create("AllSend", SendOption.Reliable);
-            var restoreName = GameStates.IsInGame ? TownOfHostL.Core.ChatSenderName.RestoreFor(sender) : name;
-
-            crs.AutoStartRpc(sender.NetId, (byte)RpcCalls.SetName)
-                .Write(sender.Data.NetId)
-                .Write(SendName)
-                .EndRpc()
-                .AutoStartRpc(sender.NetId, (byte)RpcCalls.SendChat)
-                .Write(text)
-                .EndRpc()
-                .AutoStartRpc(sender.NetId, (byte)RpcCalls.SetName)
-                .Write(sender.Data.NetId)
-                .Write(restoreName)
-                .EndRpc()
-                .SendMessage();
-            TownOfHostL.Core.ChatSenderName.Restored(sender, restoreName, -1);
+            if (TownOfHostL.Core.ChatSenderName.SplitsBroadcast())
+            {
+                // 戻す名前が人によって違う間は、宛先ごとに送る
+                foreach (var pc in Main.AllPlayerControls)
+                {
+                    if (pc == null || pc.AmOwner || pc.Data == null || pc.Data.Disconnected) continue;
+                    int cid = pc.GetClientId();
+                    if (cid < 0) continue;
+                    SendChunkTo(SendName, text, name, sender, pc, cid);
+                }
+            }
+            else SendChunkTo(SendName, text, name, sender, null, -1);
 
             // 吹き出しの例外で、手元の名前が見出しのまま残らないように戻しは finally で行う
             sender.SetName(SendName);
             try { DestroyableSingleton<HudManager>.Instance.Chat.AddChat(sender, text); }
             finally { sender.SetName(name); }
+        }
+        private static void SendChunkTo(string SendName, string text, string name, PlayerControl sender, PlayerControl seer, int clientId)
+        {
+            var crs = CustomRpcSender.Create("AllSend", SendOption.Reliable);
+            var restoreName = GameStates.IsInGame ? TownOfHostL.Core.ChatSenderName.RestoreFor(sender, seer) : name;
+
+            crs.AutoStartRpc(sender.NetId, (byte)RpcCalls.SetName, clientId)
+                .Write(sender.Data.NetId)
+                .Write(SendName)
+                .EndRpc()
+                .AutoStartRpc(sender.NetId, (byte)RpcCalls.SendChat, clientId)
+                .Write(text)
+                .EndRpc()
+                .AutoStartRpc(sender.NetId, (byte)RpcCalls.SetName, clientId)
+                .Write(sender.Data.NetId)
+                .Write(restoreName)
+                .EndRpc()
+                .SendMessage();
+            TownOfHostL.Core.ChatSenderName.Restored(sender, restoreName, clientId);
         }
 
         // 全員へ同じ名前を一時的に見せた後、見る人ごとの名前へ戻す。記録を捨てて NotifyRoles に全員分を組み直させる
@@ -655,6 +670,17 @@ namespace TownOfHostL
                 NoClientWarning.Report(Utils.GetPlayerById(sendTo), "ChatSend");
                 return;
             }
+            if (sendTo == byte.MaxValue && TownOfHostL.Core.ChatSenderName.SplitsBroadcast())
+            {
+                foreach (var pc in Main.AllPlayerControls)
+                {
+                    if (pc == null || pc.AmOwner || pc.Data == null || pc.Data.Disconnected) continue;
+                    int cid = pc.GetClientId();
+                    if (cid < 0) continue;
+                    Send(sender, title, msg, pc.PlayerId, cid);
+                }
+                return;
+            }
             if (sender.Data.IsDead && GameStates.IsInGame)
             {
                 SendMessageAsDeadSender(sender, msg, title, sendTo);
@@ -669,7 +695,7 @@ namespace TownOfHostL
             writer.StartRpc(sender.NetId, (byte)RpcCalls.SendChat)
                 .Write(msg)
                 .EndRpc();
-            var restoreName = TownOfHostL.Core.ChatSenderName.RestoreFor(sender);
+            var restoreName = TownOfHostL.Core.ChatSenderName.RestoreFor(sender, sendTo == byte.MaxValue ? null : Utils.GetPlayerById(sendTo));
             writer.StartRpc(sender.NetId, (byte)RpcCalls.SetName)
                 .Write(sender.Data.NetId)
                 .Write(restoreName)
@@ -722,7 +748,7 @@ namespace TownOfHostL
                     writer.StartRpc(sender.NetId, (byte)RpcCalls.SendChat)
                         .Write(msg)
                         .EndRpc();
-                    var restoreName = TownOfHostL.Core.ChatSenderName.RestoreFor(sender);
+                    var restoreName = TownOfHostL.Core.ChatSenderName.RestoreFor(sender, target);
                     writer.StartRpc(sender.NetId, (byte)RpcCalls.SetName)
                         .Write(sender.Data.NetId)
                         .Write(restoreName)
