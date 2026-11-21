@@ -97,6 +97,12 @@ public static class GameEndRules
     /// <summary>試合の始めに呼ぶ (終了判定を入れ替える時)。</summary>
     public static void ResetForNewGame() => sawKillers = false;
 
+    /// <summary>役職が登録した判定を呼ぶ。例外は「当てはまらない」として扱い、判定を止めない</summary>
+    static bool SafeHook(Func<bool> hook, string tag)
+    {
+        try { return hook(); }
+        catch (Exception ex) { Logger.Exception(ex, tag); return false; }
+    }
     /// <summary>生きている人を陣営ごとに数え、役職の補正を通す</summary>
     private static void CountAlive(GameEndCounts c)
     {
@@ -106,7 +112,12 @@ public static class GameEndRules
             if (pc.GetRoleClass() is { CountsForGameEnd: false }) continue;
             c[pc.GetCountTypes()]++;
         }
-        foreach (var adjust in CustomRoleManager.GameEndCountAdjustersOthers) adjust(c);
+        // 1 つの補正が例外を出し続けても、判定は残りで最後まで回す (止まると試合が終わらない)
+        foreach (var adjust in CustomRoleManager.GameEndCountAdjustersOthers)
+        {
+            try { adjust(c); }
+            catch (Exception ex) { Logger.Exception(ex, "GameEndCountAdjuster"); }
+        }
     }
 
     public static bool ByLivingPlayers(out GameOverReason reason)
@@ -116,7 +127,7 @@ public static class GameEndRules
 
         // アサシンがマーリンを当てている間などは終わらない
         foreach (var hold in CustomRoleManager.GameEndByCountHoldersOthers)
-            if (hold()) return false;
+            if (SafeHook(hold, "GameEndByCountHolder")) return false;
 
         var c = counts;
         CountAlive(c);
@@ -193,7 +204,7 @@ public static class GameEndRules
         if (Options.NoGameEndByTask.GetBool() || TaskState.InitialTotalTasks == 0) return false;
         // 妖狐の「クルーのタスク完了で終わらない」など
         foreach (var block in CustomRoleManager.TaskWinBlockersOthers)
-            if (block()) return false;
+            if (SafeHook(block, "TaskWinBlocker")) return false;
         // タスク勝利の無効化: 1 = 常に、2 = 生きているクルーがいない時だけ (幽霊のタスクだけで勝たせない)
         switch (Options.DisableTaskWin.GetValue())
         {

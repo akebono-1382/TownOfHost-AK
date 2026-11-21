@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using AmongUs.GameOptions;
 
 using TownOfHostL.Attributes;
@@ -56,7 +57,7 @@ namespace TownOfHostL.Modules
             int MeetingTimeMin = 0;
             int MeetingTimeMax = 300;
 
-            foreach (var role in CustomRoleManager.AllActiveRoles.Values)
+            foreach (var role in CustomRoleManager.AllActiveRoles.Values.ToArray())
             {
                 if (role is IMeetingTimeAlterable meetingTimeAlterable)
                 {

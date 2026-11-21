@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 using TownOfHostL.Roles.AddOns;
 using TownOfHostL.Roles.Core;
@@ -49,13 +50,26 @@ public static class WinnerResolver
         // 役職が宣言した単独勝利・乗っ取り (WinTakeOverStage.AfterSoloWins)
         WinTakeOvers.RunAfterSoloWins(ref ctx.Reason, ctx.Original);
 
-        foreach (var pc in Main.AllPlayerControls) AddAdditionalWinners(pc);
+        // 1 人分の例外で、残りの人の追加勝利や後の NeverWins の除外を飛ばさない
+        foreach (var pc in Main.AllPlayerControls)
+        {
+            try { AddAdditionalWinners(pc); }
+            catch (Exception ex) { Logger.Exception(ex, "AddAdditionalWinners"); }
+        }
         // 抜けた人の役職も拾うので、部屋にいる人ではなく役職の一覧から回す
-        foreach (var role in CustomRoleManager.AllActiveRoles.Values)
-            if (role is IAdditionalWinGranter granter) granter.GrantAdditionalWins();
+        foreach (var role in CustomRoleManager.AllActiveRoles.Values.ToArray())
+        {
+            if (role is not IAdditionalWinGranter granter) continue;
+            try { granter.GrantAdditionalWins(); }
+            catch (Exception ex) { Logger.Exception(ex, "GrantAdditionalWins"); }
+        }
 
         foreach (var pc in Main.AllPlayerControls)
-            if (pc.GetRoleClass() is ILateWinner lateWinner) lateWinner.CheckLateWin();
+        {
+            if (pc.GetRoleClass() is not ILateWinner lateWinner) continue;
+            try { lateWinner.CheckLateWin(); }
+            catch (Exception ex) { Logger.Exception(ex, "CheckLateWin"); }
+        }
 
         foreach (var pc in Main.AllPlayerControls)
         {

@@ -92,10 +92,16 @@ namespace TownOfHostL
             var winner = CustomWinnerHolder.WinnerTeam;
             foreach (var pc in Main.AllPlayerControls)
             {
+                // 1 人分の例外でコルーチンが止まると RpcEndGame が出ず、試合が終わらない
+                try { SetGhostRoleFor(pc); }
+                catch (System.Exception ex) { Logger.Exception(ex, "CoEndGame.SetGhostRole"); }
+            }
+            void SetGhostRoleFor(PlayerControl pc)
+            {
                 if (winner == CustomWinner.Draw)
                 {
                     SetGhostRole(ToGhostImpostor: true);
-                    continue;
+                    return;
                 }
                 //if (Options.IsONMode && winner == CustomWinner.Crewmate)
                 //    reason = GameOverReason.CrewmatesByVote;

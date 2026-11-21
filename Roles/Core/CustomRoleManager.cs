@@ -75,8 +75,14 @@ public static partial class CustomRoleManager
         // インポスター同士のキル無効
         if (attemptKiller.GetCustomRole().IsImpostor() && attemptTarget.GetCustomRole().IsImpostor() && !attemptKiller.GetCustomRole().IsLoneImpostor()) return false;
         // 役職によって今キルできない状態 (ゴッドファーザーのロック・ペンギンの拉致など)
+        // 例外は「止めない」として扱う (投げ続ける 1 つのせいで誰もキルできなくならないように)
         foreach (var isBlocked in KillBlockersOthers)
-            if (isBlocked(attemptKiller)) return false;
+        {
+            bool blocked;
+            try { blocked = isBlocked(attemptKiller); }
+            catch (Exception ex) { Logger.Exception(ex, "KillBlocker"); blocked = false; }
+            if (blocked) return false;
+        }
 
         var killerRole = attemptKiller.GetRoleClass();
         var targetRole = attemptTarget.GetRoleClass();
@@ -195,18 +201,21 @@ public static partial class CustomRoleManager
 
         Logger.Info($"Real Killer={attemptKiller.GetNameWithRole()}", "MurderPlayer");
 
+        // 役職ごとの処理の例外で、下の死の記録 (SetDead) を飛ばさない。飛ぶと本編では死んでいるのに
+        // 生存として数えられ、会議で全員の投票がそろわず、後追いや勝敗の判定も走らない
         //キラーの処理
-        (attemptKiller.GetRoleClass() as IKiller)?.OnMurderPlayerAsKiller(info);
+        try { (attemptKiller.GetRoleClass() as IKiller)?.OnMurderPlayerAsKiller(info); }
+        catch (Exception ex) { Logger.Exception(ex, "OnMurderPlayerAsKiller"); }
 
         //ターゲットの処理
-        var targetRole = attemptTarget.GetRoleClass();
-        if (targetRole != null)
-            targetRole.OnMurderPlayerAsTarget(info);
+        try { attemptTarget.GetRoleClass()?.OnMurderPlayerAsTarget(info); }
+        catch (Exception ex) { Logger.Exception(ex, "OnMurderPlayerAsTarget"); }
 
         //その他視点の処理があれば実行
         foreach (var onMurderPlayer in OnMurderPlayerOthers.ToArray())
         {
-            onMurderPlayer(info);
+            try { onMurderPlayer(info); }
+            catch (Exception ex) { Logger.Exception(ex, "OnMurderPlayerOthers"); }
         }
 
         // 恋人・ジャニターの後追いは、下の SetDead の「誰かが死んだ」の知らせで動く
@@ -250,9 +259,11 @@ public static partial class CustomRoleManager
         {
             player.GetRoleClass()?.OnFixedUpdate(player);
             //その他視点処理があれば実行
+            // 1 つの例外で、残りと FixedUpdate の後ろ (通報の待ち・設定の定期送信など) を止めない
             foreach (var onFixedUpdate in OnFixedUpdateOthers)
             {
-                onFixedUpdate(player);
+                try { onFixedUpdate(player); }
+                catch (Exception ex) { Logger.Exception(ex, "OnFixedUpdateOthers"); }
             }
         }
     }
@@ -267,12 +278,16 @@ public static partial class CustomRoleManager
     public static bool OnSabotage(PlayerControl player, SystemTypes systemType)
     {
         bool cancel = false;
-        foreach (var roleClass in AllActiveRoles.Values)
+        foreach (var roleClass in AllActiveRoles.Values.ToArray())
         {
-            if (!roleClass.OnSabotage(player, systemType))
+            try
             {
-                cancel = true;
+                if (!roleClass.OnSabotage(player, systemType))
+                {
+                    cancel = true;
+                }
             }
+            catch (Exception ex) { Logger.Exception(ex, "OnSabotage"); }
         }
         return !cancel;
     }
@@ -302,9 +317,11 @@ public static partial class CustomRoleManager
     }
     public static void CreateInstance()
     {
+        // 1 人分の例外で残りの人の役職を作らずに開始ごと止めない
         foreach (var pc in Main.AllPlayerControls)
         {
-            CreateInstance(pc.GetCustomRole(), pc);
+            try { CreateInstance(pc.GetCustomRole(), pc); }
+            catch (Exception ex) { Logger.Exception(ex, $"CreateInstance {pc?.PlayerId}"); }
         }
     }
     public static void CreateInstance(CustomRoles role, PlayerControl player)
@@ -497,7 +514,12 @@ public static partial class CustomRoleManager
     private static bool TryKillGuards(MurderInfo info)
     {
         foreach (var (_, tryGuard) in KillGuardsOthers)
-            if (tryGuard(info)) return true;
+        {
+            bool guarded;
+            try { guarded = tryGuard(info); }
+            catch (Exception ex) { Logger.Exception(ex, "KillGuard"); guarded = false; }
+            if (guarded) return true;
+        }
         return false;
     }
     public static string ApplyNameColorOthers(PlayerControl seer, PlayerControl seen, string colorCode)

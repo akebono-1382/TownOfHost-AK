@@ -325,7 +325,12 @@ public static partial class Utils
             }
             // その試合の役職が登録した免除 (妖狐の死後タスクの免除・忠犬の主人の死後など)
             foreach (var isExempt in CustomRoleManager.TaskExemptionsOthers)
-                if (isExempt(p)) return false;
+            {
+                bool exempt;
+                try { exempt = isExempt(p); }
+                catch (Exception ex) { Logger.Exception(ex, "TaskExemption"); exempt = false; }
+                if (exempt) return false;
+            }
             var role = States.GetNowMainRole();
             var roleClass = CustomRoleManager.GetByPlayerId(p.PlayerId);
             if (roleClass != null)
@@ -1577,8 +1582,7 @@ public static partial class Utils
             var state = PlayerState.GetByPlayerId(pc.PlayerId);
             state.IsBlackOut = false; //ブラックアウト解除
         }
-        foreach (var roleClass in CustomRoleManager.AllActiveRoles.Values)
-            roleClass.AfterMeetingTasks();
+        RoleHooks.ForEachRole(roleClass => roleClass.AfterMeetingTasks(), "AfterMeetingTasks");
 
         Counselor.AfterMeetingTask();
         ChainShifterAddon.AfterMeetingTasks();

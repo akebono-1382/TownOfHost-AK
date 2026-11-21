@@ -128,16 +128,21 @@ public static partial class MeetingHudPatch
             VentilationSystemPatch.ClearVent();
             ChatUpdatePatch.DoBlockChat = true;
             GameStates.AlreadyDied |= !Utils.IsAllAlive;
-            Main.AllPlayerControls.Do(x => ReportDeadBodyPatch.WaitReport[x.PlayerId].Clear());
-            ChainShifterAddon.OnStartMeeting();
-            foreach (var tm in Main.AllAlivePlayerControls.Where(TownOfHostL.Core.PlayerTraits.RefreshesNameOnMeetingStart))
-                Utils.NotifyRoles(true, tm);
-            TargetDeadArrow.OnStartMeeting();
+            // ここで例外が出ると本編の MeetingHud.Start も Postfix の投票の管理も走らず、会議が終わらない
+            try
+            {
+                Main.AllPlayerControls.Do(x => { if (ReportDeadBodyPatch.WaitReport.TryGetValue(x.PlayerId, out var wait)) wait.Clear(); });
+                ChainShifterAddon.OnStartMeeting();
+                foreach (var tm in Main.AllAlivePlayerControls.Where(TownOfHostL.Core.PlayerTraits.RefreshesNameOnMeetingStart))
+                    Utils.NotifyRoles(true, tm);
+                TargetDeadArrow.OnStartMeeting();
 
-            Sending.OnStartMeeting();
+                Sending.OnStartMeeting();
 
-            // 前の会議で追放されたリヴェラーの役職を次の会議(今)から公開
-            Revealer.OnStartMeeting();
+                // 前の会議で追放されたリヴェラーの役職を次の会議(今)から公開
+                Revealer.OnStartMeeting();
+            }
+            catch (System.Exception ex) { Logger.Exception(ex, "MeetingHud.Start.Prefix"); }
         }
         public static void Postfix(MeetingHud __instance)
         {
@@ -194,7 +199,7 @@ public static partial class MeetingHudPatch
                 // 役職/属性テキストは NameText の外(PlayerIcon側)に置いているため、
                 // 以前のように NameText 自体をずらす必要はない
             }
-            CustomRoleManager.AllActiveRoles.Values.Do(role => role.OnStartMeeting());
+            RoleHooks.ForEachRole(role => role.OnStartMeeting(), "OnStartMeeting");
 
             List<string> messageList = new();
 

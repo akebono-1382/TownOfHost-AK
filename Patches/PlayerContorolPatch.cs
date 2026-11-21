@@ -687,10 +687,7 @@ partial class ReportDeadBodyPatch
 
         MushroomMixupDeterioratePatch.RestorName();
 
-        foreach (var role in CustomRoleManager.AllActiveRoles.Values)
-        {
-            role.OnReportDeadBody(__instance, target);
-        }
+        RoleHooks.ForEachRole(role => role.OnReportDeadBody(__instance, target), "OnReportDeadBody");
 
         // 役職変更表示のリセット
         Main.ShowChangeMainRole.Clear();

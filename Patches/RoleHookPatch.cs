@@ -58,9 +58,13 @@ public static class RoleHooks
             ForEachRole(r => r.OnIntroEnd(), "OnIntroEnd");
             foreach (var pc in Main.AllPlayerControls)
             {
-                (pc.GetRoleClass() as IUsePhantomButton)?.Init(pc);
-                // エアシップは湧き位置を選んだ時に呼ぶ
-                if (Main.NormalOptions.MapId != 4) pc.GetRoleClass()?.OnSpawn(true);
+                try
+                {
+                    (pc.GetRoleClass() as IUsePhantomButton)?.Init(pc);
+                    // エアシップは湧き位置を選んだ時に呼ぶ
+                    if (Main.NormalOptions.MapId != 4) pc.GetRoleClass()?.OnSpawn(true);
+                }
+                catch (System.Exception ex) { Logger.Exception(ex, "OnIntroEnd.OnSpawn"); }
             }
         }, 0.5f, "RoleHooks.OnIntroEnd");
     }
@@ -71,7 +75,12 @@ public static class RoleHooks
         if (!AmongUsClient.Instance.AmHost) return;
         if (!airship)
         {
-            foreach (var pc in Main.AllPlayerControls) pc.GetRoleClass()?.OnSpawn();
+            // 1 人の例外で、残りの人の湧きの処理と下の会議明けの役職の送り直しを飛ばさない
+            foreach (var pc in Main.AllPlayerControls)
+            {
+                try { pc.GetRoleClass()?.OnSpawn(); }
+                catch (System.Exception ex) { Logger.Exception(ex, "OnExileWrapUp.OnSpawn"); }
+            }
         }
         // 追放の演出の後、暗転対策の身代わりを戻してから送る (客の演出の締めより前に本人の画面のキル役を増やすと、AntiBlackout の見積もりが外れる)
         _ = new LateTask(() => AntiBlackout.RunAfterRevert(ApplyAfterMeetingRoles), airship ? 0.5f : 1.0f, "RoleHooks.AfterMeetingRole");
@@ -84,9 +93,13 @@ public static class RoleHooks
         foreach (var pc in Main.AllPlayerControls)
         {
             if (!pc.IsAlive()) continue;
-            if (pc.GetRoleClass()?.AfterMeetingRole is not RoleTypes role) continue;
-            if ((pc.GetRoleClass() as IUsePhantomButton)?.IsPhantomRole is false && role is RoleTypes.Phantom) role = RoleTypes.Impostor;
-            RoleView.Send(pc, pc, role);
+            try
+            {
+                if (pc.GetRoleClass()?.AfterMeetingRole is not RoleTypes role) continue;
+                if ((pc.GetRoleClass() as IUsePhantomButton)?.IsPhantomRole is false && role is RoleTypes.Phantom) role = RoleTypes.Impostor;
+                RoleView.Send(pc, pc, role);
+            }
+            catch (System.Exception ex) { Logger.Exception(ex, "AfterMeetingRole"); }
         }
     }
 

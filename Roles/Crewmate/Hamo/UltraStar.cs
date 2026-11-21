@@ -246,7 +246,11 @@ public sealed class UltraStar : RoleBase, IKiller, ISchrodingerCatOwner
 
     }
 
-    public override void OnReportDeadBody(PlayerControl _, NetworkedPlayerInfo __) => Player.RpcSetColor((byte)PlayerColor);
+    public override void OnReportDeadBody(PlayerControl _, NetworkedPlayerInfo __)
+    {
+        // 抜けた人の役職も残るので、破棄済みのプレイヤーには色を戻さない
+        if (Player != null) Player.RpcSetColor((byte)PlayerColor);
+    }
 
     public override bool ShowsRoleTo(PlayerControl seer, bool isMeeting) => CanseeAllplayer;
 

@@ -31,17 +31,25 @@ class EndGamePatch
             if (!GameStates.IsModHost) return;
             SummaryText = new();
             foreach (var id in PlayerState.AllPlayerStates.Keys)
-                SummaryText[id] = Utils.SummaryTexts(id, false);
+            {
+                try { SummaryText[id] = Utils.SummaryTexts(id, false); }
+                catch (Exception ex) { SummaryText[id] = $"{id}"; Logger.Exception(ex, "EndGamePatch.SummaryTexts"); }
+            }
 
             // 役職変更表示のリセット
             Main.ShowChangeMainRole.Clear();
 
+            // 記録の例外で、下の勝者の組み立てと設定・送信器の戻しを飛ばさない (飛ぶとロビーに試合の設定が残る)
+            static void Record(Action action, string tag)
+            {
+                try { action(); }
+                catch (Exception ex) { Logger.Exception(ex, tag); }
+            }
             // キルと試合の出来事を日ごとに並べた記録 (/l)
-            Modules.GameLog.Finish();
-            KillLog = Modules.GameLog.LastText;
-            if (AmongUsClient.Instance.AmHost) Modules.JoinGuard.OnGameEnd();
-            Modules.MeetingExtras.OnGameEnd();
-            Modules.PlayerStats.OnGameEnd();
+            Record(() => { Modules.GameLog.Finish(); KillLog = Modules.GameLog.LastText; }, "GameLog.Finish");
+            if (AmongUsClient.Instance.AmHost) Record(Modules.JoinGuard.OnGameEnd, "JoinGuard.OnGameEnd");
+            Record(Modules.MeetingExtras.OnGameEnd, "MeetingExtras.OnGameEnd");
+            Record(Modules.PlayerStats.OnGameEnd, "PlayerStats.OnGameEnd");
 
             if (Main.NormalOptions != null)
                 Main.NormalOptions.KillCooldown = Options.DefaultKillCooldown;
@@ -112,7 +120,18 @@ class EndGamePatch
         {
             Logger.Error($"EndGamePatch.Postfix で例外: {ex.Message}", "EndGamePatch");
             Logger.Exception(ex, "EndGamePatch");
-            // 途中で失敗しても役職インスタンスを次の試合に残さない
+            // 途中で失敗しても、試合の設定・役職ごとの設定の送信器・役職インスタンスを次の試合やロビーに残さない
+            if (AmongUsClient.Instance.AmHost)
+            {
+                try { Main.RealOptionsData?.Restore(GameOptionsManager.Instance.CurrentGameOptions); }
+                catch (Exception e) { Logger.Exception(e, "EndGamePatch.Restore"); }
+                try
+                {
+                    GameOptionsSender.AllSenders.Clear();
+                    GameOptionsSender.AllSenders.Add(new NormalGameOptionsSender());
+                }
+                catch (Exception e) { Logger.Exception(e, "EndGamePatch.AllSenders"); }
+            }
             try { CustomRoleManager.Dispose(); }
             catch (Exception e) { Logger.Exception(e, "EndGamePatch.Dispose"); }
         }

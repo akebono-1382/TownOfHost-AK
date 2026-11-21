@@ -118,9 +118,11 @@ public class MeetingVoteManager
         }
 
         bool doVote = true;
-        foreach (var role in CustomRoleManager.AllActiveRoles.Values)
+        foreach (var role in CustomRoleManager.AllActiveRoles.Values.ToArray())
         {
-            var (roleVoteFor, roleNumVotes, roleDoVote) = role.ModifyVote(voter, voteFor, isIntentional);
+            byte? roleVoteFor; int? roleNumVotes; bool roleDoVote;
+            try { (roleVoteFor, roleNumVotes, roleDoVote) = role.ModifyVote(voter, voteFor, isIntentional); }
+            catch (Exception ex) { Logger.Exception(ex, "ModifyVote"); continue; }
             if (roleVoteFor.HasValue)
             {
                 logger.Info($"{role.Player.GetNameWithRole()} が {voterPc.GetNameWithRole()} の投票先を {GetVoteName(roleVoteFor.Value)} に変更します");
@@ -165,7 +167,9 @@ public class MeetingVoteManager
 
         var logName = exiled == null ? (result.IsTie ? "同数" : "スキップ") : exiled.Object?.GetNameWithRole() ?? exiled.PlayerName;
         logger.Info($"追放者: {logName} で会議を終了します");
-        GameLog.OnVoteResult(exiled, result.IsTie);
+        // 記録や演出の例外で RpcVotingComplete まで届かないと、次のフレームでも同じ所で止まり会議が終わらない
+        try { GameLog.OnVoteResult(exiled, result.IsTie); }
+        catch (Exception ex) { Logger.Exception(ex, "GameLog.OnVoteResult"); }
 
         var states = new List<MeetingHud.VoterState>();
         foreach (var voteArea in meetingHud.playerStates)
@@ -188,7 +192,8 @@ public class MeetingVoteManager
             }
         }
 
-        MeetingExtras.OnVotes(states);
+        try { MeetingExtras.OnVotes(states); }
+        catch (Exception ex) { Logger.Exception(ex, "MeetingExtras.OnVotes"); }
         if (exiled != null) AntiBlackout.ExiledPlayerId = exiled.PlayerId;
         Logger.Info($"ExiledPlayerIdSet exiled: {exiled?.name}", "AntiBlackout");
         // SetIsDead は MeetingHud.OnDestroy (会議終了ログの直後) で呼ばれるため、
@@ -209,13 +214,21 @@ public class MeetingVoteManager
             meetingHud.RpcVotingComplete(states.ToArray(), exiled, result.IsTie,
                                          isOverruled && exiled != null, result.OverruleNonce);
         }
-        if (exiled != null)
+        try
         {
-            // 暗転対策で追放者を伏せて送った時も、本当の追放者で属性の処理を通す
-            Revealer.OnExiled(exiled.Object, showOnExileScreen: !AntiBlackout.OverrideExiledPlayer);
-            MeetingHudPatch.CheckForDeathOnExile(CustomDeathReason.Vote, exiled.PlayerId);
+            if (exiled != null)
+            {
+                // 暗転対策で追放者を伏せて送った時も、本当の追放者で属性の処理を通す
+                try { Revealer.OnExiled(exiled.Object, showOnExileScreen: !AntiBlackout.OverrideExiledPlayer); }
+                catch (Exception ex) { Logger.Exception(ex, "Revealer.OnExiled"); }
+                MeetingHudPatch.CheckForDeathOnExile(CustomDeathReason.Vote, exiled.PlayerId);
+            }
         }
-        Destroy();
+        finally
+        {
+            // 締めの電文はもう出ている。例外でも残さず、同じ会議でもう一度締めない
+            Destroy();
+        }
     }
     /// <see cref="AllVotes"/>から投票をカウントします
     /// <param name="applyVoteMode">スキップと同数投票の設定を適用するかどうか</param>

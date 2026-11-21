@@ -69,9 +69,11 @@ public abstract class InitializerAttribute<T> : InitializerAttributeBase
         {
             FindInitializers();
         }
+        // 1 つの初期化の例外で残りの初期化を飛ばさない (飛ぶと前の試合の状態が残り、開始の処理ごと止まって部屋を抜ける)
         foreach (var initializer in allInitializers)
         {
-            initializer.Invoke(null, null);
+            try { initializer.Invoke(null, null); }
+            catch (System.Exception ex) { Logger.Exception(ex.InnerException ?? ex, $"Initializer {initializer.DeclaringType?.Name}.{initializer.Name}"); }
         }
     }
 }

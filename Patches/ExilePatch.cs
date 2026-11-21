@@ -2,6 +2,7 @@
 using BepInEx.Unity.IL2CPP.Utils.Collections;
 using HarmonyLib;
 using System.Collections;
+using System.Linq;
 using TownOfHostL.Roles.AddOns.Common;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Crewmate;
@@ -77,11 +78,14 @@ namespace TownOfHostL
                     if (role != CustomRoles.AntiComplete || PlayerState.GetByPlayerId(exiled.PlayerId).DeathReason == CustomDeathReason.etc)
                         PlayerState.GetByPlayerId(exiled.PlayerId).DeathReason = CustomDeathReason.Vote;
 
-                    foreach (var roleClass in CustomRoleManager.AllActiveRoles.Values)
+                    // 途中で役職が替わっても回せるように写しで回し、1 人の役職の例外で後ろの追放の締めを止めない
+                    foreach (var roleClass in CustomRoleManager.AllActiveRoles.Values.ToArray())
                     {
-                        roleClass.OnExileWrapUp(exiled, ref DecidedWinner);
+                        try { roleClass.OnExileWrapUp(exiled, ref DecidedWinner); }
+                        catch (System.Exception ex) { Logger.Exception(ex, "OnExileWrapUp"); }
                     }
-                    Sending.OnExileWrapUp(exiled.Object);
+                    try { Sending.OnExileWrapUp(exiled.Object); }
+                    catch (System.Exception ex) { Logger.Exception(ex, "Sending.OnExileWrapUp"); }
 
                     if (CustomWinnerHolder.WinnerTeam != CustomWinner.Terrorist) CustomRoleManager.SetDeadByExile(exiled.PlayerId);
                 }
@@ -158,24 +162,27 @@ namespace TownOfHostL
                 // 暗転対策の身代わりを戻すまでの間は、その後まで待たせる
                 _ = new LateTask(() => AntiBlackout.RunAfterRevert(() =>
                 {
-                    Main.AfterMeetingDeathPlayers.Do(x =>
+                    // 1 人分の例外で残りの人を死なせ損ね、記録が次の会議まで残って二度目の死を送らないように、1 人ずつ囲う
+                    foreach (var (playerId, reason) in Main.AfterMeetingDeathPlayers.ToArray())
                     {
-                        (byte playerId, CustomDeathReason reason) = (x.Key, x.Value);
-
-                        var player = Utils.GetPlayerById(playerId);
-                        var requireResetCam = player?.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true;
-                        var state = PlayerState.GetByPlayerId(playerId);
-                        Logger.Info($"{player.GetNameWithRole()}を{reason}で死亡させました", "AfterMeetingDeath");
-                        state.DeathReason = reason;
-                        player?.RpcExileV3();
-                        state.SetDead();
-                        if (reason == CustomDeathReason.Suicide)
-                            player?.SetRealKiller(player, true);
-                        if (requireResetCam)
-                            player?.ResetPlayerCam(1f);
-                        // エクスキューショナー・弁護士・ジャッカルは SetDead の「誰かが死んだ」の知らせで動く
-                        player?.GetRoleClass()?.OnAfterMeetingDeath(reason);
-                    });
+                        try
+                        {
+                            var player = Utils.GetPlayerById(playerId);
+                            var requireResetCam = player?.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true;
+                            var state = PlayerState.GetByPlayerId(playerId);
+                            Logger.Info($"{player.GetNameWithRole()}を{reason}で死亡させました", "AfterMeetingDeath");
+                            if (state != null) state.DeathReason = reason;
+                            player?.RpcExileV3();
+                            state?.SetDead();
+                            if (reason == CustomDeathReason.Suicide)
+                                player?.SetRealKiller(player, true);
+                            if (requireResetCam)
+                                player?.ResetPlayerCam(1f);
+                            // エクスキューショナー・弁護士・ジャッカルは SetDead の「誰かが死んだ」の知らせで動く
+                            player?.GetRoleClass()?.OnAfterMeetingDeath(reason);
+                        }
+                        catch (System.Exception ex) { Logger.Exception(ex, "AfterMeetingDeath"); }
+                    }
                     Main.AfterMeetingDeathPlayers.Clear();
                 }), 0.6f, "AfterMeetingDeathPlayers Task");
                                
