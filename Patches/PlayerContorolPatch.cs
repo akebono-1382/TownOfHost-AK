@@ -441,6 +441,12 @@ public static class PlayerControlCheckVanishPatch
 
         var phantom = __instance;
         Logger.Info($"{phantom.GetNameWithRole()} : CheckVanishStart", "CheckVanish");
+        // 死んだ後や会議・追放の演出の間に届いた要求では、役職の能力 (ワンクリックのボタンなど) を起こさず、消えさせもしない
+        if (!phantom.IsAlive() || MeetingHud.Instance || MeetingStates.MeetingCalled || ExileController.Instance || AntiBlackout.IsCached)
+        {
+            Logger.Info($"{phantom.GetNameWithRole()} : 死後か会議の間なので捨てる", "CheckVanish");
+            return false;
+        }
 
         // 役職の処理
         var role = phantom.GetRoleClass();
@@ -807,15 +813,27 @@ class CoEnterVentPatch
         if (user == null) return;
         // 誰かがベントに入った時の処理・今いるベントの記録
         RoleHooks.NowVentId[user.PlayerId] = (byte)id;
+        // 死んだ後や会議・追放の演出の間に届いたベントの要求では、役職の能力 (放火魔の焼殺・回数の消費・会議を開くベントなど) を起こさない
+        if (!user.IsAlive() || MeetingHud.Instance || MeetingStates.MeetingCalled || ExileController.Instance || AntiBlackout.IsCached)
+        {
+            Logger.Info($"{user.GetNameWithRole()}: 死後か会議の間のベントなので、役職の能力を起こさない", "EnterVent");
+            return;
+        }
         foreach (var vent in CustomRoleManager.OnEnterVentOthers.ToArray())
         {
             try { vent(physics, id); }
             catch (System.Exception ex) { Logger.Exception(ex, "OnEnterVentOthers"); }
         }
-        RoleHooks.OnEnterVent(physics, id);
-
-        bool roleAllowsVent = user.GetRoleClass()?.OnEnterVent(physics, id) ?? false;
-        bool ventTaskAllows = VentEnterTask.OnEnterVent(physics, id);
+        // 1 つの役職の例外で、本編のベントの処理と下の押し出しを止めない (止まると客がベントに入ったまま、ホストは入っていない扱いになる)
+        bool roleAllowsVent = false, ventTaskAllows = false;
+        try
+        {
+            RoleHooks.OnEnterVent(physics, id);
+            roleAllowsVent = user.GetRoleClass()?.OnEnterVent(physics, id) ?? false;
+        }
+        catch (System.Exception ex) { Logger.Exception(ex, "OnEnterVent"); }
+        try { ventTaskAllows = VentEnterTask.OnEnterVent(physics, id); }
+        catch (System.Exception ex) { Logger.Exception(ex, "VentEnterTask.OnEnterVent"); }
 
         if (!roleAllowsVent &&
             !ventTaskAllows &&
@@ -823,11 +841,11 @@ class CoEnterVentPatch
             user.Data.Role.Role != RoleTypes.Engineer &&
             !user.CanUseImpostorVentButton())
         {
-            _ = new LateTask(() => { physics.RpcBootFromVent(id); }, 0.5f, "Cancel Vent");
+            _ = new LateTask(() => { if (physics != null && GameStates.IsInTask) physics.RpcBootFromVent(id); }, 0.5f, "Cancel Vent");
         }
         else if (user.GetCustomRole().IsCCCatRoles() && !CatchCat.CatPlayer.CanUseVent(user))
         {
-            _ = new LateTask(() => { physics.RpcBootFromVent(id); }, 0.5f, "Cancel Vent");
+            _ = new LateTask(() => { if (physics != null && GameStates.IsInTask) physics.RpcBootFromVent(id); }, 0.5f, "Cancel Vent");
         }
     }
 }
