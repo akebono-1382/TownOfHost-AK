@@ -68,7 +68,7 @@ public static class WinTakeOvers
     public static bool RunBaseTeamWin(ref GameOverReason reason, CustomWinner team)
     {
         foreach (var takeOver in Get(WinTakeOverStage.BaseTeamWin))
-            if (takeOver.Check(ref reason, team)) return true;
+            if (SafeCheck(takeOver, ref reason, team)) return true;
         return false;
     }
 
@@ -78,7 +78,7 @@ public static class WinTakeOvers
         var team = CustomWinnerHolder.WinnerTeam;
         if (team is CustomWinner.Default or CustomWinner.Draw) return;
         if (reason == GameOverReason.ImpostorsBySabotage && team is not CustomWinner.None) return;
-        foreach (var takeOver in Get(WinTakeOverStage.OnGameEnd)) takeOver.Check(ref reason, team);
+        foreach (var takeOver in Get(WinTakeOverStage.OnGameEnd)) SafeCheck(takeOver, ref reason, team);
     }
 
     /// <summary>単独勝利の上書きの後。廃村・妨害での勝ちでは呼ばない</summary>
@@ -86,6 +86,13 @@ public static class WinTakeOvers
     {
         if (CustomWinnerHolder.WinnerTeam is CustomWinner.Draw) return;
         if (reason == GameOverReason.ImpostorsBySabotage) return;
-        foreach (var takeOver in Get(WinTakeOverStage.AfterSoloWins)) takeOver.Check(ref reason, originalTeam);
+        foreach (var takeOver in Get(WinTakeOverStage.AfterSoloWins)) SafeCheck(takeOver, ref reason, originalTeam);
+    }
+
+    // 1 つの乗っ取りの例外で、勝者の決め方の残りと試合の終わりを止めない
+    private static bool SafeCheck(WinTakeOver takeOver, ref GameOverReason reason, CustomWinner team)
+    {
+        try { return takeOver.Check(ref reason, team); }
+        catch (System.Exception ex) { Logger.Exception(ex, "WinTakeOver"); return false; }
     }
 }

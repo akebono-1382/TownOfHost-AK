@@ -47,6 +47,8 @@ public static partial class CustomWinnerHolder
     /// </summary>
     public static bool ResetAndSetAndChWinner(CustomWinner winner, byte playerId, bool AddWin = true, CustomRoles hantrole = CustomRoles.NotAssigned)
     {
+        // 終わりの送信を始めた後は勝者を変えない (幽霊の役職は元の勝者で配っていて、結果の画面と記録だけが食い違う)
+        if (GameEndChecker.EndingStarted) return false;
         GameStates.CalledMeeting = false;
         var priority = SoloWinOption.AllData.TryGetValue(hantrole is CustomRoles.NotAssigned ? (CustomRoles)winner : hantrole, out var data)
             ? data.OptionWin.GetInt() : 0;

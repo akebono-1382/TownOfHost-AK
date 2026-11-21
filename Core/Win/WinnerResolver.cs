@@ -117,17 +117,26 @@ public static class WinnerResolver
     private static void ApplySoloWins(Context ctx, SoloWinTier tier)
     {
         var triggered = false;
+        // 1 人分の判定の例外で、勝者を決め切らないまま終わり (勝者が空) へ進まないよう、1 人ずつ囲う
         foreach (var pc in Main.AllPlayerControls)
         {
-            if (pc.GetRoleClass() is ISoloWinner soloWinner && soloWinner.SoloWinTier == tier
-                && soloWinner.CheckSoloWin(ctx, out var winner))
-                AddSoloWinner(ctx, pc, winner, ref triggered);
+            try
+            {
+                if (pc.GetRoleClass() is ISoloWinner soloWinner && soloWinner.SoloWinTier == tier
+                    && soloWinner.CheckSoloWin(ctx, out var winner))
+                    AddSoloWinner(ctx, pc, winner, ref triggered);
+            }
+            catch (Exception ex) { Logger.Exception(ex, "CheckSoloWin"); }
 
             foreach (var subRole in pc.GetCustomSubRoles())
             {
-                var win = AddOnList.Get(subRole)?.Win;
-                if (win?.CheckSoloWin != null && win.SoloWinTier == tier && win.CheckSoloWin(ctx, pc))
-                    AddSoloWinner(ctx, pc, win.SoloWinner, ref triggered);
+                try
+                {
+                    var win = AddOnList.Get(subRole)?.Win;
+                    if (win?.CheckSoloWin != null && win.SoloWinTier == tier && win.CheckSoloWin(ctx, pc))
+                        AddSoloWinner(ctx, pc, win.SoloWinner, ref triggered);
+                }
+                catch (Exception ex) { Logger.Exception(ex, "CheckSoloWin.AddOn"); }
             }
         }
     }

@@ -72,6 +72,8 @@ namespace TownOfHostL
         /// <summary><para>既存の値をすべて削除してから、WinnerTeamに値を代入します。</para></summary>
         public static void ResetAndSetWinner(CustomWinner winner)
         {
+            // 終わりの送信を始めた後は勝者を変えない (幽霊の役職は元の勝者で配っていて、結果の画面と記録だけが食い違う)
+            if (GameEndChecker.EndingStarted) return;
             Reset();
             WinnerTeam = winner;
             winners.Add(winner);

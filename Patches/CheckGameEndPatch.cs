@@ -33,6 +33,12 @@ namespace TownOfHostL
                     predicate = null;
                     try { ShipStatus.Instance.enabled = false; } catch { }
                     var reason = lastReason;
+                    // 勝者の決め方の途中で落ちた時は、勝者の名簿が空のまま終わらないよう、決め方をもう 1 度だけ通す
+                    if (CustomWinnerHolder.WinnerIds.Count == 0)
+                    {
+                        try { reason = WinnerResolver.Resolve(reason); }
+                        catch (System.Exception ex2) { Logger.Exception(ex2, "GameEndChecker.Resolve"); }
+                    }
                     if (CustomWinnerHolder.WinnerTeam != CustomWinner.Crewmate
                         && (reason.Equals(GameOverReason.CrewmatesByTask) || reason.Equals(GameOverReason.CrewmatesByVote)))
                         reason = GameOverReason.ImpostorsByVote;
@@ -85,6 +91,12 @@ namespace TownOfHostL
         public static void ResetEnding() => EndingStarted = false;
         public static void StartEndGame(GameOverReason reason)
         {
+            // 終わりの送信は 1 試合に 1 度 (重ねると、全員への幽霊の役職と終わりの電文が二重に出る)
+            if (EndingStarted)
+            {
+                Logger.Info($"終わりの送信は始まっているので、{reason} の終わりは重ねない", "GameEndChecker");
+                return;
+            }
             EndingStarted = true;
             AmongUsClient.Instance.StartCoroutine(CoEndGame(AmongUsClient.Instance, reason).WrapToIl2Cpp());
         }
