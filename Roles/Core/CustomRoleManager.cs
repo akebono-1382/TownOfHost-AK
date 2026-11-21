@@ -190,8 +190,14 @@ public static partial class CustomRoleManager
         {
             //参照出来たら削除
             CheckMurderInfos.Remove(appearanceKiller.PlayerId);
+            // 積んだキルが死まで届かなかった時の残り。別の的の情報で役職の処理を回さない
+            if (info.AppearanceTarget != appearanceTarget)
+            {
+                Logger.Info($"古い MurderInfo を捨てる: {info.AppearanceTarget?.PlayerId} ≠ {appearanceTarget?.PlayerId}", "OnMurderPlayer");
+                info = null;
+            }
         }
-        else
+        if (info == null)
         {
             //CheckMurderを経由していない場合はappearanceで処理
             info = new MurderInfo(appearanceKiller, appearanceTarget, appearanceKiller, appearanceTarget);
@@ -339,13 +345,8 @@ public static partial class CustomRoleManager
             if (roleClass is TownOfHostL.Roles.Core.Interfaces.ISelfVoter selfVoter) selfVoter.AddSelfVoter(player);
             if (roleClass is TownOfHostL.Roles.Core.Interfaces.IRoomTasker roomTasker) roomTasker.AddRoomTaker(player.PlayerId);
         }
-        //AddonAdd
-        {
-            foreach (var subRole in player.GetCustomSubRoles())
-            {
-                SubRoleAdd(player.PlayerId, subRole);
-            }
-        }
+        // 属性の OnAdd は付けた時 (PlayerState.SetSubRole) に走っている。役職を替えるたびに走らせ直すと、
+        // 使い切った属性 (ガーディングの守りなど) が戻る
         if (player.Data.Role.Role == RoleTypes.Shapeshifter)
         {
             Main.CheckShapeshift.TryAdd(player.PlayerId, false);

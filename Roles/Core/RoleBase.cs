@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using UnityEngine;
 using Hazel;
@@ -62,8 +62,11 @@ public abstract class RoleBase : IDisposable
 #pragma warning disable CA1816
     public void Dispose()
     {
-        OnDestroy();
-        CustomRoleManager.AllActiveRoles.Remove(Player.PlayerId);
+        // 後始末の例外で登録が残ると、同じ人の次の役職が作れなくなる (AllActiveRoles.Add が重複で落ちる)
+        var playerId = Player.PlayerId;
+        try { OnDestroy(); }
+        catch (Exception ex) { Logger.Exception(ex, $"{GetType().Name}.OnDestroy {playerId}"); }
+        CustomRoleManager.AllActiveRoles.Remove(playerId);
         Player = null;
     }
 #pragma warning restore CA1816
