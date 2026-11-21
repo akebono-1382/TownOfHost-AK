@@ -15,11 +15,20 @@ using InnerNet;
 
             public static void SendAllGameOptions()
             {
-                AllSenders.RemoveAll(s => !s.AmValid());
-                foreach (var sender in AllSenders)
+                AllSenders.RemoveAll(static s =>
                 {
-                    if (sender.IsDirty) sender.SendGameOptions();
-                    sender.IsDirty = false;
+                    try { return !s.AmValid(); }
+                    catch (System.Exception ex) { Logger.Error($"AmValid: {ex.Message}", nameof(GameOptionsSender)); return true; }
+                });
+                // 1 人分の組み立ての例外で、後ろの人 (ホストは最後) の設定を止めない。
+                // 例外の人も dirty を下ろす (残すと 0.2 秒ごとに同じ例外を繰り返す)
+                for (int i = 0; i < AllSenders.Count; i++)
+                {
+                    var sender = AllSenders[i];
+                    if (!sender.IsDirty) continue;
+                    try { sender.SendGameOptions(); }
+                    catch (System.Exception ex) { Logger.Error($"SendGameOptions ({sender.Describe()}): {ex}", nameof(GameOptionsSender)); }
+                    finally { sender.IsDirty = false; }
                 }
             }
             #endregion
@@ -31,6 +40,10 @@ using InnerNet;
 
             /// <summary>送る直前のバイト列を見て、送るかどうかを決める (同じ物を送り直さないなど)。</summary>
             protected virtual bool ShouldSend(Il2CppStructArray<byte> optionArray) => true;
+            /// <summary>送り終えた設定のバイト列 (送る途中で例外になった時は呼ばない)。</summary>
+            protected virtual void OnSent(Il2CppStructArray<byte> optionArray) { }
+            /// <summary>記録に出す送り先の名前</summary>
+            public virtual string Describe() => GetType().Name;
 
             /// <summary>組み立て済みの設定を書き出して送る。</summary>
             protected void SendBuiltOptions(IGameOptions opt)
@@ -73,7 +86,11 @@ using InnerNet;
                     }
                     var byteArray = new Il2CppStructArray<byte>(writer.Length - 1);
                     Buffer.BlockCopy(writer.Buffer.Cast<Array>(), 1, byteArray.Cast<Array>(), 0, writer.Length - 1);
-                    if (ShouldSend(byteArray)) SendOptionsArray(byteArray);
+                    if (ShouldSend(byteArray))
+                    {
+                        SendOptionsArray(byteArray);
+                        OnSent(byteArray);
+                    }
                 }
                 catch (System.Exception ex)
                 {

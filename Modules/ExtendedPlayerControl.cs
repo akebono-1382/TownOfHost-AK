@@ -225,6 +225,7 @@ static partial class ExtendedPlayerControl
     /// キルクールを time 秒から始め直す (time が負なら役職のキルクール)。守護の演出 (target、省略で自分) でクールを始め、1 秒後に設定を戻す。
     /// ForceProtect はキルボタンを使えない時も行う。delay が false なら守護の演出をすぐ送る
     /// </summary>
+    private static readonly Dictionary<byte, int> killCooldownSeq = new();
     public static void SetKillCooldown(this PlayerControl player, float time = -1f, bool ForceProtect = false, PlayerControl target = null, bool delay = true)
     {
         if (player == null) return;
@@ -247,6 +248,9 @@ static partial class ExtendedPlayerControl
 
         Main.AllPlayerKillCooldown[player.PlayerId] = newCooldown * 2f;
         player.SyncSettings();
+        // 1 秒後の戻しが、その間に始め直した次の呼びの値 (2 倍のクール) を守護の演出より先に消さないよう、最後の呼びの戻しだけを走らせる
+        var playerId = player.PlayerId;
+        int seq = killCooldownSeq[playerId] = (killCooldownSeq.TryGetValue(playerId, out var last) ? last : 0) + 1;
 
         void Protect()
         {
@@ -256,6 +260,7 @@ static partial class ExtendedPlayerControl
             _ = new LateTask(() =>
             {
                 if (player == null) return;
+                if (killCooldownSeq.TryGetValue(playerId, out var now) && now != seq) return;
                 player.ResetKillCooldown();
                 player.SyncSettings();
             }, 1f, "SetKillCooldown_Reset");

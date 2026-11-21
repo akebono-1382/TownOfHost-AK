@@ -73,15 +73,22 @@ namespace TownOfHostL.Modules
                 for (int i = 0; i < n; i++)
                     if (lastSent[i] != optionArray[i]) { same = false; break; }
             }
-            if (same) return false;
+            return !same;
+        }
+
+        // 送り終えてから覚える (送る途中で例外になった物を「送った」とみなすと、同じ内容を二度と送らない)
+        protected override void OnSent(Il2CppStructArray<byte> optionArray)
+        {
+            int n = optionArray.Length;
             if (GameStates.IsMeeting) lastSent = null;
             else
             {
                 if (lastSent == null || lastSent.Length != n) lastSent = new byte[n];
                 for (int i = 0; i < n; i++) lastSent[i] = optionArray[i];
             }
-            return true;
         }
+
+        public override string Describe() => player != null ? $"{player.PlayerId}" : "null";
 
         public override void SendOptionsArray(Il2CppStructArray<byte> optionArray)
         {
@@ -115,16 +122,8 @@ namespace TownOfHostL.Modules
             if (Roles.Impostor.NormalViper.RoleInfo.IsEnable)
                 AURoleOptions.ViperDissolveTime = Roles.Impostor.NormalViper.DissolveTime;
             var state = PlayerState.GetByPlayerId(player.PlayerId);
-            if (state.IsBlackOut)
-            {
-                opt.SetFloat(FloatOptionNames.CrewLightMod, 0f);
-                opt.SetFloat(FloatOptionNames.ImpostorLightMod, 0f);
-            }
-            else
-            {
-                opt.SetFloat(FloatOptionNames.CrewLightMod, Main.DefaultCrewmateVision);
-                opt.SetFloat(FloatOptionNames.ImpostorLightMod, Main.DefaultImpostorVision);
-            }
+            opt.SetFloat(FloatOptionNames.CrewLightMod, Main.DefaultCrewmateVision);
+            opt.SetFloat(FloatOptionNames.ImpostorLightMod, Main.DefaultImpostorVision);
 
             CustomRoles role = player.GetCustomRole();
             switch (role.GetCustomRoleTypes())
@@ -185,6 +184,12 @@ namespace TownOfHostL.Modules
                     AURoleOptions.PlayerSpeedMod = Main.MinSpeed;
                 }
             }
+            // 暗転 (キルの閃光・通報・ステルス) は、視界を書き換える役職や属性 (ライター・ブラインダー・サングラスなど) より後に書く
+            if (state.IsBlackOut)
+            {
+                opt.SetFloat(FloatOptionNames.CrewLightMod, 0f);
+                opt.SetFloat(FloatOptionNames.ImpostorLightMod, 0f);
+            }
             MeetingTimeManager.ApplyGameOptions(opt);
 
             AURoleOptions.ShapeshifterCooldown = Mathf.Max(1f, AURoleOptions.ShapeshifterCooldown);
@@ -195,7 +200,7 @@ namespace TownOfHostL.Modules
 
         public override bool AmValid()
         {
-            return base.AmValid() && player != null && !player.Data.Disconnected && Main.RealOptionsData != null;
+            return base.AmValid() && player != null && player.Data != null && !player.Data.Disconnected && Main.RealOptionsData != null;
         }
     }
 }
