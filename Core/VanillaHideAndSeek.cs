@@ -209,6 +209,7 @@ public static class VanillaHideAndSeek
         else if (spawnMode == GameModes.HideNSeek) Say(GetString("ModeSwitch.DoneHns"));
     }
 
+    private static readonly System.Collections.Generic.Dictionary<byte, int> clientIdsAtSuspend = new();
     private static void Suspend()
     {
         if (state != State.Live) return;
@@ -222,6 +223,10 @@ public static class VanillaHideAndSeek
             }
         }
         catch (Exception ex) { Logger.Warn($"名前を戻せませんでした: {ex.Message}", "VanillaHideAndSeek"); }
+        // 休んでいる間に抜けて入れ替わった人を戻りで見分けるため、番号ごとの客の ID を控える
+        clientIdsAtSuspend.Clear();
+        foreach (var pc in PlayerControl.AllPlayerControls)
+            if (pc && pc.Data) clientIdsAtSuspend[pc.PlayerId] = pc.GetClientId();
         // 溜まっているのは通常モードの処理なので、その束を外した後の本編のかくれんぼでは走らせずに捨てる
         if (LateTask.Tasks.Count > 0) Logger.Info($"休む前に LateTask を {LateTask.Tasks.Count} 件捨てます", "VanillaHideAndSeek");
         LateTask.Tasks.Clear();
@@ -253,16 +258,19 @@ public static class VanillaHideAndSeek
         }
         Players.Invalidate();
         if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost) return;
-        // 休んでいる間は版の電文を受けず、抜けた人の版も消していない (空いた番号に入った別人が前の人の版を持つ)。
-        // 版の記録を作り直し、客に版を送り直してもらう
+        // 休んでいる間は抜けた人の版を消していない。休む前と別の人がいる番号 (空いた番号に入った別人) の版を捨てる
         try
         {
-            Main.playerVersion = new();
-            RPC.RpcVersionCheck();
-            var writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.RequestRetryVersionCheck, Hazel.SendOption.Reliable, -1);
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            foreach (var id in System.Linq.Enumerable.ToArray(Main.playerVersion.Keys))
+            {
+                var pc = Utils.GetPlayerById(id);
+                int clientId = pc != null ? pc.GetClientId() : -1;
+                if (clientId < 0 || !clientIdsAtSuspend.TryGetValue(id, out var before) || before != clientId)
+                    Main.playerVersion.Remove(id);
+            }
         }
-        catch (Exception ex) { Logger.Warn($"版の確認をやり直せませんでした: {ex.Message}", "VanillaHideAndSeek"); }
+        catch (Exception ex) { Logger.Warn($"版の記録を確かめられませんでした: {ex.Message}", "VanillaHideAndSeek"); }
+        clientIdsAtSuspend.Clear();
         // 休んでいる間に入ってきた人は、参加の時の確認 (BAN・名前) を通っていない
         foreach (var client in AmongUsClient.Instance.allClients)
         {

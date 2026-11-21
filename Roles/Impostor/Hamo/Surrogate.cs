@@ -148,7 +148,7 @@ public static class SurrogateSystem
             if (proxy == null || !proxy.IsAlive() || !proxy.Is(CustomRoles.MadProxy)) return;
             if (!TransformSerial.TryGetValue(proxy.PlayerId, out var now) || now != serial) return;
             // 会議や追放の演出の間は変身の電文を送らず、明けてから戻す
-            if (GameStates.IsMeeting || GameStates.ExiledAnimate)
+            if (GameStates.IsMeeting || GameStates.ExiledAnimate || GameStates.CalledMeeting || AntiBlackout.IsCached || AntiBlackout.IsRevertPending)
             {
                 _ = new LateTask(Revert, 1f, "MadProxyTransformEnd");
                 return;
