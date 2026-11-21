@@ -61,7 +61,9 @@ public sealed class NiceWorkaholic : RoleBase
         if (!IsTaskFinished) return true;
         if (!CanWinAtDeath && !Player.IsAlive()) return true;
 
-        CustomWinnerHolder.WinnerTeam = CustomWinner.Crewmate;
+        // 終わりを送り始めた後 (ほかの勝ちが先に決まった) は勝者を上書きしない
+        if (GameEndChecker.EndingStarted) return true;
+        CustomWinnerHolder.ResetAndSetWinner(CustomWinner.Crewmate);
         foreach (var pc in Main.AllPlayerControls)
         {
             if (pc.Is(CustomRoleTypes.Crewmate))
@@ -72,9 +74,8 @@ public sealed class NiceWorkaholic : RoleBase
             $"{Player.ColoredName()} が全タスク完了！クルー陣営勝利！");
 
         GameManager.Instance.enabled = false;
-        _ = new LateTask(() =>
-            GameManager.Instance.RpcEndGame(GameOverReason.CrewmatesByTask, false),
-            0.5f, "NiceWorkaholic.EndGame");
+        // 試合の終わりの流れ (結果の画面に向けた幽霊の役職の配りと蘇生) を通してから終わりを送る
+        GameEndChecker.StartEndGame(GameOverReason.CrewmatesByTask);
 
         return true;
     }
