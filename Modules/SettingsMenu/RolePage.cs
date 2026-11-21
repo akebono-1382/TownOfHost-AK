@@ -130,6 +130,12 @@ internal static class RolePage
         Browser.RefreshFromOutside();
     }
 
+    // カードの見せ方 (手元の設定) を変えた時: 開いていれば組み直す
+    public static void RebuildCards()
+    {
+        if (Built) Browser.Rebuild();
+    }
+
     public static void Tick()
     {
         if (!Built) return;

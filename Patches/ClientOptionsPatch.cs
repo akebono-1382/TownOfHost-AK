@@ -56,7 +56,7 @@ namespace TownOfHostL
             }
             if (CompactCrewMeter == null || CompactCrewMeter.ToggleButton == null)
             {
-                CompactCrewMeter = ClientOptionItem.Create("CompactCrewMeter", Main.CompactCrewMeter, __instance);
+                CompactCrewMeter = ClientOptionItem.Create("CompactCrewMeter", Main.CompactCrewMeter, __instance, TownOfHostL.SettingsUI.RolePage.RebuildCards);
             }
             if (Modules.Watchdog.IsSupported && (CrashWatchdog == null || CrashWatchdog.ToggleButton == null))
             {
