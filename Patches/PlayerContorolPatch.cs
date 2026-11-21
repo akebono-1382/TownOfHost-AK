@@ -838,9 +838,18 @@ class SetNamePatch
 [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.CompleteTask))]
 class PlayerControlCompleteTaskPatch
 {
-    public static bool Prefix(PlayerControl __instance)
+    public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] uint idx)
     {
         var pc = __instance;
+
+        // 済んだタスク・持っていないタスクの完了は本編も数えない。こちらの数え (役ごとのタスク数) も進めない。
+        // 同じ完了を重ねて送られると、タスクを終えずに役のタスク完了 (単独勝利や能力の解放) が立つ
+        var taskInfo = pc.Data?.FindTaskById(idx);
+        if (taskInfo == null || taskInfo.Complete)
+        {
+            Logger.Warn($"{pc.GetNameWithRole()}: 済んだか持っていないタスクの完了 (id:{idx}) は数えない", "CompleteTask");
+            return true;
+        }
 
         Logger.Info($"TaskComplete:{pc.GetNameWithRole()}", "CompleteTask");
         var taskState = pc.GetPlayerTaskState();
