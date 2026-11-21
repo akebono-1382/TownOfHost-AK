@@ -111,7 +111,8 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
             {
                 if (otherpc.PlayerId == player.PlayerId) continue;
 
-                if (Vector2.Distance(mypos, otherpc.GetTruePosition()) < MeterDistance)
+                // 追放の演出の間は位置が止まったままなので減らさない
+                if (!ExileController.Instance && Vector2.Distance(mypos, otherpc.GetTruePosition()) < MeterDistance)
                 {
                     NowMeter -= Time.fixedDeltaTime;
                     break;

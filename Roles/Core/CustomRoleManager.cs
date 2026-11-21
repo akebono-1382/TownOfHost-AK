@@ -256,6 +256,7 @@ public static partial class CustomRoleManager
     /// </summary>
     public static HashSet<Action<MurderInfo>> OnMurderPlayerOthers = new();
 
+    private static Action<PlayerControl>[] fixedUpdateBuffer = new Action<PlayerControl>[8];
     public static void OnFixedUpdate(PlayerControl player)
     {
         if (GameStates.IsInTask)
@@ -263,9 +264,14 @@ public static partial class CustomRoleManager
             player.GetRoleClass()?.OnFixedUpdate(player);
             //その他視点処理があれば実行
             // 1 つの例外で、残りと FixedUpdate の後ろ (通報の待ち・設定の定期送信など) を止めない
-            foreach (var onFixedUpdate in OnFixedUpdateOthers)
+            // 回している途中の役職替えで新しい役職が登録を足すことがあるので、写しで回す (毎フレーム通るので写しの入れ物は使い回す)
+            int n = OnFixedUpdateOthers.Count;
+            if (n == 0) return;
+            if (fixedUpdateBuffer.Length < n) fixedUpdateBuffer = new Action<PlayerControl>[n];
+            OnFixedUpdateOthers.CopyTo(fixedUpdateBuffer);
+            for (int i = 0; i < n; i++)
             {
-                try { onFixedUpdate(player); }
+                try { fixedUpdateBuffer[i](player); }
                 catch (Exception ex) { Logger.Exception(ex, "OnFixedUpdateOthers"); }
             }
         }

@@ -181,6 +181,12 @@ namespace TownOfHostL.Roles.Neutral
         }
         public static void CheckPromoted()
         {
+            // 死の知らせから 0.5 秒の間に試合が動いても、ほかのジャッカルが生きていれば昇格させない (会議明けの確認と同じ条件)
+            if (Main.AllAlivePlayerControls.Any(pc => pc.Is(CustomRoles.Jackal)))
+            {
+                Logger.Info($"NotPromote jackal alive", "Jackal");
+                return;
+            }
             if (Main.AllAlivePlayerControls.Any(pc => pc.Is(CustomRoles.JSidekick) &&
             ((JSidekick)pc.GetRoleClass()).Promoted))
             {

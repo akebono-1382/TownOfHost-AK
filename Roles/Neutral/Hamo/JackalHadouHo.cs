@@ -870,9 +870,14 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
 
 
+    /// <summary>撃つたび・状態を戻すたびに進める。会議で戻した後に、前の発射の後処理 (当たらなかった時の自爆など) を走らせない</summary>
+    int fireGeneration;
+
     private void ResetAllState()
 
     {
+
+        fireGeneration++;
 
         IsCharging = false;
 
@@ -1131,7 +1136,8 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         ApplyBeamHit();
 
-        _ = new LateTask(() => FinishBeam(), 3f, "JHHBeamEnd");
+        var generation = ++fireGeneration;
+        _ = new LateTask(() => { if (generation == fireGeneration) FinishBeam(); }, 3f, "JHHBeamEnd");
 
     }
 
@@ -1179,7 +1185,8 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
         ApplySuperBeamHit();
 
-        _ = new LateTask(() => FinishBeam(), 3f, "JHHSuperBeamEnd");
+        var generation = ++fireGeneration;
+        _ = new LateTask(() => { if (generation == fireGeneration) FinishBeam(); }, 3f, "JHHSuperBeamEnd");
 
     }
 

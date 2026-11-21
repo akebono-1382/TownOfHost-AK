@@ -103,7 +103,8 @@ public sealed class Evolver : RoleBase, IImpostor, IUsePhantomButton
 
     {
 
-        CustomRoleManager.MarkOthers.Remove(GetMarkOthers);
+        // GetMarkOthers は static なので登録は 1 つに畳まれる。最後の 1 人が消える時だけ外す (途中で 1 人だけ役職が替わった時に、残りの印まで消さない)
+        if (!CustomRoleManager.AllActiveRoles.Values.Any(r => r is Evolver && r != this)) CustomRoleManager.MarkOthers.Remove(GetMarkOthers);
 
     }
 

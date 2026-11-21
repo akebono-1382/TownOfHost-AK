@@ -232,7 +232,18 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
                 var dummyshapetarget = Main.AllPlayerControls.Where(pc => pc.PlayerId != Player.PlayerId).OrderBy(x => Guid.NewGuid()).FirstOrDefault(PlayerControl.LocalPlayer);
                 Player.RpcShapeshift(dummyshapetarget, true);
 
-                _ = new LateTask(() => Player.RpcShapeshift(Player, false), 1.5f + Main.LagTime, "");
+                void Revert()
+                {
+                    if (Player == null || !Player.IsAlive()) return;
+                    // 会議や追放の演出の間は変身の電文を送らず、明けてから戻す
+                    if (GameStates.IsMeeting || GameStates.ExiledAnimate || GameStates.CalledMeeting)
+                    {
+                        _ = new LateTask(Revert, 1f, "VultureShapeEnd");
+                        return;
+                    }
+                    Player.RpcShapeshift(Player, false);
+                }
+                _ = new LateTask(Revert, 1.5f + Main.LagTime, "VultureShapeEnd");
             }
 
             if (turneat > 2)

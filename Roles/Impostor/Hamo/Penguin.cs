@@ -32,7 +32,8 @@ class Penguin : RoleBase, IImpostor
     }
     public override void OnDestroy()
     {
-        Penguins = new();
+        // 自分だけ外す (途中で 1 人だけ役職が替わった時に、残りのペンギンの連れ去りまで消さない)
+        Penguins.Remove(this);
         AbductVictim = null;
     }
 
