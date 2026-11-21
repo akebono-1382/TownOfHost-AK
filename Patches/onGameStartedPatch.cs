@@ -333,8 +333,6 @@ class SelectRolesPatch
         }
 
 
-        Dictionary<(byte, byte), RoleTypes> rolesMap = new();
-
         foreach (var customRole in assignRoleList)
         {
             var roleInfo = CustomRoleManager.GetRoleInfo(customRole);
@@ -347,19 +345,7 @@ class SelectRolesPatch
             PlayerState.GetByPlayerId(player.PlayerId).SetMainRole(customRole);
             Logger.Info($"役職設定(desync): {player?.Data?.PlayerName} = {customRole}", "AssignRoles");
 
-            var hostId = PlayerControl.LocalPlayer.PlayerId;
-            var baseRole = roleInfo.BaseRoleType.Invoke();
-            // ホスト自身の役職はローカルにだけ効くので、変身・消失のボタンが要る基底はそのまま持たせる (Crewmate に落とすとボタンが出ない)
-            var selfRole = player.PlayerId == hostId ? (baseRole is RoleTypes.Shapeshifter or RoleTypes.Phantom ? baseRole : RoleTypes.Crewmate) : baseRole;
-            var othersRole = player.PlayerId == hostId ? RoleTypes.Crewmate : RoleTypes.Scientist;
-
-            foreach (var target in Main.AllPlayerControls)
-                rolesMap[(player.PlayerId, target.PlayerId)] =
-                    (player.PlayerId == target.PlayerId) ? selfRole : othersRole;
-
-            foreach (var seer in Main.AllPlayerControls)
-                if (player.PlayerId != seer.PlayerId)
-                    rolesMap[(seer.PlayerId, player.PlayerId)] = othersRole;
+            var othersRole = player.PlayerId == PlayerControl.LocalPlayer.PlayerId ? RoleTypes.Crewmate : RoleTypes.Scientist;
 
             RpcSetRoleReplacer.OverriddenSenderList.Add(senders[player.PlayerId]);
             player.StartCoroutine(player.CoSetRole(othersRole, false));
@@ -593,45 +579,6 @@ class SelectRolesPatch
 
         if (ModeCatalog.Current.UsesStandardRoles)
             StandardIntroHelper.ShowIntroForVanilla();
-    }
-
-
-    private static void AssignDesyncRole(
-        CustomRoles role,
-        List<PlayerControl> AllPlayers,
-        Dictionary<byte, CustomRpcSender> senders,
-        Dictionary<(byte, byte), RoleTypes> rolesMap,
-        RoleTypes BaseRole,
-        RoleTypes hostBaseRole = RoleTypes.Crewmate)
-    {
-        if (!role.IsPresent()) return;
-
-        var hostId = PlayerControl.LocalPlayer.PlayerId;
-        var rand = IRandom.Instance;
-
-        for (var i = 0; i < role.GetRealCount(); i++)
-        {
-            if (AllPlayers.Count <= 0) break;
-            var player = AllPlayers[rand.Next(0, AllPlayers.Count)];
-            AllPlayers.Remove(player);
-            PlayerState.GetByPlayerId(player.PlayerId).SetMainRole(role);
-            Logger.Info("役職設定(desync):" + player?.Data?.PlayerName + " = " + role.ToString(), "AssignRoles");
-
-            var selfRole = player.PlayerId == hostId ? (BaseRole is RoleTypes.Shapeshifter or RoleTypes.Phantom ? BaseRole : hostBaseRole) : BaseRole;
-            var othersRole = player.PlayerId == hostId ? RoleTypes.Crewmate : RoleTypes.Scientist;
-
-            foreach (var target in Main.AllPlayerControls)
-                rolesMap[(player.PlayerId, target.PlayerId)] =
-                    (player.PlayerId == target.PlayerId) ? selfRole : othersRole;
-
-            foreach (var seer in Main.AllPlayerControls)
-                if (player.PlayerId != seer.PlayerId)
-                    rolesMap[(seer.PlayerId, player.PlayerId)] = othersRole;
-
-            RpcSetRoleReplacer.OverriddenSenderList.Add(senders[player.PlayerId]);
-            player.StartCoroutine(player.CoSetRole(othersRole, false));
-            player.Data.IsDead = true;
-        }
     }
 
 

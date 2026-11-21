@@ -303,6 +303,11 @@ public static partial class CustomRoleManager
     {
         AllRolesInfo.Do(kvp => kvp.Value.IsEnable = kvp.Key.IsEnable());
         AllActiveRoles.Clear();
+        ClearOthers();
+    }
+    /// <summary>役職や属性が登録した *Others と、キルの橋渡しを空にする。開始と終わりの両方で同じ物を消す</summary>
+    private static void ClearOthers()
+    {
         MarkOthers.Clear();
         LowerOthers.Clear();
         SuffixOthers.Clear();
@@ -535,20 +540,7 @@ public static partial class CustomRoleManager
     public static void Dispose()
     {
         Logger.Info($"Dispose ActiveRoles", "CustomRoleManager");
-        MarkOthers.Clear();
-        LowerOthers.Clear();
-        SuffixOthers.Clear();
-        NameColorOthers.Clear();
-        KillBlockersOthers.Clear();
-        TaskExemptionsOthers.Clear();
-        EveryoneNeedsSeenNamesOthers.Clear();
-        KillGuardsOthers.Clear();
-        OnPlayerDeadOthers.Clear();
-        OnPlayerRevivedOthers.Clear();
-        CheckMurderInfos.Clear();
-        OnMurderPlayerOthers.Clear();
-        OnFixedUpdateOthers.Clear();
-        OnEnterVentOthers.Clear();
+        ClearOthers();
 
         AllActiveRoles.Values.ToArray().Do(roleClass => roleClass.Dispose());
     }

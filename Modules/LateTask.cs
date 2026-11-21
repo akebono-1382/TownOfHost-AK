@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using TownOfHostL.Core;
 using TownOfHostL.Core.Modes;
@@ -17,6 +19,8 @@ namespace TownOfHostL
         public float timer;
         public Action action;
         private readonly GameSession owner;
+        private readonly string callerFile;
+        private readonly int callerLine;
         private bool done;
 
         public static List<LateTask> Tasks = new();
@@ -33,8 +37,12 @@ namespace TownOfHostL
             return false;
         }
         /// <param name="outlivesSession">true なら試合が閉じても捨てない。試合の外まで残る static な状態を戻す処理に使う。</param>
-        public LateTask(Action action, float time, string name = "No Name Task", bool outlivesSession = false)
+        /// <param name="callerFile">作った場所。例外の記録に出す (呼び元は渡さない)。</param>
+        public LateTask(Action action, float time, string name = "No Name Task", bool outlivesSession = false,
+            [CallerFilePath] string callerFile = "", [CallerLineNumber] int callerLine = 0)
         {
+            this.callerFile = callerFile;
+            this.callerLine = callerLine;
             this.action = action;
             this.timer = time;
             this.name = name;
@@ -70,7 +78,7 @@ namespace TownOfHostL
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error($"{ex.GetType()}: {ex.Message}  in \"{task.name}\"\n{ex.StackTrace}", "LateTask.Error", false);
+                    Logger.Error($"{ex.GetType()}: {ex.Message}  in \"{task.name}\" (made at {Path.GetFileName(task.callerFile)}:{task.callerLine})\n{ex.StackTrace}", "LateTask.Error", false);
                     task.done = anyDone = true;
                 }
             }

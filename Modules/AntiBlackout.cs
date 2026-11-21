@@ -447,31 +447,6 @@ public static partial class AntiBlackout
         SendGameData();
     }
 
-    ///<summary>
-    ///一時的にIsDeadを本来のものに戻した状態でコードを実行します
-    ///<param name="action">実行内容</param>
-    ///</summary>
-    public static void TempRestore(Action action)
-    {
-        logger.Info("==Temp Restore==");
-        //IsDeadが上書きされた状態でTempRestoreが実行されたかどうか
-        bool before_IsCached = IsCached;
-        try
-        {
-            if (before_IsCached) RestoreIsDead(doSend: false);
-            action();
-        }
-        catch (Exception ex)
-        {
-            logger.Warn("AntiBlackout.TempRestore内で例外が発生しました");
-            logger.Exception(ex);
-        }
-        finally
-        {
-            if (before_IsCached) SetIsDead(doSend: false);
-            logger.Info("==/Temp Restore==");
-        }
-    }
 
     [GameModuleInitializer]
     public static void Reset()
