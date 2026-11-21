@@ -407,10 +407,18 @@ class ShapeshiftPatch
 
         // 本編の変身は名前を変身先の名前に、解除は本名に戻すので、見る人ごとの名前 (役職表示や通信妨害中の隠した名前) を配り直す。
         // 変身はすぐに送る (送り直しの元になる LastNotifyNames を変身先の名前にしておく)。
+        // 本編の客は変身の演出の終わりに名前を変身先の名前へ付け直し、すぐに送った名前は上書きされる
+        // (変身した本人の画面から役職の表示が消える・2026-11-22 実機の録画で確認) ので、解除と同じだけ待ってもう一度送る。
         // 解除はタイミングがずれて名前が直せないことがあるので、少し待ってから送る
         if (shapeshifting)
         {
             Utils.NotifyRoles(NoCache: true);
+            _ = new LateTask(() =>
+            {
+                if (!GameStates.IsInTask) return;
+                Utils.NotifyRoles(NoCache: true);
+            },
+            1.2f, "ShapeShiftNotifyAfterEffect");
         }
         else
         {
