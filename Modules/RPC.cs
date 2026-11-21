@@ -32,6 +32,8 @@ namespace TownOfHostL
         public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] byte callId, [HarmonyArgument(1)] MessageReader reader)
         {
             var rpcType = (RpcCalls)callId;
+            // 本編の客なら送らない電文の受け口 (ホストのみ)
+            if (RpcGuard.ShouldDrop(__instance, rpcType, reader)) return false;
             if (Logger.IsTagEnabled("ReceiveRPC")) Log.Info("ReceiveRPC", $"{__instance?.Data?.PlayerId}({__instance?.Data?.PlayerName}):{callId}({RPC.GetRpcName(callId)})");
             MessageReader subReader = MessageReader.Get(reader);
             switch (rpcType)

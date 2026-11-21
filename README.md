@@ -89,6 +89,7 @@ TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwi
   - ジェスター・マッドメイトのアイデア
 - [TownOfHostEdited](https://github.com/KARPED1EM/TownOfHostEdited)
   - スカベンジャー
+  - 試合中に客から届く不正な通信のチート対策
 - [ExtremeRoles](https://github.com/yukieiji/ExtremeRoles)
   - トトカルチョ
 - [End K not](https://github.com/waffle-ful/Aeterna-End-K-not)

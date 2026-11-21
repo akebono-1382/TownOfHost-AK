@@ -825,6 +825,11 @@ DSchrodingerCatInfo,You are now on Team Darkhide,ダークハイドの味方に�
 "AntiCheat","Anti Cheat","チート対策","","","",""
 "CheaterAutoBan","Automatically Ban Cheater","自動BANリスト追加","","","",""
 "CheatLobbyKill","Lobby Kill Cheat","ロビーキルチート","","","",""
+"CheatIllegalRpc","Illegal Network Messages in Game","試合中の不正な通信"
+"CheatIllegalRpcNotify","Notify Host","ホストに知らせる"
+"CheatIllegalRpcKick","Kick","キックする"
+"CheatIllegalRpcNotice","Illegal network message ({1}) in the name of {0}","{0} 名義の不正な通信 ({1})"
+"CheatIllegalRpcKicked","Kicked {0} for illegal network messages","不正な通信のため {0} をキックしました"
 "ShowReportReason","Show button or report","ボタンかレポートか表示させる","显示按钮或报告"
 "ShowReportReasonInfoLong","","開かれた会議が緊急ボタンか死体レポートか、チャットと会議画面に表示される機能。\n死体レポート時は誰の死体を通報したかも表示される。",
 "ShowRevengeTarget","Show Revenge player at Meeting","道連れされた人を会議で表示する","在会议上显示复仇玩家"

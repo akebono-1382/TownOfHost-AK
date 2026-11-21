@@ -310,6 +310,7 @@ public static partial class Options
     public static OptionItem AntiCheat;
     public static OptionItem CheaterAutoBan;
     public static OptionItem CheatLobbyKill;
+    public static OptionItem CheatIllegalRpc;
 
     // ModGameMode
 
@@ -933,11 +934,14 @@ public static partial class Options
             .SetGameMode(CustomGameMode.All);
         ApplyBanList = StringOptionItem.Create("ApplyBanList", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, true)
             .SetGameMode(CustomGameMode.All);
-        AntiCheat = StringOptionItem.Create("AntiCheat", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, true)
+        AntiCheat = StringOptionItem.Create("AntiCheat", new string[] { "ColoredOff", "ColoredOn" }, 1, TabGroup.ModMainSettings, true)
             .SetGameMode(CustomGameMode.All);
         CheaterAutoBan = StringOptionItem.Create("CheaterAutoBan", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, true).SetParent(AntiCheat)
             .SetGameMode(CustomGameMode.All);
         CheatLobbyKill = StringOptionItem.Create("CheatLobbyKill", new string[] { "ColoredOff", "ColoredOn" }, 0, TabGroup.ModMainSettings, true).SetParent(AntiCheat)
+            .SetGameMode(CustomGameMode.All);
+        // 本編の客なら送らない電文 (ホストだけが送るキル・会議の開始など) が試合中に届いた時: 0 = 何もしない・1 = ホストに知らせる・2 = 追い出す
+        CheatIllegalRpc = StringOptionItem.Create("CheatIllegalRpc", new string[] { "ColoredOff", "CheatIllegalRpcNotify", "CheatIllegalRpcKick" }, 1, TabGroup.ModMainSettings, true).SetParent(AntiCheat)
             .SetGameMode(CustomGameMode.All);
 
         // 役職の共通設定
@@ -971,6 +975,7 @@ public static partial class Options
                         or "AntiCheat"
                         or "CheaterAutoBan"
                         or "CheatLobbyKill"
+                        or "CheatIllegalRpc"
                         or "ChangeIntro"
                         or "AddonShowMode";
     }
