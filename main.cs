@@ -82,6 +82,7 @@ public partial class Main : BasePlugin
     public static ConfigEntry<bool> IsMuteLobbyBGM { get; private set; }
     public static ConfigEntry<bool> SleepAccountMenu { get; private set; }
     public static ConfigEntry<bool> OnlyTohlLobbies { get; private set; }
+    public static ConfigEntry<bool> CompactCrewMeter { get; private set; }
     /// <summary>番犬 (Among Us が落ちた・固まった時に起動し直す外の見張り役) を動かすか</summary>
     public static ConfigEntry<bool> CrashWatchdog { get; private set; }
     public static ConfigEntry<float> MessageWait { get; private set; }
@@ -165,6 +166,8 @@ public partial class Main : BasePlugin
             "Hide the account panel on the main menu until login finishes, so the menu can be used right after start-up.");
         OnlyTohlLobbies = Config.Bind("Client Options", "Only TOHL Lobbies", true,
             "Find Game lists only lobbies hosted with TOHL (official servers only). When off, TOHL lobbies are not listed.");
+        CompactCrewMeter = Config.Bind("Client Options", "Compact Crew Meter", false,
+            "Role cards in the settings menu show up to 3 crew figures and write larger counts as a number, instead of lining up to 15 small figures.");
         CrashWatchdog = Config.Bind("Client Options", "Crash Watchdog", false,
             "Run a watchdog outside Among Us (Windows only) that relaunches the game when it crashes or freezes, and re-hosts the room.");
         DebugKeyInput = Config.Bind("Authentication", "Debug Key", "");

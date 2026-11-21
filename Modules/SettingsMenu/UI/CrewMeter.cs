@@ -1,32 +1,39 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 namespace TownOfHostL.SettingsUI;
 
-// 役職のカードの値を絵で見せる: 人数ぶんのクルーの人形 (3 人を超えると 1 体と ×人数) と出現率の字、その下に出現率の棒。
+// 役職のカードの値を絵で見せる: 人数ぶんのクルーの人形と出現率の字、その下に出現率の棒。
+// 人形の並べ方は 2 通り。既定は小さめの人形を 5 人ずつの段で 15 人まで並べる。手元の設定で「人数を数字で」を選ぶと、
+// 大きめの人形を 3 人まで並べ、それより多い時は 1 体と ×人数 にする。並べきれない人数はどちらも 1 体と ×人数。
 // 出ない役職は人形も棒の塗りも無く OFF の字だけ。値が変わったら棒は伸び縮みし、人形は増えた分が弾む。
 internal sealed class CrewMeter : Widget
 {
-    public const int MaxFigures = 3;
-    private const float FigH = 0.27f, FigW = FigH * 0.8f, FigGap = 0.025f, BarH = 0.055f, RowGap = 0.05f;
+    public const int PerRow = 5, MaxRows = 3, CompactMax = 3;
+    private const float BigH = 0.27f, SmallH = 0.15f, GapRatio = 0.025f / 0.27f, RowStep = 0.02f, BarH = 0.055f, RowGap = 0.05f;
 
     public float Width;
     public Color Color = Color.white;
     public float FontSize = 1.15f;
 
+    private readonly bool _compact;
+    private readonly int _rows;          // 人形の欄に取った段の数 (隣のカードと高さを揃えるため、要る段より多いことがある)
     private bool _on;
     private int _chance, _count;
     private bool _hasCount;
     private float _shownFrac;
 
     private GameObject _root;
-    private readonly SpriteRenderer[] _figs = new SpriteRenderer[MaxFigures];
+    private int _layer;
+    private Sprite _crew;
+    private readonly List<SpriteRenderer> _figs = new();
     private SpriteRenderer _track, _fill;
     private Label _label;
-    private float _barY;
+    private float _barY, _areaY;
 
-    public CrewMeter(float width, Color color, bool on, int chance, bool hasCount, int count)
+    public CrewMeter(float width, Color color, bool on, int chance, bool hasCount, int count, bool compact, int rows = 1)
     {
         Width = width;
         Color = color;
@@ -34,34 +41,46 @@ internal sealed class CrewMeter : Widget
         _chance = chance;
         _hasCount = hasCount;
         _count = count;
+        _compact = compact;
+        _rows = compact ? 1 : Math.Clamp(rows, 1, MaxRows);
     }
+
+    // 人形の欄に要る段の数 (隣のカードと揃える時に使う)
+    public static int RowsFor(bool compact, bool on, bool hasCount, int count)
+    {
+        if (compact) return 1;
+        int n = FiguresFor(false, on, hasCount, count);
+        return Math.Max(1, (n + PerRow - 1) / PerRow);
+    }
+
+    private static int MaxOf(bool compact) => compact ? CompactMax : PerRow * MaxRows;
+    // 並べられる人数までは人数ぶん、それより多い時は 1 体と「×人数」の字にする
+    private static int FiguresFor(bool compact, bool on, bool hasCount, int count) =>
+        !on || !hasCount ? 0 : count > MaxOf(compact) ? 1 : Math.Max(count, 0);
+
+    public int Rows => _rows;
+    public int NeedRows => RowsFor(_compact, _on, _hasCount, _count);
+
+    private float FigH => _compact ? BigH : SmallH;
+    private float FigW => FigH * 0.8f;
+    private float FigGap => FigH * GapRatio;
+    private float AreaH => Math.Max(BigH, _rows * SmallH + (_rows - 1) * RowStep);
 
     public override GameObject Build(Transform parent, BuildCtx ctx, float maxWidth, out Vector2 size)
     {
         var go = Node("CrewMeter", parent, ctx.Layer);
         _root = go;
-        float h = FigH + RowGap + BarH;
+        _layer = ctx.Layer;
+        _crew = CrewSprite();
+        _figs.Clear();
+        float h = AreaH + RowGap + BarH;
         size = new Vector2(Width, h);
-        float rowY = h / 2f - FigH / 2f;
+        _areaY = h / 2f - AreaH / 2f;
         _barY = -h / 2f + BarH / 2f;
-
-        var crew = CrewSprite();
-        for (int i = 0; i < MaxFigures; i++)
-        {
-            // 弾ませる時は入れ物の大きさを変える (絵の大きさ合わせは中の絵に持たせる)
-            var holder = Node("Crew", go.transform, ctx.Layer);
-            holder.transform.localPosition = new Vector3(-Width / 2f + FigW / 2f + i * (FigW + FigGap), rowY, -0.01f);
-            var sr = Node("Body", holder.transform, ctx.Layer).AddComponent<SpriteRenderer>();
-            sr.sprite = crew;
-            var b = crew ? crew.bounds.size : Vector3.one;
-            float sc = FigH / Math.Max(b.y, 0.0001f);
-            sr.transform.localScale = new Vector3(sc, sc, 1f);
-            _figs[i] = sr;
-        }
 
         _label = new Label("", FontSize) { Bold = true, Width = Width, MinFontSize = 0.75f, TextAlign = TextAlignmentOptions.Left, NoWrap = true };
         var lgo = _label.Build(go.transform, ctx, Width, out _);
-        lgo.transform.localPosition = new Vector3(0f, rowY, -0.02f);
+        lgo.transform.localPosition = new Vector3(0f, _areaY, -0.02f);
 
         var round = MenuArt.Round(BarH / 2f);
         _track = Node(UiScreen.BackName, go.transform, ctx.Layer).AddComponent<SpriteRenderer>();
@@ -81,8 +100,7 @@ internal sealed class CrewMeter : Widget
     public bool On => _on;
 
     private float Target => _on ? Math.Clamp(_chance / 100f, 0f, 1f) : 0f;
-    // 3 人までは人数ぶん並べ、それより多い時は 1 体と「×人数」の字にする (一目で数えられるのは 3 つほどまで・出現率の字も縮めずに済む)
-    private int Figures => !_on || !_hasCount ? 0 : _count > MaxFigures ? 1 : Math.Max(_count, 0);
+    private int Figures => FiguresFor(_compact, _on, _hasCount, _count);
 
     // 値を書き換える。animate なら棒を伸び縮みさせ、増えた人形を弾ませる
     public void Set(Color color, bool on, int chance, int count, bool animate)
@@ -115,24 +133,54 @@ internal sealed class CrewMeter : Widget
         });
     }
 
+    // 人形は要る数だけ作る (一覧のカードが多いので、15 体ぶんを先に作っておかない)
+    private SpriteRenderer Fig(int i)
+    {
+        while (_figs.Count <= i)
+        {
+            // 弾ませる時は入れ物の大きさを変える (絵の大きさ合わせは中の絵に持たせる)
+            var holder = Node("Crew", _root.transform, _layer);
+            holder.SetActive(false);
+            var sr = Node("Body", holder.transform, _layer).AddComponent<SpriteRenderer>();
+            sr.sprite = _crew;
+            var b = _crew ? _crew.bounds.size : Vector3.one;
+            float sc = FigH / Math.Max(b.y, 0.0001f);
+            sr.transform.localScale = new Vector3(sc, sc, 1f);
+            _figs.Add(sr);
+        }
+        return _figs[i];
+    }
+
     private void Apply(int popFrom)
     {
         int n = Figures;
+        int perRow = _compact ? CompactMax : PerRow;
+        int usedRows = Math.Max(1, (n + perRow - 1) / perRow);
+        // 使う段のまとまりを欄の真ん中に置く (隣に合わせて広げた欄でも字と人形の高さが揃う)
+        float blockH = usedRows * FigH + (usedRows - 1) * RowStep;
+        float topY = _areaY + blockH / 2f - FigH / 2f;
         var figColor = Color.Lerp(Color, Color.white, 0.25f);
-        for (int i = 0; i < MaxFigures; i++)
+        int upto = Math.Max(n, _figs.Count);
+        for (int i = 0; i < upto; i++)
         {
-            var f = _figs[i];
-            if (!f) continue;
             bool show = i < n;
+            var f = Fig(i);
+            if (!f) continue;
             var holder = f.transform.parent;
+            if (show)
+            {
+                int r = i / perRow, c = i % perRow;
+                holder.localPosition = new Vector3(-Width / 2f + FigW / 2f + c * (FigW + FigGap), topY - r * (FigH + RowStep), -0.01f);
+                f.color = figColor;
+            }
             if (holder.gameObject.activeSelf != show) holder.gameObject.SetActive(show);
-            f.color = figColor;
             if (show && popFrom >= 0 && i >= popFrom) UiFx.Pop(holder, 0.35f, 0.22f);
         }
-        // 人形の後ろに字 (3 人を超える時は ×人数)。出ない役職は OFF だけ
+        // 人形の後ろに字 (並べきれない時は ×人数)。出ない役職は OFF だけ
         // 字の欄は人形の右から端まで (長い字はその幅に入るよう縮める)
-        string text = !_on ? "OFF" : _hasCount && _count > MaxFigures ? $"×{_count}  {_chance}%" : $"{_chance}%";
-        float left = n > 0 ? n * (FigW + FigGap) + 0.04f : 0f;
+        string text = !_on ? "OFF" : _hasCount && _count > MaxOf(_compact) ? $"×{_count}  {_chance}%" : $"{_chance}%";
+        int cols = Math.Min(n, perRow);
+        float left = cols > 0 ? cols * (FigW + FigGap) + 0.04f : 0f;
         float labelW = Math.Max(Width - left, 0.3f);
         if (text != _label.Content || labelW != _label.Width)
         {
@@ -166,12 +214,12 @@ internal sealed class CrewMeter : Widget
 
     // ---- クルーの人形 (白・色は SpriteRenderer.color で付ける)。右向き・左に背負い袋・顔の窓は半透明 ----
 
-    private static Sprite _crew;
+    private static Sprite _crewSprite;
     private const int CW = 32, CH = 40;
 
     internal static Sprite CrewSprite()
     {
-        if (_crew) return _crew;
+        if (_crewSprite) return _crewSprite;
         var px = new byte[CW * CH * 4];
         for (int y = 0; y < CH; y++)
         for (int x = 0; x < CW; x++)
@@ -199,9 +247,9 @@ internal sealed class CrewMeter : Widget
         tex.LoadRawTextureData(px);
         tex.Apply(false, true);
         tex.hideFlags = HideFlags.DontUnloadUnusedAsset;
-        _crew = Sprite.Create(tex, new Rect(0, 0, CW, CH), new Vector2(0.5f, 0.5f), 100f);
-        _crew.hideFlags = HideFlags.DontUnloadUnusedAsset;
-        return _crew;
+        _crewSprite = Sprite.Create(tex, new Rect(0, 0, CW, CH), new Vector2(0.5f, 0.5f), 100f);
+        _crewSprite.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        return _crewSprite;
     }
 
     // 角の丸い四角 (x0..x1, y0..y1・角の半径 r) までの距離 (内側が負)

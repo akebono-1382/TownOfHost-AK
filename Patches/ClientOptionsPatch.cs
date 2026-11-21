@@ -17,6 +17,7 @@ namespace TownOfHostL
         private static ClientActionItem IsMuteLobbyBGM;
         private static ClientActionItem OnlyTohlLobbies;
         private static ClientActionItem CrashWatchdog;
+        private static ClientActionItem CompactCrewMeter;
 
         public static void Postfix(OptionsMenuBehaviour __instance)
         {
@@ -52,6 +53,10 @@ namespace TownOfHostL
             if (OnlyTohlLobbies == null || OnlyTohlLobbies.ToggleButton == null)
             {
                 OnlyTohlLobbies = ClientOptionItem.Create("OnlyTohlLobbies", Main.OnlyTohlLobbies, __instance);
+            }
+            if (CompactCrewMeter == null || CompactCrewMeter.ToggleButton == null)
+            {
+                CompactCrewMeter = ClientOptionItem.Create("CompactCrewMeter", Main.CompactCrewMeter, __instance);
             }
             if (Modules.Watchdog.IsSupported && (CrashWatchdog == null || CrashWatchdog.ToggleButton == null))
             {

@@ -177,6 +177,7 @@ internal sealed class RoleBrowser
     private MenuOpt _slideOpt;
     private float _slideAt;
     private bool _pendingSide;   // つまみを引いている間に出る行が変わった (離したら右の欄を作り直す)
+    private bool _relayout;      // カードの高さを揃え直す (次に指を離している Tick で組み直す)
     private bool _sideDirty;     // 当てた物が変わった (次の Tick で右の欄を書き直す)
     private string _query = "";
     private string[] _tokens = Array.Empty<string>();
@@ -234,6 +235,7 @@ internal sealed class RoleBrowser
         _tokens = Array.Empty<string>();
         _query = "";
         _pendingSide = false;
+        _relayout = false;
     }
 
     private void SetQueryText(string q)
@@ -274,6 +276,7 @@ internal sealed class RoleBrowser
         _slider = null;
         _resetBtn = _undoBtn = null;
         _pendingSide = false;
+        _relayout = false;
         ChipScreen?.Clear();
         _screen.Set(_open != null && !SideEdit ? DetailPage(_open) : Searching ? SearchPage() : ListPage());
         if (_growIn)
@@ -302,18 +305,20 @@ internal sealed class RoleBrowser
     {
         var cards = new Stack(false) { Gap = CardGap, Width = CardW };
         float half = (CardW - CardGap) / 2f;
-        Stack line = null;
-        int n = 0;
-        foreach (var e in Visible())
+        var visible = Visible();
+        int n = visible.Count;
+        for (int i = 0; i < n; i += 2)
         {
-            if (n % 2 == 0)
-            {
-                line = new Stack(true) { Gap = CardGap, Align = Align.Start };
-                cards.Add(line);
-            }
-            line.Add(Card(e, half, true));
-            _listed.Add(e);
-            n++;
+            // 横に並ぶ 2 枚は人形の段の数を揃える (カードの高さが揃う)
+            var b = i + 1 < n ? visible[i + 1] : null;
+            int rows = Math.Max(MeterRows(visible[i]), b != null ? MeterRows(b) : 1);
+            var line = new Stack(true) { Gap = CardGap, Align = Align.Start };
+            cards.Add(line);
+            line.Add(Card(visible[i], half, true, rows));
+            _listed.Add(visible[i]);
+            if (b == null) continue;
+            line.Add(Card(b, half, true, rows));
+            _listed.Add(b);
         }
         if (n == 0) cards.Add(new Label(Tr("RoleBrowser.NoMatch"), 1.6f) { Color = SubText, Width = CardW, TextAlign = TextAlignmentOptions.Center });
 
@@ -390,8 +395,13 @@ internal sealed class RoleBrowser
         return false;
     }
 
+    // 人数の人形を小さく 15 人まで並べるか、大きく 3 人まで並べて残りは数字にするか (手元の設定)
+    private static bool CompactMeter => Main.CompactCrewMeter.Value;
+    private static int MeterRows(RoleEntry e) =>
+        e.IsRole ? CrewMeter.RowsFor(CompactMeter, e.On, e.Count != null, CountOf(e)) : 1;
+
     // narrow = 2 列の一覧のカード (名前+出現率と人数の 1 行・説明は右の欄だけ)。検索の結果は幅いっぱいで説明つき
-    private Widget Card(RoleEntry e, float width, bool narrow)
+    private Widget Card(RoleEntry e, float width, bool narrow, int meterRows = 1)
     {
         bool on = !e.IsRole || e.On;
         float pad = narrow ? 0.09f : 0.14f;
@@ -404,7 +414,7 @@ internal sealed class RoleBrowser
             name = new Label(e.Title, 1.6f) { Width = textW, MinFontSize = 1.05f, Bold = true, Color = NameColor(e), Align = Align.Start };
             // 役職は人数をクルーの人形・出現率を棒で見せる (まとまりは項目の数の字)
             Widget under;
-            if (e.IsRole) under = meter = new CrewMeter(textW, e.Color, e.On, ChanceOf(e), e.Count != null, CountOf(e)) { Align = Align.Start };
+            if (e.IsRole) under = meter = new CrewMeter(textW, e.Color, e.On, ChanceOf(e), e.Count != null, CountOf(e), CompactMeter, meterRows) { Align = Align.Start };
             else under = values = new Label(CardValues(e), 1.15f) { Width = textW, Bold = true, Color = on ? Color.white : Gray, Align = Align.Start };
             body = new Stack(false, name, under) { Gap = 0.02f, Width = textW, Align = Align.Start };
         }
@@ -779,6 +789,16 @@ internal sealed class RoleBrowser
             if (name.Built) name.Built.color = NameColor(e);
             if (SideEdit && card.FillRenderer) card.FillRenderer.color = SelectFill(e);
         }
+        // 人形の段の数が変わった組があれば、カードの高さを揃え直すために組み直す (つまみを離してから)
+        if (!Searching)
+            for (int i = 0; i < _cards.Count; i += 2)
+            {
+                var a = _cards[i].meter;
+                var b = i + 1 < _cards.Count ? _cards[i + 1].meter : null;
+                if (a == null && b == null) continue;
+                int need = Math.Max(a?.NeedRows ?? 1, b?.NeedRows ?? 1);
+                if ((a != null && a.Rows != need) || (b != null && b.Rows != need)) { _relayout = true; break; }
+            }
     }
 
     // 出す/止めるが切り替わったカード: 出したら弾んで陣営の色に光り、止めたら少し沈む
@@ -1068,6 +1088,10 @@ internal sealed class RoleBrowser
         {
             _sideDirty = false;
             RefreshSide();
+        }
+        if (_relayout && !Input.GetMouseButton(0) && Input.touchCount == 0)
+        {
+            Rebuild();
         }
         // つまみを離したら、出る行が変わっていた右の欄を作り直す
         if (_pendingSide && !Input.GetMouseButton(0) && Input.touchCount == 0)
