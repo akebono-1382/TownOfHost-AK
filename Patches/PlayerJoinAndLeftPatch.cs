@@ -210,13 +210,16 @@ namespace TownOfHostL
                             }
                         }
                         if (wasAlive) GameLog.OnDisconnected(playerId);
-                        if (state.DeathReason == CustomDeathReason.etc) //死因が設定されていなかったら
-                            state.SetDead(CustomDeathReason.Disconnected);
+                        // 生きていた人は死因を「切断」にして死なせる (止められたキルの前書きなどで死因が残っていても、生存者に数え続けない)。
+                        // 死んでいた人の死因はそのまま
+                        if (wasAlive) state.SetDead(CustomDeathReason.Disconnected);
                         if (GameData.Instance != null && GameData.Instance.GetPlayerById(playerId) is NetworkedPlayerInfo info)
                             AntiBlackout.OnDisconnect(info);
                         PlayerGameOptionsSender.RemoveSender(playerId);
                         if (wasAlive) Modules.AutoAbort.OnAliveDisconnected();
                         if (AmongUsClient.Instance.AmHost && GameStates.IsInGame) CustomRoleManager.NotifyPlayerLeft(playerId);
+                        // 会議中に最後の未投票の人が抜けた時、残りの全員が票済みなら締める (票が来ないので締めの判定が走らない)
+                        if (AmongUsClient.Instance.AmHost && wasAlive && MeetingHud.Instance) MeetingVoteManager.Instance?.CheckAndEndMeeting();
                     }
                     Main.playerVersion.Remove(playerId);
                     AfkDetector.OnPlayerLeft(playerId);

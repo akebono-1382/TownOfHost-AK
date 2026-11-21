@@ -37,6 +37,8 @@ public static partial class MeetingHudPatch
             var voter = Utils.GetPlayerById(srcPlayerId);
             var voted = Utils.GetPlayerById(suspectPlayerId);
             if (voter == null) return false;
+            // 締めた後 (結果の表示の間) に遅れて届いた票で、役職の能力 (ゲッサーの撃ちなど) を走らせない
+            if (AmongUsClient.Instance.AmHost && __instance.state is MeetingHud.MeetingStates.Results or MeetingHud.MeetingStates.Proceeding) return false;
             if (voter.GetRoleClass()?.CheckVoteAsVoter(voted) == false)
             {
                 __instance.RpcClearVote(voter.PlayerId);
@@ -365,6 +367,10 @@ public static partial class MeetingHudPatch
         public static void Postfix(MeetingHud __instance)
         {
             if (!AmongUsClient.Instance.AmHost) return;
+            // 出だしの演出や話し合いの間に見送った締めの判定を、投票の段階に入ったらやり直す
+            if (MeetingVoteManager.Instance is { PendingCheck: true } pending
+                && __instance.state is MeetingHud.MeetingStates.NotVoted or MeetingHud.MeetingStates.Voted)
+                pending.CheckAndEndMeeting();
             if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl))
             {
                 __instance.playerStates.DoIf(x => x.HighlightedFX.enabled, x =>
@@ -384,6 +390,7 @@ public static partial class MeetingHudPatch
                         if (voter == null) continue;
                         __instance.RpcClearVote(voter.PlayerId);
                     }
+                    MeetingVoteManager.OnMeetingKill(player.PlayerId);
 
                     string formatTag = "<size=70%><line-height=1.6pic>";
                     Utils.SendMessageAutoSplit($"{formatTag}{string.Format(GetString("Message.Executed"), player.Data.PlayerName)}", true);

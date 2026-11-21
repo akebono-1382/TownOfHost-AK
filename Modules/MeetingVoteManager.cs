@@ -150,13 +150,38 @@ public class MeetingVoteManager
     /// 議論時間が終わってる or 全員が投票を終えていれば会議を終了します
     public void CheckAndEndMeeting()
     {
-        bool timeExpired = meetingHud.discussionTimer - (float)Main.NormalOptions.DiscussionTime >= Main.NormalOptions.VotingTime;
+        // 会議の出だしの演出と話し合いの間は締めない。この間に締めの電文を送ると、本編の演出が後から投票前の段階へ戻し、
+        // 会議が閉じたのに画面が投票前のまま進まなくなる。票がそろっていれば、投票の段階に入った時に締める (MeetingHud.Update)
+        if (meetingHud.state is MeetingHud.MeetingStates.Animating or MeetingHud.MeetingStates.Discussion)
+        {
+            PendingCheck = true;
+            return;
+        }
+        PendingCheck = false;
+        // 投票時間 0 は無制限 (時間切れで締めない)
+        bool timeExpired = Main.NormalOptions.VotingTime > 0
+            && meetingHud.discussionTimer - (float)Main.NormalOptions.DiscussionTime >= Main.NormalOptions.VotingTime;
         bool allVoted = AllVotes.Values.All(vote => vote.HasVoted);
         if (timeExpired || allVoted)
         {
             EndMeeting();
         }
     }
+    /// <summary>出だしの演出や話し合いの間に締めの判定を見送った</summary>
+    public bool PendingCheck { get; private set; }
+
+    /// <summary>
+    /// 会議中キル (ゲッサー・処刑) の後: 死んだ人へ入れた票を取り消し (本編の画面の票の取り消しと合わせる)、
+    /// 入れ直す間を置いてから締めの判定をやり直す (死んだ人が最後の未投票だった時に締まらないままにならないように)
+    /// </summary>
+    public static void OnMeetingKill(byte targetId)
+    {
+        if (!AmongUsClient.Instance.AmHost || Instance is not { } manager) return;
+        foreach (var vote in manager.allVotes.Values)
+            if (vote.VotedFor == targetId) vote.DoVote(NoVote, 1);
+        _ = new LateTask(() => Instance?.CheckAndEndMeeting(), 3f, "CheckForEndVoting.AfterMeetingKill");
+    }
+
     /// 無条件で会議を終了します
     /// <param name="applyVoteMode">スキップと同数投票の設定を適用するかどうか</param>
     public void EndMeeting(bool applyVoteMode = true, byte antiCompId = byte.MaxValue)
@@ -340,6 +365,7 @@ public class MeetingVoteManager
         {
             var vote = voteData.Value;
             var voter = Utils.GetPlayerById(vote.Voter);
+            if (voter == null) continue;
             if (!vote.IsSkip && !voter.Data.IsDead)
             {
                 SetVote(vote.Voter, Skip, isIntentional: false);
@@ -469,8 +495,8 @@ public class MeetingVoteManager
             // 役職による投票結果の書き換え (どれかが true なら同数時の特殊モードを使わない)
             var skipVoteMode = RoleHooks.VotingResults(ref Exiled, ref IsTie, votedCounts, mostVotedPlayers);
 
-            // 同数投票時の特殊モード
-            if (IsTie && Options.VoteMode.GetBool() && !skipVoteMode)
+            // 同数投票時の特殊モード (誰にも票が入っていない時は、全員が 0 票で並ぶだけなので当てない)
+            if (IsTie && Options.VoteMode.GetBool() && !skipVoteMode && maxVoteNum > 0)
             {
                 var tieMode = (TieMode)Options.WhenTie.GetValue();
                 switch (tieMode)

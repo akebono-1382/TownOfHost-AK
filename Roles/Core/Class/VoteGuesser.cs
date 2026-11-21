@@ -306,8 +306,10 @@ public abstract class VoteGuesser : RoleBase
         {
             if (va.VotedForId != target.PlayerId) continue;
             var voter = Utils.GetPlayerById(va.PlayerId);
+            if (voter == null) continue;
             MeetingHud.Instance.RpcClearVote(voter.PlayerId);
         }
+        TownOfHostL.Modules.MeetingVoteManager.OnMeetingKill(target.PlayerId);
     }
     private class GuesserInfo
     {
