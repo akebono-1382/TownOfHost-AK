@@ -368,9 +368,13 @@ public static partial class MeetingHudPatch
         {
             if (!AmongUsClient.Instance.AmHost) return;
             // 出だしの演出や話し合いの間に見送った締めの判定を、投票の段階に入ったらやり直す
-            if (MeetingVoteManager.Instance is { PendingCheck: true } pending
+            if (MeetingVoteManager.Instance is { } pending
+                && (pending.PendingCheck || pending.PendingEnd != null)
                 && __instance.state is MeetingHud.MeetingStates.NotVoted or MeetingHud.MeetingStates.Voted)
-                pending.CheckAndEndMeeting();
+            {
+                if (pending.PendingEnd is { } end) end();
+                else pending.CheckAndEndMeeting();
+            }
             if (Input.GetMouseButtonUp(1) && Input.GetKey(KeyCode.LeftControl))
             {
                 __instance.playerStates.DoIf(x => x.HighlightedFX.enabled, x =>

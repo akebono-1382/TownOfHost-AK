@@ -94,6 +94,12 @@ public class MeetingVoteManager
     public void SetVote(byte voter, byte voteFor, int numVotes = 1, bool isIntentional = true,
                         byte judgeExiledId = byte.MaxValue, ushort judgeNonce = 0, bool isoverride = true)
     {
+        // 締めを待たせている間 (役職がその場で決めた締め) の票は受けない
+        if (PendingEnd != null)
+        {
+            logger.Info($"ID: {voter}の票は、締めを待っている間なので数えません");
+            return;
+        }
         if (!allVotes.TryGetValue(voter, out var vote))
         {
             logger.Warn($"ID: {voter}の投票データがありません。新規作成します");
@@ -152,12 +158,14 @@ public class MeetingVoteManager
     {
         // 会議の出だしの演出と話し合いの間は締めない。この間に締めの電文を送ると、本編の演出が後から投票前の段階へ戻し、
         // 会議が閉じたのに画面が投票前のまま進まなくなる。票がそろっていれば、投票の段階に入った時に締める (MeetingHud.Update)
-        if (meetingHud.state is MeetingHud.MeetingStates.Animating or MeetingHud.MeetingStates.Discussion)
+        if (IsEarlyPhase)
         {
             PendingCheck = true;
             return;
         }
         PendingCheck = false;
+        // 役職がその場で決めた締めを待たせていれば、そちらで締める
+        if (PendingEnd is { } end) { end(); return; }
         // 投票時間 0 は無制限 (時間切れで締めない)
         bool timeExpired = Main.NormalOptions.VotingTime > 0
             && meetingHud.discussionTimer - (float)Main.NormalOptions.DiscussionTime >= Main.NormalOptions.VotingTime;
@@ -169,6 +177,9 @@ public class MeetingVoteManager
     }
     /// <summary>出だしの演出や話し合いの間に締めの判定を見送った</summary>
     public bool PendingCheck { get; private set; }
+    /// <summary>出だしの演出や話し合いの間に待たせた締め</summary>
+    public Action PendingEnd { get; private set; }
+    private bool IsEarlyPhase => meetingHud != null && meetingHud.state is MeetingHud.MeetingStates.Animating or MeetingHud.MeetingStates.Discussion;
 
     /// <summary>
     /// 会議中キル (ゲッサー・処刑) の後: 死んだ人へ入れた票を取り消し (本編の画面の票の取り消しと合わせる)、
@@ -186,6 +197,21 @@ public class MeetingVoteManager
     /// <param name="applyVoteMode">スキップと同数投票の設定を適用するかどうか</param>
     public void EndMeeting(bool applyVoteMode = true, byte antiCompId = byte.MaxValue)
     {
+        // 出だしの演出と話し合いの間に締めると、本編の演出が投票前の段階へ戻して会議が止まる。
+        // 役職がその場で決めた締め (ディクテーターなど) も、投票の段階に入るまで待ってから同じ形で締める (待つ間の票は受けない)
+        if (IsEarlyPhase)
+        {
+            bool inClear = RoleHooks.InClearAndExile;
+            PendingEnd = () =>
+            {
+                RoleHooks.InClearAndExile = inClear;
+                try { EndMeeting(applyVoteMode, antiCompId); }
+                finally { RoleHooks.InClearAndExile = false; }
+            };
+            logger.Info("会議の出だしの演出の間なので、締めを投票の段階まで待ちます");
+            return;
+        }
+        PendingEnd = null;
         var result = CountVotes(applyVoteMode, antiCompId != byte.MaxValue);
         //Y-anti
         var exiled = (antiCompId == byte.MaxValue) ? result.Exiled : Utils.GetPlayerInfoById(antiCompId);
