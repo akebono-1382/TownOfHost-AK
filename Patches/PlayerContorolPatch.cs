@@ -700,17 +700,17 @@ partial class ReportDeadBodyPatch
 
         // 会議を開くと決めた後なので、付随の処理の例外で本編の通報まで止めない
         // (止まると会議中の旗と全員の暗転が立ったまま会議が開かない)
-        try
+        // 1 つずつ囲い、前の処理の例外で会議用の名前と設定の送信を飛ばさない
+        static void Step(System.Action action, string tag)
         {
-            MeetingTimeManager.OnReportDeadBody();
-            // 会議で死体は全部片付くので、死体の覆いも外す
-            DeadBodyEraser.OnReportDeadBody();
-
-            Utils.NotifyRoles(isForMeeting: true, NoCache: true);
-
-            Utils.SyncAllSettings();
+            try { action(); }
+            catch (System.Exception ex) { Logger.Exception(ex, tag); }
         }
-        catch (System.Exception ex) { Logger.Exception(ex, "ReportDeadBody"); }
+        Step(MeetingTimeManager.OnReportDeadBody, "MeetingTimeManager.OnReportDeadBody");
+        // 会議で死体は全部片付くので、死体の覆いも外す
+        Step(DeadBodyEraser.OnReportDeadBody, "DeadBodyEraser.OnReportDeadBody");
+        Step(() => Utils.NotifyRoles(isForMeeting: true, NoCache: true), "ReportDeadBody.NotifyRoles");
+        Step(Utils.SyncAllSettings, "ReportDeadBody.SyncAllSettings");
 
         if (ShapeKiller.DummyReportDeadBody(__instance, target)) return false;
 
