@@ -259,10 +259,13 @@ public static class VanillaHideAndSeek
         Players.Invalidate();
         if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost) return;
         // 休んでいる間は抜けた人の版を消していない。休む前と別の人がいる番号 (空いた番号に入った別人) の版を捨てる
+        // 客の間から戻った時 (控えが無い) は見ない。自分の版は消さない
+        if (clientIdsAtSuspend.Count > 0)
         try
         {
             foreach (var id in System.Linq.Enumerable.ToArray(Main.playerVersion.Keys))
             {
+                if (PlayerControl.LocalPlayer && id == PlayerControl.LocalPlayer.PlayerId) continue;
                 var pc = Utils.GetPlayerById(id);
                 int clientId = pc != null ? pc.GetClientId() : -1;
                 if (clientId < 0 || !clientIdsAtSuspend.TryGetValue(id, out var before) || before != clientId)
