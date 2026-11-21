@@ -84,7 +84,8 @@ namespace TownOfHostL.Modules
             }
 
             int TotalMeetingTime = DiscussionTime + VotingTime;
-            //時間の下限、上限で刈り込み
+            //時間の下限、上限で刈り込み (下限の役職と上限の役職の設定が逆転していたら下限に合わせる。Clamp は min > max で例外を出す)
+            MeetingTimeMax = Math.Max(MeetingTimeMax, MeetingTimeMin);
             BonusMeetingTime = Math.Clamp(TotalMeetingTime + BonusMeetingTime, MeetingTimeMin, MeetingTimeMax) - TotalMeetingTime;
             if (BonusMeetingTime >= 0)
                 VotingTime += BonusMeetingTime; //投票時間を延長
