@@ -115,7 +115,9 @@ public static class RoleHooks
     {
         if (!AmongUsClient.Instance.AmHost) return;
         if (Main.SabotageType is SystemTypes.Hallway) return;
-        if (Main.IsActiveSabotage) GameLog.OnSabotageFixed(Main.SabotageType);
+        // 修理の電文とホスト自身のサボのタスクの完了の両方から呼ばれるので、2 度目 (もう直っている) は何もしない
+        if (!Main.IsActiveSabotage) return;
+        GameLog.OnSabotageFixed(Main.SabotageType);
         Main.IsActiveSabotage = false;
         Main.SabotageActivetimer = 0;
         ForEachRole(r => r.AfterSabotage(Main.SabotageType), "AfterSabotage");

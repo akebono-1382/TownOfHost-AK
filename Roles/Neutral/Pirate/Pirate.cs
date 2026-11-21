@@ -129,18 +129,20 @@ public sealed class Pirate : RoleBase, IKiller
         if (!isMadeGang) return true;
         if (Gang == null) return true;
 
-        var state = Gang.GetPlayerTaskState();
-        int rate = state.CompletedTasksCount * 100 / state.AllTasksCount;
-        return rate >= 50;
+        return GangTaskRate() >= 50;
     }
     public bool CanUseImpostorVentButton()
     {
         if (!isMadeGang) return false;
         if (Gang == null) return true;
 
+        return GangTaskRate() >= 25;
+    }
+    // 一味のタスクの進み (%)。タスクを持たない時は 0 で割らず、終えたものとして扱う
+    int GangTaskRate()
+    {
         var state = Gang.GetPlayerTaskState();
-        int rate = state.CompletedTasksCount * 100 / state.AllTasksCount;
-        return rate >= 25;
+        return state.AllTasksCount <= 0 ? 100 : state.CompletedTasksCount * 100 / state.AllTasksCount;
     }
     public override void ApplyGameOptions(IGameOptions opt) => opt.SetVision(HasImpostorVision);
     public void OnCheckMurderAsKiller(MurderInfo info)
@@ -200,8 +202,9 @@ public sealed class Pirate : RoleBase, IKiller
             {
                 target.RpcSetCustomRole(CustomRoles.Gang);
                 target.GetPlayerTaskState().CompletedTasksCount = 0;
-                target.GetPlayerTaskState().AllTasksCount = target.Data.Tasks.Count;
                 target.Data.RpcSetTasks(Array.Empty<byte>()); //タスクを再配布
+                // 数は配り直した後のタスクで数える (前に数えると元の役職の共通タスクの分が残る)
+                target.GetPlayerTaskState().AllTasksCount = target.Data.Tasks.Count;
                 target.SyncSettings();
                 Utils.NotifyRoles();
             }

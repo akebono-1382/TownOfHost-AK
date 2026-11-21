@@ -613,24 +613,28 @@ partial class ReportDeadBodyPatch
         }
         if (target != null && TownOfHostL.Core.PlayerTraits.CannotReport(reporter.Object, target.Object))
         {
-            DontReportMarkList.Add(reporter.PlayerId);
-            Utils.NotifyRoles(SpecifySeer: reporter.Object);
+            // 印を外す 5 秒後には static の reporter が次の通報者に替わっているので、今の通報者を写して使う
+            var marked = reporter;
+            DontReportMarkList.Add(marked.PlayerId);
+            Utils.NotifyRoles(SpecifySeer: marked.Object);
             _ = new LateTask(() =>
             {
-                DontReportMarkList.Remove(reporter.PlayerId);
-                Utils.NotifyRoles(SpecifySeer: reporter.Object);
+                DontReportMarkList.Remove(marked.PlayerId);
+                Utils.NotifyRoles(SpecifySeer: marked.Object);
             }, 5f, "Don't Report Mark Remove");
             return false;
         }
         // Scavenger
         if (target != null && CannotReportByDeadBodyList.Contains(target.PlayerId))
         {
-            DontReportMarkList.Add(reporter.PlayerId);
-            Utils.NotifyRoles(SpecifySeer: reporter.Object);
+            // 印を外す 5 秒後には static の reporter が次の通報者に替わっているので、今の通報者を写して使う
+            var marked = reporter;
+            DontReportMarkList.Add(marked.PlayerId);
+            Utils.NotifyRoles(SpecifySeer: marked.Object);
             _ = new LateTask(() =>
             {
-                DontReportMarkList.Remove(reporter.PlayerId);
-                Utils.NotifyRoles(SpecifySeer: reporter.Object);
+                DontReportMarkList.Remove(marked.PlayerId);
+                Utils.NotifyRoles(SpecifySeer: marked.Object);
             }, 5f, "Scavenger DontReportMark Remove");
             return false;
         }

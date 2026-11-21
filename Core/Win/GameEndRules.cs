@@ -213,6 +213,8 @@ public static class GameEndRules
         }
 
         (int vtComp, int vtTotal) = VentEnterTask.TaskWinCountData();
+        // 今数えるタスクが 0 (タスクを持つ人が抜けた・死んで数えなくなった・タスクの無い役職に替わった) の時は、1 つも終えずに勝たせない
+        if (GameData.Instance.TotalTasks + vtTotal <= 0) return false;
         if (GameData.Instance.TotalTasks + vtTotal <= GameData.Instance.CompletedTasks + vtComp)
         {
             reason = GameOverReason.CrewmatesByTask;

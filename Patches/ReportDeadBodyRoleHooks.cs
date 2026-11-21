@@ -30,7 +30,11 @@ partial class ReportDeadBodyPatch
         foreach (var role in CustomRoleManager.AllActiveRoles.Values.ToArray())
         {
             var reason = RoleBase.DontReportReason.None;
-            if (role.CancelReportDeadBody(reporter, target, ref reason))
+            // 1 つの役職の例外で通報の前置きごと止まり、会議が開かなくならないよう、例外は「取り消さない」として扱う
+            bool cancels;
+            try { cancels = role.CancelReportDeadBody(reporter, target, ref reason); }
+            catch (System.Exception ex) { Logger.Exception(ex, "CancelReportDeadBody"); cancels = false; }
+            if (cancels)
             {
                 Logger.Info($"{reporter.GetNameWithRole().RemoveHtmlTags()} の通報を {role.Player.GetNameWithRole().RemoveHtmlTags()} が取り消し ({reason})", "ReportDeadBody");
                 DontReport[reporter.PlayerId] = (0f, reason);
