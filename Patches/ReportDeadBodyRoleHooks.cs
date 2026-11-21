@@ -74,6 +74,15 @@ partial class ReportDeadBodyPatch
         ForceReport = Cancelcheck is false;
         reporter.ReportDeadBody(target);
         ForceReport = false;
+        // 通報の前置きが捨てた (会議を開くと決めなかった) 時は、立てた旗と見出しを戻す。
+        // 残すと次の追放の後まで、会議の前を見る能力が止まったままになり、次の会議に古い見出しが出る。
+        // 預かった通報と、自分を対象にする会議 (前置きの判定を通らず本編へ渡す) は後で開くので戻さない
+        if (!MeetingStates.MeetingCalled && !GameStates.IsMeeting && !TownOfHostL.Modules.Revive.HasHeldReport
+            && target?.PlayerId != reporter.PlayerId)
+        {
+            GameStates.CalledMeeting = false;
+            meetingInfo = null;
+        }
     }
 
     [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Start))]

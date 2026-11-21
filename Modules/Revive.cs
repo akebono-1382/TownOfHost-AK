@@ -74,6 +74,8 @@ public static class Revive
     public static bool WasRevived(byte playerId) => revived.Contains(playerId);
     /// <summary>復活の SetRole が落ち着くまでの間か。この間に会議を開かない。</summary>
     public static bool IsSettling => Time.realtimeSinceStartup < settlingUntil;
+    /// <summary>落ち着くまで預かっている通報があるか</summary>
+    public static bool HasHeldReport => hasHeldReport;
     /// <summary>最後に会議・追放の画面が出ていた時刻 (Time.realtimeSinceStartup)</summary>
     public static float LastMeetingAt => lastMeetingAt;
 

@@ -643,6 +643,7 @@ partial class ReportDeadBodyPatch
         //通報者が死んでいる場合、本処理で会議がキャンセルされるのでここで止める
         if (__instance.Data.IsDead) return false;
 
+        bool countedSyncButton = false;
         if (Options.SyncButtonMode.GetBool() && target == null)
         {
             Logger.Info("最大:" + Options.SyncedButtonCount.GetInt() + ", 現在:" + Options.UsedButtonCount, "ReportDeadBody");
@@ -651,15 +652,19 @@ partial class ReportDeadBodyPatch
                 Logger.Info("使用可能ボタン回数が最大数を超えているため、ボタンはキャンセルされました。", "ReportDeadBody");
                 return false;
             }
-            else Options.UsedButtonCount++;
+            else { Options.UsedButtonCount++; countedSyncButton = true; }
             if (Options.SyncedButtonCount.GetFloat() == Options.UsedButtonCount)
             {
                 Logger.Info("使用可能ボタン回数が最大数に達しました。", "ReportDeadBody");
             }
         }
 
-        // 役職による通報の取り消し
-        if (RoleCancelsReport(__instance, target)) return false;
+        // 役職による通報の取り消し (開かなかったボタンは、同期ボタンの回数に数えない)
+        if (RoleCancelsReport(__instance, target))
+        {
+            if (countedSyncButton) Options.UsedButtonCount--;
+            return false;
+        }
         // 残りの緊急ボタンの数
         if (target == null)
         {
