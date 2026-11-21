@@ -236,7 +236,7 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
                 {
                     if (Player == null || !Player.IsAlive()) return;
                     // 会議や追放の演出の間は変身の電文を送らず、明けてから戻す
-                    if (GameStates.IsMeeting || GameStates.ExiledAnimate || GameStates.CalledMeeting || AntiBlackout.IsCached || AntiBlackout.IsRevertPending)
+                    if (GameStates.InMeetingWindow)
                     {
                         _ = new LateTask(Revert, 1f, "VultureShapeEnd");
                         return;

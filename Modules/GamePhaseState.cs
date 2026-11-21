@@ -13,6 +13,14 @@ public static partial class GameStates
     /// <summary>イントロ中</summary>
     public static bool Intro;
 
+    /// <summary>
+    /// 会議の呼び出しから、追放の演出の後に暗転対策が客の画面の役職を戻し終えるまで (ホストのみ)。
+    /// この間に客へ送る変身・役職・死は、客の画面の頭数や見え方を崩しうるので、明けてから送る
+    /// </summary>
+    public static bool InMeetingWindow
+        => CalledMeeting || ExiledAnimate || MeetingHud.Instance || ExileController.Instance
+        || AntiBlackout.IsCached || AntiBlackout.IsRevertPending;
+
     [GameModuleInitializer]
     public static void InitPhaseFlags()
     {
