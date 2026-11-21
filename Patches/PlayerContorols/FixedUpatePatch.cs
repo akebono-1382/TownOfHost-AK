@@ -190,7 +190,7 @@ namespace TownOfHost
                     OcCoVentUsePatch.timer += Time.fixedDeltaTime;
                     var kiruta = GameStates.IsInTask && !GameStates.Intro && ((__instance.Is(CustomRoles.Amnesiac) && !(roleclass as Amnesiac).Realized) || __instance.Is(CustomRoles.OneWolf));
                     //キルターゲットの上書き処理
-                    if (GameStates.IsInTask && !GameStates.Intro && ((!(__instance.Is(CustomRoleTypes.Impostor) || __instance.Is(CustomRoles.Egoist)) && (roleinfo?.IsDesyncImpostor ?? false)) || kiruta) && !__instance.Data.IsDead)
+                    if (GameStates.IsInTask && !GameStates.Intro && ((!(__instance.Is(CustomRoleTypes.Impostor) || __instance.Is(CustomRoles.Egoist)) && (roleinfo?.IsDesyncImpostor ?? false)) || kiruta) && __instance.IsAlive())
                     {
                         PlayerControl target = null;
                         if (!__instance.CanUseKillButton()) target = null;
@@ -337,7 +337,7 @@ namespace TownOfHost
 
                         if ((target.Is(CustomRoles.Connecting) && seerSubrole.Contains(CustomRoles.Connecting)
                         && !target.Is(CustomRoles.WolfBoy) && seerRole is not WolfBoy)
-                        || (target.Is(CustomRoles.Connecting) && seer.Data.IsDead))
+                        || (target.Is(CustomRoles.Connecting) && seer.IsAlive() is false))
                         {
                             Mark.Append($"<color={UtilsRoleText.GetRoleColorCode(CustomRoles.Connecting)}>Ψ</color>");
                         }

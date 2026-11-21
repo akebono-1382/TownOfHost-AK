@@ -53,8 +53,8 @@ public sealed class FortuneTeller : RoleBase, ISelfVoter
     public static OptionItem Optionrolename;
     public static OptionItem OptionRole;
     public static OptionItem OptionCanTaskcount;
-    public static OptionItem Option1MeetingMaximum;
     public static OptionItem OptAwakening;
+    public static OptionItem Option1MeetingMaximum;
     public float Max;
     public AbilityVoteMode Votemode;
     public bool rolename;

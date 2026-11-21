@@ -51,7 +51,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
     static OptionItem OptionAfterMeetingRemoveCharge;//会議後どれだけ空気が抜けるか
     static OptionItem OptionSuicide;//爆破時、自殺するか
     static OptionItem OptionTargetImpostor;//爆破時、味方を巻き込むか
-
+    static OptionItem OptionSyncKillCool; //キルクと同期するか
     float NowBoomDis;//現在の爆破範囲 0以下なら使用不可
     float NowWalkCount;//歩数計
     Vector2 OldPosition;//前チェックの位置
@@ -72,6 +72,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
         OptionMaxBoomDis = FloatOptionItem.Create(RoleInfo, 13, OptionName.BalloonerMaxBoomDis, new(0.25f, 15, 0.25f), 3, false).SetValueFormat(OptionFormat.Multiplier);
         OptionChargeWalk = FloatOptionItem.Create(RoleInfo, 14, OptionName.BalloonerChargeWalk, new(1, 300, 1), 60, false);
         OptionChargeStep = FloatOptionItem.Create(RoleInfo, 15, OptionName.BalloonerChargeStep, new(0.1f, 5, 0.05f), 0.5f, false).SetValueFormat(OptionFormat.Multiplier);
+        OptionSyncKillCool = BooleanOptionItem.Create(RoleInfo, 19, GeneralOption.SyncCoolKillcool, false, false);
         OptionAfterMeetingRemoveCharge = FloatOptionItem.Create(RoleInfo, 16, OptionName.BalloonerAfterMeetingRemoveCharge, new(0, 30, 0.5f), 0.5f, false).SetValueFormat(OptionFormat.Multiplier);
         OptionSuicide = BooleanOptionItem.Create(RoleInfo, 17, OptionName.BalloonerSuicide, false, false);
         OptionTargetImpostor = BooleanOptionItem.Create(RoleInfo, 18, OptionName.BalloonerTargetImpostor, true, false);
@@ -139,7 +140,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
     internal static bool IsInExplosionRange(PlayerControl source, PlayerControl target, float radius)
         => source != null && target != null
             && Vector2.Distance(target.GetTruePosition(), source.GetTruePosition()) <= radius;
-
+    bool IUsePhantomButton.IsresetAfterKill => OptionSyncKillCool.GetBool();
     void IUsePhantomButton.OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
         if (NowBoomDis <= 0)
@@ -169,8 +170,13 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
             ResetBalloon();
             SendRPC();
             UtilsNotifyRoles.NotifyRoles();
+            if (!OptionSyncKillCool.GetBool())
+            {
+                AdjustKillCooldown = true;
+                return;
+            }
+            Player.SetKillCooldown(delay: true);
         }
-        Player.SetKillCooldown(delay: true);
     }
 
     public override void AfterMeetingTasks()

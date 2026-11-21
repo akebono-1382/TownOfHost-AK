@@ -12,6 +12,7 @@ namespace TownOfHost.Roles.AddOns.Crewmate
     {
         private static readonly int Id = 19300;
         public static Color RoleColor = UtilsRoleText.GetRoleColor(CustomRoles.Workhorse);
+        public static string SubRoleMark = Utils.ColorString(RoleColor, "Ｗｏ");
         public static List<byte> playerIdList = new();
         private static OptionItem OptionAssignOnlyToCrewmate;
         private static OptionItem OptionNumCommonTasks;

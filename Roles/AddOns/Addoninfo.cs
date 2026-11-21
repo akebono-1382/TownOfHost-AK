@@ -32,6 +32,9 @@ class AddondataInfo
                 CustomRoles.Moon => "э",
                 CustomRoles.Absorb => "Г",
                 CustomRoles.Trapping => "Ｔr",
+                CustomRoles.LastImpostor => "ＬＩ",
+                CustomRoles.LastNeutral => "ＬＮ",
+
                 //デバフ
                 CustomRoles.SlowStarter => "Ｓs",
                 CustomRoles.Notvoter => "Ｖ",
@@ -45,6 +48,9 @@ class AddondataInfo
                 CustomRoles.News => "Ｎ",
                 CustomRoles.Notice => "Ｎо",
                 CustomRoles.Sunglasses => "Ｓ",
+                CustomRoles.OneWolf => "Ｏ",
+                CustomRoles.Workhorse => "Ｗｏ",
+
                 _ => ""
             };
         }

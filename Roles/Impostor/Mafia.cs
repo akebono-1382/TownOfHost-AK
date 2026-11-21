@@ -1,3 +1,13 @@
+//Memo
+//現マフィア廃止に向けて
+//マフィア代替役入れて、マフィアをGJと統一コンビにする。
+//代替役設定↓
+/*
+    初期キルク　0/180/0.5 45
+    キルク短縮受けれるimp人数/生存/ターンも off/99/1  1/5/5
+    キルク　0/180/0.5 20
+*/
+
 using AmongUs.GameOptions;
 using Hazel;
 using TownOfHost.Modules;

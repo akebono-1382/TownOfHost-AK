@@ -31,6 +31,7 @@ using static TownOfHost.PlayerCatch;
 using TownOfHost.Roles.Core.Descriptions;
 using TownOfHost.Patches;
 using TownOfHost.Roles.AddOns.Common;
+using TownOfHost.Roles.Crewmate;
 
 namespace TownOfHost
 {
@@ -62,7 +63,7 @@ namespace TownOfHost
             var text = __instance.freeChatField.textArea.text;
             if (ChatHistory.Count == 0 || ChatHistory[^1] != text) ChatHistory.Add(text);
             ChatControllerUpdatePatch.CurrentHistorySelection = ChatHistory.Count;
-                        if (text.StartsWith("/") && !text.Contains("cmd"))
+            if (text.StartsWith("/") && !text.Contains("cmd"))
             {
                 text = "/cmd " + text;
             }
@@ -446,6 +447,10 @@ namespace TownOfHost
                         canceled = true;
                         subArgs = args.Length < 2 ? "" : args[1];
                         GetRolesInfo(subArgs, byte.MaxValue);
+                        break;
+
+                    case "/brv":
+                        Busker.CheckBuskerCommand(PlayerControl.LocalPlayer);
                         break;
 
                     case "/m":
@@ -1435,6 +1440,11 @@ namespace TownOfHost
                     subArgs = args.Length < 2 ? "" : args[1];
                     GetRolesInfo(subArgs, player.PlayerId);
                     break;
+
+                case "/brv":
+                    Busker.CheckBuskerCommand(player);
+                    break;
+
                 case "/m":
                 case "/myrole":
                     if (GameStates.IsInGame)

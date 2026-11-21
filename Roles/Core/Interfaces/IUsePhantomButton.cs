@@ -56,7 +56,7 @@ public interface IUsePhantomButton
     /// <param name="AdjustKillCooldown">trueで使用後キルクールの調整処理を行う</param>
     /// <param name="ResetCooldown">trueでアビリティリセット処理を入れる<br/> nullでファントム戻し処理もいれない</param>
     public abstract void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown);
-    /// <summary>ワンクリックボタンが使えるか</summary>
+    /// <summary>ワンクリックボタンが使えるか　シェイプシフター置き換えでもワンクリになるので注意が必要</summary>
     public bool UseOneclickButton => true;
     /// <summary>ファントム置き換えにするかどうか</summary>
     public bool IsPhantomRole => true;

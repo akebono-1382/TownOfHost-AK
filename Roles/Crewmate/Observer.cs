@@ -47,7 +47,7 @@ public sealed class Observer : RoleBase
         OptionMaxMonitoring = IntegerOptionItem.Create(RoleInfo, 10, Option.maxMonitoringCount, new(0, 99, 1), 10, false)
             .SetValueFormat(OptionFormat.Times);
         OptAwakening = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.TaskAwakening, false, false);
-        OptAwakeningTaskCount = FloatOptionItem.Create(RoleInfo, 12, GeneralOption.AwakeningTaskcount, new(0f, 255f, 1f), 5f, false, OptAwakening);
+        OptAwakeningTaskCount = FloatOptionItem.Create(RoleInfo, 12, GeneralOption.AwakeningTaskcount, new(0f, 255f, 0.5f), 5f, false, OptAwakening);
     }
 
     enum Option

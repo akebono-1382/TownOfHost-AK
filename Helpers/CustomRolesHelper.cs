@@ -49,7 +49,8 @@ namespace TownOfHost
         public static bool IsVanilla(this CustomRoles role)
         {
             return
-                role is CustomRoles.Crewmate or
+                role is
+                CustomRoles.Crewmate or
                 CustomRoles.Engineer or
                 CustomRoles.Scientist or
                 CustomRoles.Noisemaker or
@@ -302,11 +303,12 @@ namespace TownOfHost
             {
                 var roleOpt = Main.NormalOptions?.RoleOptions;
                 if (roleOpt is null) return 0;
-                return role switch
+                return Options.GetRoleCount(role);
+                /*return role switch
                 {
                     CustomRoles.Crewmate => roleOpt.GetNumPerGame(RoleTypes.Crewmate),
                     _ => Options.GetRoleCount(role)
-                };
+                };*/
             }
             else
             {
@@ -318,11 +320,12 @@ namespace TownOfHost
             if (role.IsVanilla())
             {
                 var roleOpt = Main.NormalOptions.RoleOptions;
-                return role switch
+                return Options.GetRoleChance(role);
+                /*return role switch
                 {
                     CustomRoles.Crewmate => roleOpt.GetChancePerGame(RoleTypes.Crewmate),
                     _ => Options.GetRoleChance(role)
-                };
+                };*/
             }
             else
             {

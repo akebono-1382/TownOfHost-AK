@@ -216,7 +216,7 @@ public sealed class AlienHijack : RoleBase, IMeetingTimeAlterable, IImpostor, IN
             }
             return;
         }
-        if (AbductVictim != null)//会議明けでのペングインを考えてこっち優先。
+        if (AbductVictim != null)//会議明けでのペンギンを考えてこっち優先。
         {
             if (target != AbductVictim)
             {

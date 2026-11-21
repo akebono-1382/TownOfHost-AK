@@ -679,7 +679,7 @@ public sealed class AllArounder : RoleBase, ISystemTypeUpdateHook, IKillFlashSee
         }
         RandomTrapper = IntegerOptionItem.Create(RoleInfo, 30, OptionName.AllArounderRandomTrapper, new(0, 100, 5), 100, false).SetValueFormat(OptionFormat.Percent);
         {
-            OptionBlockMoveTime = FloatOptionItem.Create(RoleInfo, 31, OptionName.TrapperBlockMoveTime, new(1f, 180f, 1f), 5f, false, RandomTrapper)
+            OptionBlockMoveTime = FloatOptionItem.Create(RoleInfo, 31, OptionName.TrapperBlockMoveTime, new(0.5f, 180f, 0.5f), 5f, false, RandomTrapper)
             .SetValueFormat(OptionFormat.Seconds);
         }
         RandomOpportunist = IntegerOptionItem.Create(RoleInfo, 32, OptionName.AllArounderRandomOpportunist, new(0, 100, 5), 100, false).SetValueFormat(OptionFormat.Percent);

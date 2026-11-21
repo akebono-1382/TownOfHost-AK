@@ -4,8 +4,7 @@ namespace TownOfHost
 {
     public class Xorshift : IRandom
     {
-        // 参考元
-        public const string REFERENCE = "https://ja.wikipedia.org/wiki/Xorshift";
+        //参考元 => https://ja.wikipedia.org/wiki/Xorshift
 
         private uint num;
 

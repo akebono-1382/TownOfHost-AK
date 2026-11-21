@@ -226,7 +226,7 @@ public sealed class JackalAlien : RoleBase, IMeetingTimeAlterable, ILNKiller, IS
             }
             return;
         }
-        if (AbductVictim != null)//会議明けでのペングインを考えてこっち優先。
+        if (AbductVictim != null)//会議明けでのペンギンを考えてこっち優先。
         {
             if (target != AbductVictim)
             {
@@ -1050,7 +1050,7 @@ public sealed class JackalAlien : RoleBase, IMeetingTimeAlterable, ILNKiller, IS
         + RateNotifier + RateTimeThief + RateTairo + RateMayor + RateMole + RateProgresskiller + RateNekokabocha + RateInsider
         + RatePenguin)
         {
-            Logger.Info("Alienはペングインになりました", "JAlien");
+            Logger.Info("Alienはペンギンになりました", "JAlien");
             mode = AlienMode.Penguin;
         }
         else if (chance <= RateVampire + RateEvilHacker + RateLimiter + RatePuppeteer + RateStealth + RateRemotekiller

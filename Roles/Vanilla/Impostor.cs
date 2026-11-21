@@ -8,12 +8,17 @@ namespace TownOfHost.Roles.Vanilla;
 public sealed class Impostor : RoleBase, IImpostor
 {
     public static readonly SimpleRoleInfo RoleInfo =
-        SimpleRoleInfo.CreateForVanilla(
+        SimpleRoleInfo.Create(
             typeof(Impostor),
             player => new Impostor(player),
-            RoleTypes.Impostor,
-            null
-            , from: From.AmongUs
+            CustomRoles.Impostor,
+            () => RoleTypes.Impostor,
+            CustomRoleTypes.Impostor,
+            27600,
+            null,
+            "imp",
+            OptionSort: (0, 0),
+            from: From.AmongUs
         );
     public Impostor(PlayerControl player)
     : base(

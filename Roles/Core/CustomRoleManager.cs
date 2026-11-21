@@ -890,6 +890,12 @@ public enum CustomRoles
     Cloner,
     EvilChainer,
     Poisoner,
+    EvilSwapper,
+    Purge,
+    Underdog,
+    Miner,
+    Blinker,
+    Timeleaper,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,
@@ -973,6 +979,8 @@ public enum CustomRoles
     Satellite,
     Merlin,
     DebateMaster,
+    Busker,
+    Medium,
     //DEBUG only Crewmate
     Analyzer,
     //Neutral

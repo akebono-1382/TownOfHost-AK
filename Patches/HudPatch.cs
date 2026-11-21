@@ -1,16 +1,16 @@
 using System;
 using System.Linq;
 using System.Text;
-using HarmonyLib;
-using UnityEngine;
 using AmongUs.GameOptions;
-
+using HarmonyLib;
 using TownOfHost.Roles;
+using TownOfHost.Roles.AddOns.Common;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
-using TownOfHost.Roles.AddOns.Common;
+using TownOfHost.Roles.Crewmate;
 using TownOfHost.Roles.Impostor;
 using TownOfHost.Roles.Neutral;
+using UnityEngine;
 using static TownOfHost.Translator;
 
 namespace TownOfHost
@@ -74,7 +74,7 @@ namespace TownOfHost
                     GameSettings.transform.SetParent(__instance.roomTracker.transform.parent);
                     GameSettings.rectTransform.pivot = new(-0.67f, 1.13f);
                     GameSettingsAspectPos = GameSettings.gameObject.AddComponent<AspectPosition>();
-                    // GameSettingsAspectPos.OnEnable(); 特に理由がないならエラーがでるので... / もし必要なら代わりにAdjustPosition()叩くと解決すると思う
+                    //GameSettingsAspectPos.OnEnable(); 特に理由がないならエラーがでるので... / もし必要なら代わりにAdjustPosition()叩くと解決すると思う
                     GameSettingsAspectPos.Alignment = AspectPosition.EdgeAlignments.LeftTop;
                     GameSettingsAspectPos.DistanceFromEdge = new(-2.5f, 0, 0);
                 }
@@ -83,7 +83,7 @@ namespace TownOfHost
                 GameSettings.SetOutlineColor(Color.black);
                 GameSettings.SetOutlineThickness(0.13f);
                 GameSettings.fontSizeMin =
-                GameSettings.fontSizeMax = (TranslationController.Instance.currentLanguage.languageID == SupportedLangs.Japanese || Main.ForceJapanese.Value) ? 1.05f : 1.2f;
+                GameSettings.fontSizeMax = TranslationController.Instance.currentLanguage.languageID == SupportedLangs.Japanese ? 1.05f : 1.2f;
 
                 var settaskPanel = GameStates.IsLobby && !GameStates.Intro && !GameStates.IsCountDown && !GameStates.InGame && GameSettingMenu.Instance && (GameSettingMenuStartPatch.ModSettingsButton?.selected ?? false);// && GameSettingMenuStartPatch.NowRoleTab is not CustomRoles.NotAssigned;
                 GameObject.Find("Main Camera/Hud/TaskDisplay")?.gameObject?.SetActive(settaskPanel);
@@ -466,12 +466,14 @@ namespace TownOfHost
                     Mark.Append(Utils.ColorString(UtilsRoleText.GetRoleColor(CustomRoles.OneLove), "♡"));
                 }
 
+            bool busker = PlayerControl.LocalPlayer.GetRoleClass() is Busker b && b.NowFakeDeath;
+
             if (target.Is(CustomRoles.Connecting) && PlayerControl.LocalPlayer.Is(CustomRoles.Connecting)
             && !target.Is(CustomRoles.WolfBoy) && !PlayerControl.LocalPlayer.Is(CustomRoles.WolfBoy))
             {
                 Mark.Append($"<{UtilsRoleText.GetRoleColorCode(CustomRoles.Connecting)}>Ψ</color>");
             }
-            else if (target.Is(CustomRoles.Connecting) && PlayerControl.LocalPlayer.Data.IsDead)
+            else if (target.Is(CustomRoles.Connecting) && PlayerControl.LocalPlayer.Data.IsDead && !busker)
             {
                 Mark.Append($"<{UtilsRoleText.GetRoleColorCode(CustomRoles.Connecting)}>Ψ</color>");
             }

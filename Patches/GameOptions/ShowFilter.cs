@@ -140,9 +140,14 @@ class ShowFilter
                         rolelist.Add(CustomRoles.Braid);
                         rolelist.Add(CustomRoles.Fool);
                     }
-                    Options.CustomRoleSpawnChances.Keys.Do(r => rolelist.Add(r));
+                    foreach (var r in Options.CustomRoleSpawnChances.Keys)
+                    {
+                        if (!rolelist.Contains(r)) rolelist.Add(r);
+                    }
                     foreach (var customrole in rolelist)
                     {
+                        if (buttons.ContainsKey(customrole)) continue;
+
                         if (customrole.IsMainRole() is false && !role.addon) continue;
                         if (customrole is CustomRoles.SKMadmate or CustomRoles.Emptiness or CustomRoles.HASFox or CustomRoles.HASTroll) continue;
                         if (IsFilterOption is false && !role.addon)
@@ -292,7 +297,10 @@ class ShowFilter
                     Scrollbargameobject.GetComponentInParent<Scroller>().ContentYBounds.max = numItems > 9 ? 0.5f * (numItems / 4 - 9) : 0;
                     Scrollbargameobject.GetComponentInParent<Scroller>().Inner.localPosition = Vector3.zero;
                 }
-                catch { }
+                catch (System.Exception ex)
+                {
+                    Logger.Exception(ex, "ShowFilter");
+                }
             }
         }
         //Show 

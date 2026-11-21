@@ -46,7 +46,7 @@ public sealed class Trapper : RoleBase
 
     private static void SetupOptionItem()
     {
-        OptionBlockMoveTime = FloatOptionItem.Create(RoleInfo, 10, OptionName.TrapperBlockMoveTime, new(1f, 180f, 1f), 5f, false)
+        OptionBlockMoveTime = FloatOptionItem.Create(RoleInfo, 10, OptionName.TrapperBlockMoveTime, new(0.5f, 180f, 0.5f), 5f, false)
             .SetValueFormat(OptionFormat.Seconds);
         Awakening = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.TaskAwakening, false, false);
         AwakeningTask = IntegerOptionItem.Create(RoleInfo, 12, GeneralOption.AwakeningTaskcount, new(1, 255, 1), 5, false, Awakening);

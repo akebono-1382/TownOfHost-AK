@@ -1,18 +1,19 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hazel;
-using UnityEngine;
 using AmongUs.GameOptions;
-
+using Hazel;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 using TownOfHost.Roles.Impostor;
 using TownOfHost.Roles.Neutral;
+using UnityEngine;
 using static TownOfHost.Translator;
+using static UnityEngine.ProBuilder.AutoUnwrapSettings;
 
 namespace TownOfHost.Roles.Crewmate;
 
-public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
+public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner, IPetTrigger
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
@@ -56,6 +57,10 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
     /// 0そのまま1シェリフ2タスク
     /// </summary>
     public static OptionItem CommsMode;
+    /// <summary>
+    /// ペット切り替え
+    /// </summary>
+    static OptionItem PetSwitch;
     public bool Taskmode;
     float nowcool;
     int LastCooltime;
@@ -64,6 +69,7 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
         SheriffMisfireKillsTarget,
         SheriffShotLimit,
         SheriffCanKillAllAlive,
+        SwitchSheriffPetSwitch,
         SheriffCanKillNeutrals,
         SheriffCanKill,
         SwitchSheriffCommsmode,
@@ -76,7 +82,7 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
     int Flug3;
     public static readonly string[] KillOption =
     {
-        "SheriffCanKillAll", "SheriffCanKillSeparately"
+        "SheriffCanKillAll", "SheriffCanKillSeparately", "ColoredOff"
     };
     public static readonly string[] Mode =
     {
@@ -84,10 +90,10 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
     };
 
     public ISchrodingerCatOwner.TeamType SchrodingerCatChangeTo => ISchrodingerCatOwner.TeamType.Crew;
-
+    public override bool CanClickUseVentButton => !PetSwitch.GetBool();
     private static void SetupOptionItem()
     {
-        KillCooldown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, new(0f, 990f, 1f), 30f, false)
+        KillCooldown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, new(0f, 180f, 0.5f), 30f, false)
             .SetValueFormat(OptionFormat.Seconds);
         OverrideKilldistance.Create(RoleInfo, 8);
         MisfireKillsTarget = BooleanOptionItem.Create(RoleInfo, 11, OptionName.SheriffMisfireKillsTarget, false, false);
@@ -95,6 +101,7 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
             .SetValueFormat(OptionFormat.Times);
         CommsMode = StringOptionItem.Create(RoleInfo, 21, OptionName.SwitchSheriffCommsmode, Mode, 0, false);
         CanKillAllAlive = BooleanOptionItem.Create(RoleInfo, 15, OptionName.SheriffCanKillAllAlive, true, false);
+        PetSwitch = BooleanOptionItem.Create(RoleInfo, 23, OptionName.SwitchSheriffPetSwitch, false);
         SetUpKillTargetOption(CustomRoles.Madmate, 13);
         CanKillNeutrals = StringOptionItem.Create(RoleInfo, 14, OptionName.SheriffCanKillNeutrals, KillOption, 0, false);
         SetUpNeutralOptions(30);
@@ -107,7 +114,7 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
         {
             if (Event.CheckRole(neutral) is false) continue;
             if (neutral is CustomRoles.SchrodingerCat) continue;
-            SetUpKillTargetOption(neutral, idOffset, true, CanKillNeutrals);
+            SetUpKillTargetOption(neutral, idOffset, true, CanKillNeutrals, () => CanKillNeutrals.GetValue() is 1);
             idOffset++;
         }
         foreach (var catType in EnumHelper.GetAllValues<ISchrodingerCatOwner.TeamType>())
@@ -120,25 +127,34 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
             idOffset++;
         }
     }
-    public static void SetUpKillTargetOption(CustomRoles role, int idOffset, bool defaultValue = true, OptionItem parent = null)
+    public static void SetUpKillTargetOption(CustomRoles role, int idOffset, bool defaultValue = true, OptionItem parent = null, Func<bool> enable = null)
     {
         var id = RoleInfo.ConfigId + idOffset;
         if (parent == null) parent = RoleInfo.RoleOption;
         var roleName = UtilsRoleText.GetRoleName(role);
         Dictionary<string, string> replacementDic = new() { { "%role%", Utils.ColorString(UtilsRoleText.GetRoleColor(role), roleName) } };
-        KillTargetOptions[role] = BooleanOptionItem.Create(id, OptionName.SheriffCanKill + "%role%", defaultValue, RoleInfo.Tab, false).SetParent(parent).SetParentRole(CustomRoles.SwitchSheriff);
+        if (enable is null)
+        {
+            if (parent is null) enable = () => true;
+            else if (parent is BooleanOptionItem) enable = () => parent.GetBool();
+            else enable = () => true;
+        }
+        KillTargetOptions[role] = BooleanOptionItem.Create(id, OptionName.SheriffCanKill + "%role%", defaultValue, RoleInfo.Tab, false)
+            .SetParent(parent).SetParentRole(CustomRoles.SwitchSheriff).SetEnabled(enable);
         KillTargetOptions[role].ReplacementDictionary = replacementDic;
     }
     public static void SetUpSchrodingerCatKillTargetOption(ISchrodingerCatOwner.TeamType catType, int idOffset, bool defaultValue = true, OptionItem parent = null)
     {
         var id = RoleInfo.ConfigId + idOffset;
         parent ??= RoleInfo.RoleOption;
+        if (catType is ISchrodingerCatOwner.TeamType.MilkyWay && !Event.CheckRole(CustomRoles.Altair)) return;
         // (%team%陣営)
         var inTeam = GetString("In%team%", new Dictionary<string, string>() { ["%team%"] = GetRoleString(catType.ToString()) });
         // シュレディンガーの猫(%team%陣営)
         var catInTeam = Utils.ColorString(SchrodingerCat.GetCatColor(catType), UtilsRoleText.GetRoleName(CustomRoles.SchrodingerCat) + inTeam);
         Dictionary<string, string> replacementDic = new() { ["%role%"] = catInTeam };
-        SchrodingerCatKillTargetOptions[catType] = BooleanOptionItem.Create(id, OptionName.SheriffCanKill + "%role%", defaultValue, RoleInfo.Tab, false).SetParent(parent).SetParentRole(CustomRoles.SwitchSheriff);
+        SchrodingerCatKillTargetOptions[catType] = BooleanOptionItem.Create(id, OptionName.SheriffCanKill + "%role%", defaultValue, RoleInfo.Tab, false)
+            .SetParent(parent).SetParentRole(CustomRoles.SwitchSheriff).SetEnabled(() => CanKillNeutrals.GetValue() is 1);
         SchrodingerCatKillTargetOptions[catType].ReplacementDictionary = replacementDic;
     }
     public override void Add()
@@ -172,13 +188,28 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
         && (CanKillAllAlive.GetBool() || GameStates.AlreadyDied)
         && ShotLimit > 0;
     public bool CanUseSabotageButton() => false;
-
-    public override bool CanUseAbilityButton() => !Is(Player);
+    public override bool CanUseAbilityButton() => Taskmode;
     public override void ApplyGameOptions(IGameOptions opt)
     {
         opt.SetVision(false);
-        AURoleOptions.EngineerCooldown = 0;
-        AURoleOptions.EngineerInVentMaxTime = 0.5f;
+        AURoleOptions.EngineerCooldown = PetSwitch.GetBool() ? nowcool : 0f;
+        AURoleOptions.EngineerInVentMaxTime = 0.1f;
+    }
+    bool IPetTrigger.OnPetUsed()
+    {
+        if (!CanChangeMode()) return false;
+        if (PetSwitch.GetBool() is false) return false;
+        ModeSwitching();
+        SendRPC();
+        if (Taskmode)
+        {
+            Player.RpcResetAbilityCooldown(Sync: true);
+        }
+        else
+        {
+            _ = new LateTask(() => Player.SetKillCooldown(nowcool), 0.2f, "", true);
+        }
+        return true;
     }
     public void OnCheckMurderAsKiller(MurderInfo info)
     {
@@ -286,6 +317,7 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
     public static bool CanBeKilledBy(PlayerControl player)
     {
         var cRole = player.GetCustomRole();
+        if (player.Is(CustomRoleTypes.Neutral) && CanKillNeutrals.GetValue() == 2) return false;
 
         if (player.GetRoleClass() is SchrodingerCat schrodingerCat)
         {
@@ -357,14 +389,6 @@ public sealed class SwitchSheriff : RoleBase, IKiller, ISchrodingerCatOwner
         if (nowcool > 0)
             nowcool -= Time.fixedDeltaTime;
         else nowcool = 0;
-        var now = (int)nowcool;
-        if (now != LastCooltime)
-        {
-            if (now <= 0) player.SetKillCooldown(0.5f);//相互性が取れないので～
-            LastCooltime = now;
-            if (player != PlayerControl.LocalPlayer)
-                UtilsNotifyRoles.NotifyRoles(OnlyMeName: true, SpecifySeer: player);
-        }
     }
     public override bool OnSabotage(PlayerControl _, SystemTypes sabotage)
     {

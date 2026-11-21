@@ -1,11 +1,14 @@
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
+using UnityEngine;
 using static TownOfHost.Options;
 namespace TownOfHost.Roles.AddOns.Neutral
 {
     public static class LastNeutral
     {
         private static readonly int Id = 19800;
+        private static Color RoleColor = UtilsRoleText.GetRoleColor(CustomRoles.LastNeutral);
+        public static string SubRoleMark = Utils.ColorString(RoleColor, "ＬＮ");
         public static byte currentId = byte.MaxValue;
         public static OptionItem KillCooldown;
         public static OptionItem GiveKillCooldown;
@@ -46,7 +49,7 @@ namespace TownOfHost.Roles.AddOns.Neutral
         {
             SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.LastNeutral, new(1, 1, 1));
             GiveKillCooldown = StringOptionItem.Create(Id + 6, "Givekillcoondown", Givekillcooldownmode, 3, TabGroup.Addons, false).SetParentRole(CustomRoles.LastNeutral).SetParent(CustomRoleSpawnChances[CustomRoles.LastNeutral]);
-            KillCooldown = FloatOptionItem.Create(Id + 8, "KillCooldown", new(0f, 180f, 1f), 15f, TabGroup.Addons, false).SetParentRole(CustomRoles.LastNeutral).SetParent(GiveKillCooldown)
+            KillCooldown = FloatOptionItem.Create(Id + 8, "KillCooldown", new(0f, 180f, 0.5f), 15f, TabGroup.Addons, false).SetParentRole(CustomRoles.LastNeutral).SetParent(GiveKillCooldown)
                 .SetValueFormat(OptionFormat.Seconds);
             ChKilldis = BooleanOptionItem.Create(Id + 7, "ChKilldis", false, TabGroup.Addons, false).SetParentRole(CustomRoles.LastNeutral).SetParent(CustomRoleSpawnChances[CustomRoles.LastNeutral]);
             OverrideKilldistance.Create(Id + 5, TabGroup.Addons, CustomRoles.LastNeutral);

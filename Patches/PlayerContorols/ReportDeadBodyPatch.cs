@@ -8,12 +8,50 @@ using TownOfHost.Roles.AddOns.Common;
 using TownOfHost.Roles.Impostor;
 using TownOfHost.Roles.Neutral;
 using static TownOfHost.Roles.Core.RoleBase;
+using UnityEngine;
+using Hazel;
 
 namespace TownOfHost
 {
     [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.ReportDeadBody))]
     class ReportDeadBodyPatch
     {
+        /// <summary>通報キャンセル時、通報者のクライアントだけに死体を作り直させる(バニラ対応)</summary>
+        public static void RespawnBodyFor(PlayerControl reporter, NetworkedPlayerInfo target)
+        {
+            if (!AmongUsClient.Instance.AmHost) return;
+            var dead = target?.Object;
+            if (reporter == null || dead == null) return;
+            var clientId = reporter.GetClientId();
+            if (clientId < 0) return;
+
+            // 元の死体位置に戻してから(ゴーストが動いている可能性があるため)
+            Vector2 pos = new(0f, 0f);
+            foreach (var body in Object.FindObjectsOfType<DeadBody>())
+            {
+                if (body.ParentId == target.PlayerId)
+                    pos = body.transform.position;
+            }
+            dead.RpcSnapToDesync(reporter, pos);
+
+            var sender = CustomRpcSender.Create("RespawnBody", SendOption.Reliable);
+            sender.AutoStartRpc(dead.NetId, (byte)RpcCalls.MurderPlayer, clientId)
+                  .WriteNetObject(dead)
+                  .Write((int)(MurderResultFlags.Succeeded | MurderResultFlags.DecisionByHost))
+                  .EndRpc();
+            sender.SendMessage();
+        }
+        /// <summary>通報キャンセル時、通報者本人のローカルにある DeadBody.Reported を戻す</summary>
+        public static void ResetReportedFlag(PlayerControl reporter, NetworkedPlayerInfo target = null)
+        {
+            if (reporter == null || !reporter.AmOwner) return;
+            if (GameStates.IsMeeting) return;
+            foreach (var body in UnityEngine.Object.FindObjectsOfType<DeadBody>())
+            {
+                if (target == null || body.ParentId == target.PlayerId)
+                    body.Reported = false;
+            }
+        }
         public static Dictionary<byte, bool> CanReport;
         public static Dictionary<byte, bool> IgnoreBodyids;
         public static Dictionary<byte, string> ChengeMeetingInfo;
@@ -52,6 +90,7 @@ namespace TownOfHost
             if (!CanReport[__instance.PlayerId])
             {
                 GameStates.CalledMeeting = false;
+                ResetReportedFlag(__instance, target);
                 WaitReport[__instance.PlayerId].Add(target);
                 Logger.Warn($"{__instance.GetNameWithRole().RemoveHtmlTags()}:通報禁止中のため可能になるまで待機します", "ReportDeadBody");
 
@@ -75,7 +114,11 @@ namespace TownOfHost
                 return true;
             }
 
-            if (!CheckMeeting(__instance, target)) return false;
+            if (!CheckMeeting(__instance, target))
+            {
+                ResetReportedFlag(__instance, target);
+                return false;
+            }
 
             PlayerControlRpcUseZiplinePatch.OnMeeting(__instance, target);
 
@@ -471,6 +514,7 @@ namespace TownOfHost
 
             if (target == null) return;
 
+            ResetReportedFlag(target);
             if (!DontReport.TryAdd(target.PlayerId, (0, reason))) DontReport[target.PlayerId] = (0, reason);
             Logger.Info($"ホストが会議をキャンセルしました: {reason}", "CancelMeeting");
         }

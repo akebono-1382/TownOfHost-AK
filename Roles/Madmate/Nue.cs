@@ -5,9 +5,10 @@ using TownOfHost.Modules;
 using TownOfHost.Modules.ChatManager;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
+using TownOfHost.Roles.Neutral;
 using UnityEngine;
 
-namespace TownOfHost.Roles.Neutral;
+namespace TownOfHost.Roles.Madmate;
 
 public sealed class Nue : RoleBase, ISelfVoter, IKiller
 {

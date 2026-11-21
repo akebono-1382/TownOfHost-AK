@@ -62,7 +62,8 @@ public sealed class ShrineMaiden : RoleBase, ISelfVoter
     enum Option
     {
         TellMaximum,
-        AbilityVotemode, AbilityUseVote,
+        AbilityVotemode,
+        AbilityUseVote,
     }
     public enum VoteMode
     {

@@ -26,10 +26,8 @@ namespace TownOfHost;
 
 public class MersenneTwister : IRandom
 {
-    // 参考元
-    public const string REFERENCE_HOMEPAGE = "http://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/mt.html";
-    public const string REFERENCE_SOURCE_CODE = "https://github.com/vpmedia/template-unity/blob/master/Framework/Assets/Frameworks/URandom/MersenneTwister.cs";
-
+    // 参考元 → http://www.math.sci.hiroshima-u.ac.jp/m-mat/MT/mt.html
+    //           https://github.com/vpmedia/template-unity/blob/master/Framework/Assets/Frameworks/URandom/MersenneTwister.cs
     public MersenneTwister() : this((Int32)DateTime.UtcNow.Ticks) { }
     public MersenneTwister(Int32 seed)
     {

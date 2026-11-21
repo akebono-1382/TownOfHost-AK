@@ -41,7 +41,7 @@ public sealed class VentBeginner : RoleBase
 
     private static void SetupOptionItem()
     {
-        FirstCooldown = FloatOptionItem.Create(RoleInfo, 10, Options.FirstCooldown, new(15f, 60f, 1f), 45f, false);
+        FirstCooldown = FloatOptionItem.Create(RoleInfo, 10, Options.FirstCooldown, new(15f, 60f, 0.5f), 45f, false);
     }
 
     public override bool OnCompleteTask(uint taskid)

@@ -141,7 +141,7 @@ namespace TownOfHost
             GiveSlacker = BooleanOptionItem.Create(idStart++, "GiveSlacker", false, tab, false)
                 .SetParentRole(role).SetParent(GiveAddons);
             GiveSunglasses = BooleanOptionItem.Create(idStart++, "GiveSunglasses", false, tab, false).SetParentRole(role).SetParent(GiveAddons);
-            SunglassesVisionmagnification = FloatOptionItem.Create(idStart++, "SunglassesVisionmagnification", new(1f, 100f, 1f), 75, tab, false)
+            SunglassesVisionmagnification = FloatOptionItem.Create(idStart++, "SunglassesVisionmagnification", new(1f, 100f, 0.5f), 75, tab, false)
                 .SetParent(GiveSunglasses).SetParentRole(role).SetValueFormat(OptionFormat.Percent)
                     .SetTooltip(() => string.Format(Translator.GetString("SunglassesVisionmagnification_Info"), Main.NormalOptions.CrewLightMod, Main.NormalOptions.CrewLightMod * SunglassesVisionmagnification.GetFloat() * 0.01f, Main.NormalOptions.ImpostorLightMod, Main.NormalOptions.ImpostorLightMod * SunglassesVisionmagnification.GetFloat() * 0.01f));
             GiveTrapping = BooleanOptionItem.Create(idStart++, "GiveTrapping", false, TabGroup.Addons, false)

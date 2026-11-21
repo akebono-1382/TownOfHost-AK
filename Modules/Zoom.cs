@@ -10,7 +10,7 @@ namespace TownOfHost
         private static int last = 0;
         public static void Postfix()
         {
-            if ((GameStates.IsFreePlay && Input.GetKey(KeyCode.LeftAlt)) || (Options.UseZoom.GetBool() && GameStates.IsInGame && !PlayerControl.LocalPlayer.IsAlive() && !PlayerControl.LocalPlayer.IsGhostRole() && GameStates.IsInTask))
+            if ((GameStates.IsFreePlay && Input.GetKey(KeyCode.LeftAlt)) || (Options.UseZoom.GetBool() /*&& GameStates.IsInGame*/ && !PlayerControl.LocalPlayer.IsAlive() && !PlayerControl.LocalPlayer.IsGhostRole()/* && GameStates.IsInTask*/))
             {
                 //チャットなど開いていて、動けない状態 なら操作を無効にする
                 if (!PlayerControl.LocalPlayer.CanMove) return;

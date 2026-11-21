@@ -511,7 +511,7 @@ namespace TownOfHost
             MessageWriter w = AmongUsClient.Instance.StartRpcImmediately(player.NetId, (byte)RpcCalls.Exiled, SendOption.None, seer.GetClientId());
             AmongUsClient.Instance.FinishRpcImmediately(w);
         }
-        public static void RpcExileV3(this PlayerControl player, bool force = false)
+        public static void RpcExileV3(this PlayerControl player, bool force = false, bool meetingex = false)
         {
             //自視点以外当たり判定が変わらないから霊界だと挙動不審になる。
             if (player == null) return;
@@ -536,7 +536,8 @@ namespace TownOfHost
                 return;
             }
             if (player.IsAlive() || !(player.Data.Role.Role is RoleTypes.CrewmateGhost or RoleTypes.ImpostorGhost or RoleTypes.GuardianAngel or RoleTypes.SpiritGuide))
-            {//道連れ、イビルマジック等で死んでいないのにIsDeadを変更する場合はモーションを入れる。
+            {
+                //道連れ、イビルマジック等で死んでいないのにIsDeadを変更する場合はモーションを入れる。
                 if (!force)
                 {
                     if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId)
@@ -658,11 +659,35 @@ namespace TownOfHost
         public static void RpcSnapToDesync(this PlayerControl pc, PlayerControl seer, Vector2 position)
         {
             var net = pc.NetTransform;
+
+            if (seer == PlayerControl.LocalPlayer)
+            {
+                net.SnapTo(position);
+                return;
+            }
             var num = (ushort)(net.lastSequenceId + 2);
             MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(net.NetId, (byte)RpcCalls.SnapTo, SendOption.None, seer.GetClientId());
             NetHelpers.WriteVector2(position, messageWriter);
             messageWriter.Write(num);
             AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
+        }
+        public static void RpcRevive(this PlayerControl pc)
+        {
+            // 1. ホスト側の死亡状態を戻す
+            pc.Data.IsDead = false;
+            pc.Data.MarkDirty();            // NetworkedPlayerInfoを全員に同期
+            pc.Revive();                    // ホスト自身のローカル状態(layer・見た目など)を戻す
+
+            // 2. 全員に「ゴースト役職ではない」役職を送る
+            //    (元の基底役職 = Crewmate / Engineer / Impostor など)
+            pc.RpcSetRole(pc.GetCustomRole().GetRoleTypes(), true);
+
+            // 3. MOD側の状態も戻す
+            var state = PlayerState.GetByPlayerId(pc.PlayerId);
+            state.IsDead = false;
+            state.DeathReason = CustomDeathReason.etc;
+
+            RPC.RpcSyncAllNetworkedPlayer();
         }
         /// <summary>
         /// 自身の色を特定の人視点のみ変更する。<br/>

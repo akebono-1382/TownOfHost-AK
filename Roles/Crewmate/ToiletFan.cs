@@ -44,13 +44,13 @@ public sealed class ToiletFan : RoleBase
     int flug;
     private static void SetupOptionItem()
     {
-        OptionCooldown = FloatOptionItem.Create(RoleInfo, 10, OptionName.Cooldown, new(1f, 30f, 1f), 5f, false)
+        OptionCooldown = FloatOptionItem.Create(RoleInfo, 10, OptionName.Cooldown, new(1f, 30f, 0.5f), 5f, false)
             .SetValueFormat(OptionFormat.Seconds);
     }
     public override bool OnEnterVent(PlayerPhysics physics, int ventId)
     {
         flug = Main.NormalOptions.MapId is 4 ? 1 : 2;
-        if (flug is not 1) return false;
+        //if (flug is not 1) return false;
         ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Doors, 79);
         ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Doors, 80);
         ShipStatus.Instance.RpcUpdateSystem(SystemTypes.Doors, 81);

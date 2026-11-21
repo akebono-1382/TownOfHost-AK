@@ -26,28 +26,40 @@ public sealed class ShapeMaster : RoleBase, IImpostor
         player
     )
     {
-        shapeshiftDuration = OptionShapeshiftDuration.GetFloat();
-        anime = OptionShapeAnime.GetBool();
+        //anime = OptionShapeAnime.GetBool();
     }
-    private static OptionItem OptionShapeshiftDuration;
-    static OptionItem OptionShapeAnime;
+    public static OptionItem ShapeshifterCooldown;
+    public static OptionItem ShapeshifterDuration;
+    public static OptionItem ShapeshifterLeaveSkin;
+    //static OptionItem OptionShapeAnime;
     private static float shapeshiftDuration;
-    static bool anime;
+    ///static bool anime;
     public static void SetupOptionItem()
     {
-        OptionShapeshiftDuration = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.ShapeDuration, new(1, 1000, 1), 10, false);
-        OptionShapeAnime = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.PlayShapeAnimate, false, false);
+        ShapeshifterCooldown = FloatOptionItem.Create(RoleInfo, 3, "ShapeshifterCooldown", new(0f, 180f, 0.5f), 15f, false)
+            .SetValueFormat(OptionFormat.Seconds);
+        ShapeshifterDuration = FloatOptionItem.Create(RoleInfo, 4, "ShapeshifterDuration", new(0f, 180f, 0.5f), 5f, false)
+            .SetValueFormat(OptionFormat.Seconds).SetZeroNotation(OptionZeroNotation.Infinity);
+        ShapeshifterLeaveSkin = BooleanOptionItem.Create(RoleInfo, 5, StringNames.ShapeshifterLeaveSkin, false, false);
+        //OptionShapeAnime = BooleanOptionItem.Create(RoleInfo, 11, GeneralOption.PlayShapeAnimate, false, false);
     }
 
-    public override void ApplyGameOptions(IGameOptions opt)
+    /*public override void ApplyGameOptions(IGameOptions opt)
     {
         AURoleOptions.ShapeshifterCooldown = 0f;
         AURoleOptions.ShapeshifterLeaveSkin = false;
         AURoleOptions.ShapeshifterDuration = shapeshiftDuration;
+    }*/
+    public override void ApplyGameOptions(IGameOptions opt)
+    {
+        AURoleOptions.ShapeshifterCooldown = ShapeshifterCooldown.GetFloat();
+        AURoleOptions.ShapeshifterDuration = ShapeshifterDuration.GetFloat();
+        AURoleOptions.ShapeshifterLeaveSkin = ShapeshifterLeaveSkin.GetBool();
     }
     public override bool CheckShapeshift(PlayerControl target, ref bool animate)
     {
-        animate = anime;
+        animate = false;
+        //animate = anime;
         return true;
     }
 }

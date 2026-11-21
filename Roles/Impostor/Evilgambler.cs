@@ -22,8 +22,8 @@ public sealed class Evilgambler : RoleBase, IImpostor
             );
     public Evilgambler(PlayerControl player)
     : base(
-    RoleInfo,
-    player
+        RoleInfo,
+        player
     )
     {
         gamblecollect = OptionGamblecollect.GetInt();

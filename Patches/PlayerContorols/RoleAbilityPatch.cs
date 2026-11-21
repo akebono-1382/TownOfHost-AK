@@ -29,6 +29,7 @@ namespace TownOfHost
             {
                 return false;
             }
+            if (MeetingShapeshift.OnCheckShapeshift(__instance, target)) return false;
 
             var roleclass = __instance.GetRoleClass();
 
@@ -138,7 +139,7 @@ namespace TownOfHost
                 logger.Info("変身者が死亡しているため変身をキャンセルします");
                 return false;
             }
-            if (instance.Is(CustomRoles.SKMadmate) || instance.Is(CustomRoles.Jackaldoll))
+            if (instance.Is(CustomRoles.SKMadmate)/* || instance.Is(CustomRoles.Jackaldoll)*/)
             {
                 logger.Info("変身者がサイドキックされてるため変身をキャンセルします");
                 return false;

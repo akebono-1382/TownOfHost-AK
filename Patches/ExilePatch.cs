@@ -164,7 +164,7 @@ namespace TownOfHost
                         exiled.Object != null && //exiled.Objectがnullでない
                     !Iscallassasin)
                     {
-                        exiled.Object.RpcExileV3();
+                        exiled.Object.RpcExileV3(meetingex: true);
                     }
 
                     if (Options.ExAftermeetingflash.GetBool())

@@ -67,7 +67,7 @@ public sealed class WhiteHacker : RoleBase
         .SetValueFormat(OptionFormat.Seconds);
         TrackerDelay = FloatOptionItem.Create(RoleInfo, 15, "TrackerDelay", new(0f, 180f, 0.5f), 5f, false, CanUseTrackAbility)
                 .SetValueFormat(OptionFormat.Seconds);
-        TrackerDuration = FloatOptionItem.Create(RoleInfo, 16, "TrackerDuration", new(0f, 180f, 1f), 5f, false, CanUseTrackAbility)
+        TrackerDuration = FloatOptionItem.Create(RoleInfo, 16, "TrackerDuration", new(0f, 180f, 0.5f), 5f, false, CanUseTrackAbility)
                 .SetValueFormat(OptionFormat.Seconds).SetZeroNotation(OptionZeroNotation.Infinity);
         OptionMaximum = IntegerOptionItem.Create(RoleInfo, 11, Option.WhiteHackerTrackTimes, new(1, 99, 1), 1, false)
             .SetValueFormat(OptionFormat.Times);

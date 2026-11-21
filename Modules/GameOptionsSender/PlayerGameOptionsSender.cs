@@ -399,6 +399,7 @@ namespace TownOfHost.Modules
         }
 
         public override bool AmValid()
+
         {
             try
             {

@@ -182,7 +182,11 @@ namespace TownOfHost
             try { Logger.Info("パッチを登録", "MeetingChatHider"); } catch { }
             return true;
         }
-        public static void Postfix() => MeetingChatHider.OnMeetingStart();
+        public static void Postfix()
+        {
+            MeetingChatHider.OnMeetingStart();
+            MeetingShapeshift.OnMeetingStart();
+        }
     }
 
     [HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.OnDestroy))]

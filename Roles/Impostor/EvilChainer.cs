@@ -20,7 +20,11 @@ public sealed class EvilChainer : RoleBase, IImpostor, IUsePhantomButton
             27200,
             SetupOptionItem,
             "Ecr",
-            OptionSort: (2, 9)
+            OptionSort: (2, 9),
+            assignInfo: new RoleAssignInfo(CustomRoles.EvilChainer, CustomRoleTypes.Impostor)
+            {
+                AssignCountRule = new(1, 1, 1)
+            }
         );
     public EvilChainer(PlayerControl player)
     : base(
@@ -181,7 +185,7 @@ public sealed class EvilChainer : RoleBase, IImpostor, IUsePhantomButton
 
     public override string GetProgressText(bool comms = false, bool GameLog = false)
     {
-        if (NowLimit <= 0 && (Chain.Count >= OneChainMax.GetInt() && OneChainMax.GetInt() != 0))
+        if (NowLimit <= 0 && Chain.Count >= OneChainMax.GetInt() && OneChainMax.GetInt() != 0)
         {
             return "";
         }

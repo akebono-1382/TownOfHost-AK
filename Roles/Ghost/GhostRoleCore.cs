@@ -71,9 +71,9 @@ class GhostRoleCore
         Amanojaku.SetupCustomOption();
         LastImpostor.SetupCustomOption();
         LastNeutral.SetupCustomOption();
-        Workhorse.SetupCustomOption();
-
         Stack.SetupCustomOption();
+        Notice.SetupCustomOption();
+
         ObjectOptionitem.Create(1_000_116, "Buff-Addon", true, null, TabGroup.Addons)
             .SetOptionName(() => "Buff Add-on").SetColor(UtilsRoleText.GetRoleColor(CustomRoles.Moon)).SetTag(CustomOptionTags.Role);
         //バフ(ゲッサー→特定陣営→会議効果→タスクターン)
@@ -106,11 +106,11 @@ class GhostRoleCore
         SlowStarter.SetupCustomOption();
         Notvoter.SetupCustomOption();
         Elector.SetupCustomOption();
+        Workhorse.SetupCustomOption();
         InfoPoor.SetupCustomOption();
         NonReport.SetupCustomOption();
         Sunglasses.SetupCustomOption();
         Transparent.SetupCustomOption();
-        Notice.SetupCustomOption();
         Water.SetupCustomOption();
         Clumsy.SetupCustomOption();
         Slacker.SetupCustomOption();

@@ -26,11 +26,10 @@ namespace TownOfHost.Roles.AddOns.Common
         AssignOptionItem MadmateAssignTarget;
         static readonly CustomRoles[] InvalidRoles =
         {
-            CustomRoles.Phantom,
+            CustomRoles.Amnesiac,
             CustomRoles.Emptiness,
             CustomRoles.GuardianAngel,
             CustomRoles.SKMadmate,
-            CustomRoles.Jackaldoll,
             CustomRoles.HASFox,
             CustomRoles.HASTroll,
             CustomRoles.GM,

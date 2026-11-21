@@ -31,6 +31,7 @@ public enum From
     Love_Couple_Mod,
     TownOfHost_K,
     TownOfHost_hamo,
+    TownOfHost_Pko,
 }
 public class SimpleRoleInfo
 {
@@ -143,7 +144,7 @@ public class SimpleRoleInfo
         CustomRoleTypes customRoleType,
         int configId,
         OptionCreatorDelegate optionCreator,
-        string chatCommand,
+        string chatCommand = "",
         string colorCode = "",
         (int TabNumber, int SortNumber)? OptionSort = null,
         bool isDesyncImpostor = false,
@@ -286,7 +287,7 @@ public class SimpleRoleInfo
             default:
                 roleName = CustomRoles.Crewmate;
                 customRoleType = CustomRoleTypes.Crewmate;
-                configId = -1;
+                configId = 27700;
                 OptionSort = (0, 0);
                 break;
         }

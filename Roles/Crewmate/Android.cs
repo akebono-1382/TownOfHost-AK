@@ -62,7 +62,7 @@ public sealed class Android : RoleBase
     {
         CoolTime = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.Cooldown, new(0f, 180f, 0.5f), 20f, false).SetValueFormat(OptionFormat.Seconds);
         InVentTime = FloatOptionItem.Create(RoleInfo, 11, GeneralOption.EngineerInVentCooldown, new(1f, 60f, 0.5f), 7.5f, false).SetValueFormat(OptionFormat.Seconds);
-        TaskAddBattery = FloatOptionItem.Create(RoleInfo, 12, OptionName.AndroidAddTaskBattery, new(1f, 100f, 1f), 10f, false, RemoveBattery).SetValueFormat(OptionFormat.Percent);
+        TaskAddBattery = FloatOptionItem.Create(RoleInfo, 12, OptionName.AndroidAddTaskBattery, new(0.5f, 100f, 0.5f), 10f, false, RemoveBattery).SetValueFormat(OptionFormat.Percent);
         RemoveBattery = BooleanOptionItem.Create(RoleInfo, 13, OptionName.AndroidRemoveBattery, true, false);
         Remove = FloatOptionItem.Create(RoleInfo, 14, OptionName.AndroidRemove, new(1f, 100f, 0.1f), 7.5f, false, RemoveBattery).SetValueFormat(OptionFormat.Percent);
         RemoveTime = FloatOptionItem.Create(RoleInfo, 15, OptionName.AndroidRemoveTime, new(1f, 180f, 0.5f), 4.0f, false, RemoveBattery).SetValueFormat(OptionFormat.Seconds);

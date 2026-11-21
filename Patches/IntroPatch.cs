@@ -564,7 +564,7 @@ namespace TownOfHost
 
                         // 位置見えなくなるのがなあ...って感じなので
                         // 良い代替法見つかるまで封印。
-                        /*if (UtilsTask.HasTasks(pl.Data, false) is false && pl.GetCustomRole().GetRoleInfo()?.BaseRoleType?.Invoke().IsCrewmate() is true)
+                        /*if (UtilsTask.HasTasks(pl.Data, false) is false && pl.GetCustomRole().GetRoleInfo()?.BaseRoleType?.Invoke().IsCrewmate())
                         {
                             foreach (var task in pl.myTasks)
                             {

@@ -57,9 +57,9 @@ namespace TownOfHost
         // ==========
         //Sorry for many Japanese comments.
         public const string PluginGuid = "com.akebono.TownOfHost-AK";
-        public const string PluginVersion = "3.11.09";
-        public const string PluginShowVersion = "3.11.09";
-        public const string ModVersion = ".09";//リリースver用バージョン変更
+        public const string PluginVersion = "11.21";
+        public const string PluginShowVersion = "11.21a";
+        public const string ModVersion = ".0";//リリースver用バージョン変更
 
         /// 配布するデバッグ版なのであればtrue。リリース時にはfalseにすること。
         public static bool DebugVersion = true;
@@ -80,8 +80,6 @@ namespace TownOfHost
         //Client Options
         public static ConfigEntry<string> HideName { get; private set; }
         public static ConfigEntry<string> HideColor { get; private set; }
-        public static ConfigEntry<bool> ForceJapanese { get; private set; }
-        public static ConfigEntry<bool> JapaneseRoleName { get; private set; }
         public static ConfigEntry<float> MessageWait { get; private set; }
         public static ConfigEntry<bool> ShowResults { get; private set; }
         public static ConfigEntry<bool> Hiderecommendedsettings { get; private set; }
@@ -117,7 +115,7 @@ namespace TownOfHost
         public static ConfigEntry<float> LastKillCooldown { get; private set; }
         public static ConfigEntry<float> LastShapeshifterCooldown { get; private set; }
         public static ConfigEntry<bool> LastKickModClient { get; private set; }
-        public static bool UseingJapanese => ForceJapanese.Value || TranslationController.Instance.currentLanguage.languageID is SupportedLangs.Japanese;
+        public static bool UseingJapanese => TranslationController.Instance.currentLanguage.languageID is SupportedLangs.Japanese;
         public static OptionBackupData RealOptionsData;
         public static Dictionary<byte, string> AllPlayerNames = new();
         public static Dictionary<(byte, byte), string> LastNotifyNames;
@@ -180,8 +178,6 @@ namespace TownOfHost
             //Client Options
             HideName = Config.Bind("Client Options", "Hide Game Code Name", "Town Of Host-AK");
             HideColor = Config.Bind("Client Options", "Hide Game Code Color", $"{ModColor}");
-            ForceJapanese = Config.Bind("Client Options", "Force Japanese", false);
-            JapaneseRoleName = Config.Bind("Client Options", "Japanese Role Name", true);
             ShowResults = Config.Bind("Result", "Show Results", true);
             Hiderecommendedsettings = Config.Bind("Client Options", "Hide recommended settings", false);
             UseWebHook = Config.Bind("Client Options", "UseWebHook", false);

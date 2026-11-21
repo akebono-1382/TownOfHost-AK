@@ -5,6 +5,7 @@ using UnityEngine;
 using TownOfHost.Attributes;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
+using TownOfHost.Roles.Impostor;
 
 namespace TownOfHost
 {
@@ -76,6 +77,7 @@ namespace TownOfHost
         {
             if (!GameStates.IsInGame) return;
             if (player.GetRoleClass() is not IDoubleTrigger role) return;
+            if (player.GetRoleClass() is Amnesiac am && !am.Realized) return;
 
             if (!DoubleTriggerList.TryGetValue(player.PlayerId, out var triggerData)) throw new Exception($"{player.name} is Not Registered DoubleTrigger");
             if (!GameStates.IsInTask)

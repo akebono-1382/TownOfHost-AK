@@ -3,6 +3,7 @@ using Hazel;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TownOfHost.Patches.ISystemType;
 

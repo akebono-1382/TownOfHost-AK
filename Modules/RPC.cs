@@ -39,7 +39,8 @@ namespace TownOfHost
         SyncModSystem,
         SyncAssassinState,
         GetAchievement,
-        PublicRoleSync
+        PublicRoleSync,
+        AmnesiacSyncRealize,
     }
     public enum Sounds
     {
@@ -287,6 +288,11 @@ namespace TownOfHost
                             }
                         }
                     }
+                    break;
+                case CustomRPC.AmnesiacSyncRealize:
+                    byte amnesiacid = reader.ReadByte();
+                    if (CustomRoleManager.GetByPlayerId(amnesiacid) is not Roles.Impostor.Amnesiac amnesiacrole) break;
+                    amnesiacrole.ReceiveRealizeRPC(reader);
                     break;
             }
         }

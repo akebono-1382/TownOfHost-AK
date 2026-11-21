@@ -75,13 +75,20 @@ static class Event
     }
     public static Dictionary<CustomRoles, Func<bool>> EventRoles = new()
     {
-        //とりま封印もここに書いてるけど、変えていいかも
+        //封印
         {CustomRoles.Explosioner, () => false},
         {CustomRoles.RocketLauncher, () => false},
         {CustomRoles.Altair,() => false},
         {CustomRoles.Vega,() => false},
         {CustomRoles.Cakeshop, () => false},
         {CustomRoles.Poisoner, () => false},
+        {CustomRoles.Busker, () => false},
+        {CustomRoles.Camouflager, () => false},
+
+        //一旦封印
+        {CustomRoles.Godfather, () => false},
+        {CustomRoles.Janitor, () => false},
+        {CustomRoles.Mafia, () => false},
     };
 
     public static Dictionary<(CustomRoles role, bool isApiData), bool> cachedEventFlags = new(EventRoles.Count);

@@ -19,6 +19,7 @@ using static TownOfHost.PlayerCatch;
 using static TownOfHost.UtilsTask;
 using TownOfHost.Roles.Core.Descriptions;
 using TownOfHost.Roles.Neutral;
+using TownOfHost.Roles.Crewmate;
 namespace TownOfHost
 {
     public static class UtilsRoleText
@@ -46,12 +47,18 @@ namespace TownOfHost
         public static string GetDisplayRoleName(PlayerControl seer, PlayerControl seen = null)
         {
             seen ??= seer;
+            bool buskerdead = false;
+            if (seer.PlayerId != seen.PlayerId && seer.GetRoleClass() is Busker busker && busker.NowFakeDeath)
+            {
+                buskerdead = true;
+            }
+
             var seerrole = seer.GetCustomRole();
             //デフォルト値
             bool enabled = seer == seen
                         || seen.Is(CustomRoles.GM)
-                        || (Main.VisibleTasksCount && !seer.Is(CustomRoles.AsistingAngel) && !seer.IsAlive() && (!seer.IsGhostRole() || Options.GhostRoleCanSeeOtherRoles.GetBool()) && (Options.GhostCanSeeOtherRoles.GetBool() || !Options.GhostOptions.GetBool()))
-                        || (Options.InsiderMode.GetBool() && seerrole.IsImpostor())
+                        || (Main.VisibleTasksCount && !seer.Is(CustomRoles.AsistingAngel) && !buskerdead && !seer.IsAlive() && (!seer.IsGhostRole() || Options.GhostRoleCanSeeOtherRoles.GetBool()) && (Options.GhostCanSeeOtherRoles.GetBool() || !Options.GhostOptions.GetBool()))
+                        || (Options.InsiderMode.GetBool() && seerrole.IsImpostor() && !buskerdead)
                         || (Options.CanSeeImpostorRole.GetBool() && seerrole.IsImpostor() && seen.GetCustomRole().IsImpostor())
                         || (Options.ImpostorCanSeeSKMadmate.GetBool() && seerrole.IsImpostor() && seen.Is(CustomRoles.SKMadmate))
                         || seen.Is(CustomRoles.MadonnaLovers) && seer.Is(CustomRoles.MadonnaLovers) && Madonna.IsKnowRole
@@ -65,7 +72,7 @@ namespace TownOfHost
             //属性が見れるか
             bool addon = seer == seen
                         || seen.Is(CustomRoles.GM)
-                        || (Main.VisibleTasksCount && !seer.Is(CustomRoles.AsistingAngel) && !seer.IsAlive() && (!seer.IsGhostRole() || Options.GhostRoleCanSeeOtherRoles.GetBool()) && (Options.GhostCanSeeOtherRoles.GetBool() || !Options.GhostOptions.GetBool()))
+                        || (Main.VisibleTasksCount && !seer.Is(CustomRoles.AsistingAngel) && !buskerdead && !seer.IsAlive() && (!seer.IsGhostRole() || Options.GhostRoleCanSeeOtherRoles.GetBool()) && (Options.GhostCanSeeOtherRoles.GetBool() || !Options.GhostOptions.GetBool()))
                         || (Options.InsiderMode.GetBool() && seerrole.IsImpostor());
 
             var (roleColor, roleText) = GetTrueRoleNameData(seen.PlayerId, addon);
@@ -110,10 +117,6 @@ namespace TownOfHost
                     if (subRole <= CustomRoles.NotAssigned) continue;
                     switch (subRole)
                     {
-                        case CustomRoles.LastImpostor:
-                        case CustomRoles.LastNeutral:
-                            roleText = GetRoleString("Last-") + roleText;
-                            break;
                         case CustomRoles.Amanojaku:
                             roleText = GetRoleString("Amanojaku") + roleText;
                             roleColor = GetRoleColor(CustomRoles.Amanojaku);
@@ -126,9 +129,6 @@ namespace TownOfHost
                             break;
                         case CustomRoles.Faction:
                             roleText = GetRoleColorAndtext(CustomRoles.Faction) + roleText;
-                            break;
-                        case CustomRoles.OneWolf:
-                            roleText = GetRoleColorAndtext(CustomRoles.OneWolf) + roleText;
                             break;
                     }
                 }
@@ -171,6 +171,10 @@ namespace TownOfHost
                         case CustomRoles.Moon: sb.Append(Moon.SubRoleMark); break;
                         case CustomRoles.Powerful: sb.Append(Powerful.SubRoleMark); break;
                         case CustomRoles.Absorb: sb.Append(Absorb.SubRoleMark); break;
+                        case CustomRoles.Trapping: sb.Append(Trapping.SubRoleMark); break;
+                        case CustomRoles.LastImpostor: sb.Append(LastImpostor.SubRoleMark); break;
+                        case CustomRoles.LastNeutral: sb.Append(LastNeutral.SubRoleMark); break;
+
                         //デバフ
                         case CustomRoles.SlowStarter: sb.Append(SlowStarter.SubRoleMark); break;
                         case CustomRoles.NonReport: sb.Append(NonReport.SubRoleMark); break;
@@ -184,6 +188,8 @@ namespace TownOfHost
                         case CustomRoles.News: sb.Append(News.SubRoleMark); break;
                         case CustomRoles.Notice: sb.Append(Notice.SubRoleMark); break;
                         case CustomRoles.Sunglasses: sb.Append(Sunglasses.SubRoleMark); break;
+                        case CustomRoles.OneWolf: sb.Append(OneWolf.SubRoleMark); break;
+                        case CustomRoles.Workhorse: sb.Append(Workhorse.SubRoleMark); break;
                     }
                 }
             }
@@ -365,11 +371,17 @@ namespace TownOfHost
             seen ??= seer;
             var comms = IsActive(SystemTypes.Comms);
             var seerisAlive = seer.IsAlive();
+
+            // 偽装死中のBuskerには、他人のタスク進捗やボタン数を見せない
+            bool buskerdead = seer.PlayerId != seen.PlayerId
+                           && seer.GetRoleClass() is Busker busker
+                           && busker.NowFakeDeath;
+
             bool enabled = seer == seen
-                        || (Main.VisibleTasksCount && !seer.Is(CustomRoles.AsistingAngel) && !seerisAlive && (!seer.IsGhostRole() || Options.GhostRoleCanSeeOtherTasks.GetBool()) && (Options.GhostCanSeeOtherTasks.GetBool() || !Options.GhostOptions.GetBool()));
+                        || (Main.VisibleTasksCount && !buskerdead && !seer.Is(CustomRoles.AsistingAngel) && !seerisAlive && (!seer.IsGhostRole() || Options.GhostRoleCanSeeOtherTasks.GetBool()) && (Options.GhostCanSeeOtherTasks.GetBool() || !Options.GhostOptions.GetBool()));
             string text = GetProgressText(seen.PlayerId, comms, ShowManegementText);
 
-            if ((Options.GhostCanSeeNumberOfButtonsOnOthers.GetBool() || !Options.GhostOptions.GetBool()) && !seerisAlive && !seer.Is(CustomRoles.AsistingAngel) && (!seer.IsGhostRole() || Options.GhostRoleCanSeeNumberOfButtonsOnOthers.GetBool()))
+            if ((Options.GhostCanSeeNumberOfButtonsOnOthers.GetBool() || !Options.GhostOptions.GetBool()) && !seerisAlive && !buskerdead && !seer.Is(CustomRoles.AsistingAngel) && (!seer.IsGhostRole() || Options.GhostRoleCanSeeNumberOfButtonsOnOthers.GetBool()))
                 text += $"[{PlayerState.GetByPlayerId(seen.PlayerId).NumberOfRemainingButtons}]";
 
             //seer側による変更
@@ -649,9 +661,6 @@ namespace TownOfHost
                             break;
                         case CustomRoles.Faction:
                             sb.Append(GetRoleColorAndtext(CustomRoles.Faction));
-                            break;
-                        case CustomRoles.OneWolf:
-                            sb.Append(GetRoleColorAndtext(CustomRoles.OneWolf));
                             break;
                     }
                 sb.Append(GetSubRolesText(id, mark: true, onlyaddon: true).RemoveColorTags().RemoveDeltext(" + ", ","));

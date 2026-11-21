@@ -1,5 +1,6 @@
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
+using UnityEngine;
 using static TownOfHost.Options;
 
 namespace TownOfHost.Roles.AddOns.Impostor
@@ -7,7 +8,10 @@ namespace TownOfHost.Roles.AddOns.Impostor
     public static class LastImpostor
     {
         private static readonly int Id = 19400;
+        private static Color RoleColor = UtilsRoleText.GetRoleColor(CustomRoles.LastImpostor);
+        public static string SubRoleMark = Utils.ColorString(RoleColor, "ＬＩ");
         public static byte currentId = byte.MaxValue;
+
         public static OptionItem KillCooldown;
         public static OptionItem GiveKillCooldown;
         public static readonly string[] Givekillcooldownmode =
@@ -42,7 +46,7 @@ namespace TownOfHost.Roles.AddOns.Impostor
         {
             SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.LastImpostor, new(1, 1, 1), fromtext: UtilsOption.GetFrom(From.TownOfHost));
             GiveKillCooldown = StringOptionItem.Create(Id + 7, "Givekillcoondown", Givekillcooldownmode, 3, TabGroup.Addons, false).SetParentRole(CustomRoles.LastImpostor).SetParent(CustomRoleSpawnChances[CustomRoles.LastImpostor]);
-            KillCooldown = FloatOptionItem.Create(Id + 8, "KillCooldown", new(0f, 180f, 1f), 15f, TabGroup.Addons, false).SetParentRole(CustomRoles.LastImpostor).SetParent(GiveKillCooldown)
+            KillCooldown = FloatOptionItem.Create(Id + 8, "KillCooldown", new(0f, 180f, 0.5f), 15f, TabGroup.Addons, false).SetParentRole(CustomRoles.LastImpostor).SetParent(GiveKillCooldown)
                 .SetValueFormat(OptionFormat.Seconds);
             OverrideKilldistance.Create(Id + 5, TabGroup.Addons, CustomRoles.LastImpostor);
             GiveGuesser = BooleanOptionItem.Create(Id + 11, "GiveGuesser", false, TabGroup.Addons, false).SetParentRole(CustomRoles.LastImpostor).SetParent(CustomRoleSpawnChances[CustomRoles.LastImpostor]);

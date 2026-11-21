@@ -6,6 +6,7 @@ using HarmonyLib;
 using Hazel;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
+using TownOfHost.Roles.Crewmate;
 using TownOfHost.Roles.Vanilla;
 using UnityEngine;
 using static UnityEngine.GraphicsBuffer;
@@ -132,6 +133,19 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
                     CustomWinnerHolder.NeutralWinnerIds.Add(Player.PlayerId);
                 }
             }
+            else
+            {
+                var targetpc = PlayerCatch.GetPlayerById(target.PlayerId);
+                if (targetpc != null && targetpc.GetRoleClass() is Busker busker && busker.NowFakeDeath)
+                {
+                    busker.NowFakeDeath = false;
+                    busker.Durationtimer = 999f;
+                    var state = PlayerState.GetByPlayerId(busker.Player.PlayerId);
+                    state.DeathReason = CustomDeathReason.Suicide;
+                    busker.Player.RpcMurderPlayer(busker.Player, true);
+                    state.SetDead();
+                }
+            }    
 
             //食べたときにシェイプを
             if (OptEatShape)

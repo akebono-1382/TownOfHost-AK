@@ -227,9 +227,10 @@ namespace TownOfHost
                 }
                 var rolech = seerRole?.NotifyRolesCheckOtherName ?? false;
                 bool Sended = false;
+                bool busker = seer.GetRoleClass() is Busker bus && bus.NowFakeDeath;
 
                 //seerが死んでいる場合など、必要なときのみ第二ループを実行する
-                if (seer.Data.IsDead //seerが死んでいる
+                if ((seer.Data.IsDead && !busker)//seerが死んでいる
                     || role.IsImpostor() //seerがインポスター
                     || seer.IsNeutralKiller() //seerがキル出来るニュートラル
                     || PlayerState.GetByPlayerId(seer.PlayerId).TargetColorData.Count > 0 //seer視点用の名前色データが一つ以上ある
@@ -293,16 +294,16 @@ namespace TownOfHost
                             var seenIsOne = targetsubrole.Contains(CustomRoles.OneLove);
                             if (seerri == tageri && seer.IsLovers() && !seerisone)
                                 TargetMark.Append(ColorString(GetRoleColor(seerri), "♥"));
-                            else if (seer.Data.IsDead && !seer.Is(tageri) && tageri != CustomRoles.NotAssigned && !seerisone)
+                            else if (seer.Data.IsDead && !busker && !seer.Is(tageri) && tageri != CustomRoles.NotAssigned && !seerisone)
                                 TargetMark.Append(ColorString(GetRoleColor(tageri), "♥"));
 
                             if ((seerisone && seenIsOne)
-                            || ((seer.Data.IsDead || seerisone) && target.PlayerId == Lovers.OneLovePlayer.BelovedId)
+                            || ((seer.Data.IsDead || seerisone) && target.PlayerId == Lovers.OneLovePlayer.BelovedId && !busker)
                             )
                                 TargetMark.Append("<#ff7961>♡</color>");
 
                             if (seerConnecting && targetsubrole.Contains(CustomRoles.Connecting) && (role is not CustomRoles.WolfBoy || !seerisAlive)
-                            || (seer.Data.IsDead && !seerConnecting && targetsubrole.Contains(CustomRoles.Connecting))
+                            || (seer.Data.IsDead && !seerConnecting && targetsubrole.Contains(CustomRoles.Connecting) && !busker)
                             ) //狼少年じゃないか死亡なら処理
                                 TargetMark.Append($"<#96514d>Ψ</color>");
 
@@ -678,18 +679,20 @@ namespace TownOfHost
                             var seerisone = seerSubrole.Contains(CustomRoles.OneLove);
                             var targetsubrole = target.GetCustomSubRoles();
                             var seenIsOne = targetsubrole.Contains(CustomRoles.OneLove);
+                            bool busker = seer.GetRoleClass() is Busker bus && bus.NowFakeDeath;
+
                             if (seerri == tageri && seer.IsLovers() && !seerisone)
                                 TargetMark.Append(ColorString(GetRoleColor(seerri), "♥"));
-                            else if (seer.Data.IsDead && !seer.Is(tageri) && tageri is not CustomRoles.NotAssigned and not CustomRoles.OneLove && !seerisone)
+                            else if (seer.Data.IsDead && !busker && !seer.Is(tageri) && tageri is not CustomRoles.NotAssigned and not CustomRoles.OneLove && !seerisone)
                                 TargetMark.Append(ColorString(GetRoleColor(tageri), "♥"));
 
                             if ((seerisone && seenIsOne)
-                            || ((seer.Data.IsDead || seerisone) && target.PlayerId == Lovers.OneLovePlayer.BelovedId)
+                            || ((seer.Data.IsDead || seerisone) && target.PlayerId == Lovers.OneLovePlayer.BelovedId && !busker)
                             )
                                 TargetMark.Append("<#ff7961>♡</color>");
 
                             if (seercone && targetsubrole.Contains(CustomRoles.Connecting) && (role is not CustomRoles.WolfBoy || !seerisAlive)
-                            || (seer.Data.IsDead && !seercone && targetsubrole.Contains(CustomRoles.Connecting))
+                            || (seer.Data.IsDead && !busker && !seercone && targetsubrole.Contains(CustomRoles.Connecting))
                             ) //狼少年じゃないか死亡なら処理
                                 TargetMark.Append($"<#96514d>Ψ</color>");
 

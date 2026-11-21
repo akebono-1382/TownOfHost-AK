@@ -220,7 +220,7 @@ public sealed class Alien : RoleBase, IMeetingTimeAlterable, IImpostor, INekomat
             }
             return;
         }
-        if (AbductVictim != null)//会議明けでのペングインを考えてこっち優先。
+        if (AbductVictim != null)//会議明けでのペンギンを考えてこっち優先。
         {
             if (target != AbductVictim)
             {
@@ -980,7 +980,7 @@ public sealed class Alien : RoleBase, IMeetingTimeAlterable, IImpostor, INekomat
         + RateNotifier + RateTimeThief + RateTairo + RateMayor + RateMole + RateProgresskiller + RateNekokabocha + RateInsider
         + RatePenguin)
         {
-            Logger.Info("Alienはペングインになりました", "Alien");
+            Logger.Info("Alienはペンギンになりました", "Alien");
             mode = AlienMode.Penguin;
         }
         else if (chance <= RateVampire + RateEvilHacker + RateLimiter + RatePuppeteer + RateStealth + RateRemotekiller

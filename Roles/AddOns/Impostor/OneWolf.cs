@@ -10,6 +10,8 @@ namespace TownOfHost.Roles.AddOns.Common
     public static class OneWolf
     {
         private static readonly int Id = 22700;
+        private static Color RoleColor = UtilsRoleText.GetRoleColor(CustomRoles.OneWolf);
+        public static string SubRoleMark = Utils.ColorString(RoleColor, "Ｏ");
         public static List<byte> playerIdList = new();
         public static OptionItem OptionImpostorkillMe;
         public static OptionItem OptionMeCanKillImpostor;

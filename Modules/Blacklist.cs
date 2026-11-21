@@ -136,11 +136,15 @@ public static class Blacklist
         {
             if (PlayerControl.LocalPlayer.GetClientId() == clientData.Id)
             {
+                //さすがにこれは変えたい。
                 AmongUsClient.Instance.ExitGame(DisconnectReasons.Custom);
                 if (Main.UseingJapanese)
-                    AmongUsClient.Instance.LastCustomDisconnect = "<size=0%>MOD</size><size=0%>NoFriend</size>" + "<size=225%>フレンドコードがありません</size>\n\nおうちのひとにみせてください。\n\n【保護者の方へ】\nフレンドコードが設定されていないため、\nこのMODをプレイできません。\nフレンド機能を有効にしてください。\nフレンド機能を有効にする：<link=\"https://parents.innersloth.com/ja/login\">https://parents.innersloth.com/ja/login</link>";
+                    AmongUsClient.Instance.LastCustomDisconnect =
+                        //"<size=0%>MOD</size><size=0%>NoFriend</size>" + "<size=225%>フレンドコードがありません</size>\n\nおうちのひとにみせてください。\n\n【保護者の方へ】\nフレンドコードが設定されていないため、\nこのMODをプレイできません。\nフレンド機能を有効にしてください。\nフレンド機能を有効にする：<link=\"https://parents.innersloth.com/ja/login\">https://parents.innersloth.com/ja/login</link>";
+                        "<size=0%>MOD</size><size=0%>NoFriend</size>" + "フレンドコードが設定されていないため、\nこのMODをプレイできません。\nフレンド機能を有効にしてください。\nフレンド機能を有効にする：<link=\"https://parents.innersloth.com/ja/login\">https://parents.innersloth.com/ja/login</link>";
                 else
-                    AmongUsClient.Instance.LastCustomDisconnect = "<size=0%>MOD</size><size=0%>NoFriend</size>" + "<size=225%>No friend code</size>\n\nPlease show it to your family.\n\n【For Parents】\nYou cannot play this mod because you do not have a friend code set up.。\nPlease enable the friend function.\nEnable the friend function:<link=\"https://parents.innersloth.com/ja/login\">https://parents.innersloth.com/ja/login</link>";
+                    AmongUsClient.Instance.LastCustomDisconnect =
+                        "<size=0%>MOD</size><size=0%>NoFriend</size>" + "<size=225%>No friend code</size>\n\nPlease show it to your family.\n\n【For Parents】\nYou cannot play this mod because you do not have a friend code set up.。\nPlease enable the friend function.\nEnable the friend function:<link=\"https://parents.innersloth.com/ja/login\">https://parents.innersloth.com/ja/login</link>";
             }
             //フレコ持ってないクライアントをキックするやつ。もとから実装してるなら下のコメントのところまで消して
             /*else if (CustomOptionHolder.DisconnectDontHaveFriendCodeOption.GetBool() && !ModHelpers.IsCustomServer())
@@ -190,7 +194,6 @@ internal class DisconnectPopupClosePatch
         catch (Exception e)
         {
             Logger.Info(e.ToString(), "BlackList");
-
         }
     }
 }
@@ -225,14 +228,17 @@ internal class OnGameJoinedPatch
                 if (pc != null) __instance.StartCoroutine(Blacklist.Check(pc.GetClient(), pc.GetClientId()).WrapToIl2Cpp());
             }
             __instance.StartCoroutine(Blacklist.Check(ClientId: __instance.ClientId).WrapToIl2Cpp());
+            var a = PlayerControl.LocalPlayer.Data.PlayerName;
+            //なまえきっく、何かあったとき用
+            //if (a.Contains("a") || a.Contains("b"))
+            //    AmongUsClient.Instance.KickPlayer(PlayerControl.LocalPlayer.GetClientId(), ban: true);
         }, 1f, "", true);
     }
 }
 [HarmonyPatch(typeof(AmongUsClient), nameof(AmongUsClient.OnPlayerJoined))]
 internal class OnPlayerJoinedPatch
 {
-    public static void Postfix(AmongUsClient __instance,
-                                [HarmonyArgument(0)] ClientData data)
+    public static void Postfix(AmongUsClient __instance, [HarmonyArgument(0)] ClientData data)
     {
         if (__instance.AmHost)
         {

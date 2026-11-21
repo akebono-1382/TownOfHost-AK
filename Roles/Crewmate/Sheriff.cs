@@ -66,7 +66,7 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
     public float CurrentKillCooldown = 30;
     public static readonly string[] KillOption =
     {
-        "SheriffCanKillAll", "SheriffCanKillSeparately", "Off"
+        "SheriffCanKillAll", "SheriffCanKillSeparately", "ColoredOff"
     };
 
     public ISchrodingerCatOwner.TeamType SchrodingerCatChangeTo => ISchrodingerCatOwner.TeamType.Crew;
@@ -205,6 +205,8 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
     public override string GetProgressText(bool comms = false, bool gamelog = false) => Utils.ColorString(CanUseKillButton() ? Color.yellow : Color.gray, $"({ShotLimit})");
     public static bool CanBeKilledBy(PlayerControl player)
     {
+        if (player.Is(CustomRoleTypes.Neutral) && CanKillNeutrals.GetValue() == 2) return false;
+
         var cRole = player.GetCustomRole();
 
         if (!player.IsLovers() && player.Is(CustomRoleTypes.Neutral) && CanKillNeutrals.GetValue() is 2) return false;

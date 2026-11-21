@@ -3,6 +3,7 @@ using AmongUs.GameOptions;
 using Hazel;
 using InnerNet;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
+using UnityEngine;
 
 namespace TownOfHost
 {

@@ -2,6 +2,7 @@ using AmongUs.GameOptions;
 using Hazel;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
+using TownOfHost.Roles.Madmate;
 using UnityEngine;
 
 namespace TownOfHost.Roles.Neutral;

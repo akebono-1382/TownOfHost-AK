@@ -56,7 +56,8 @@ namespace TownOfHost
                     sb.Clear();
 
                     sb.Append("\r\n").Append($"<{Main.ModColor}>{Main.ModName}</color> v{Main.PluginShowVersion}");
-                    if (Main.DebugVersion) sb.Append($"<{Main.ModColor}>☆Debug☆</color>");
+                    //if (Main.DebugVersion) sb.Append($"<{Main.ModColor}>☆Debug☆</color>");
+                    //if (Main.DebugVersion) sb.Append("-Debug");
 
                     if (!GameStates.IsFreePlay)
                     {
@@ -131,6 +132,16 @@ namespace TownOfHost
             {
                 if (!__instance) return;
 
+                // 参考 → https://github.com/rar006/TownOfHost-hamo
+                if (__instance.text != null && !__instance.text.text.Contains(Main.ModName))
+                {
+                    string text = __instance.text.text;
+                    int last = text.IndexOf('(');
+                    if (last != -1) text = text.Substring(0, last);
+
+                    __instance.text.text = $"AU {text}, <color=#00bfff>TOH-</color><color=#ff3834>AK</color> v{Main.PluginShowVersion}";
+                }
+
                 TMPTemplate.SetBase(__instance.text);
 
                 CreateText();
@@ -198,7 +209,9 @@ namespace TownOfHost
         public static TextMeshPro CreateText()
         {
             var Debugver = "";
-            if (Main.DebugVersion) Debugver = $"<{Main.ModColor}>☆Debug☆</color>";
+            //if (Main.DebugVersion) Debugver = $"<{Main.ModColor}>☆Debug☆</color>";
+            //if (Main.DebugVersion) Debugver = "-Debug";
+
             Subver = "";
             Main.credentialsText = $"<{Main.ModColor}>{Main.ModName}</color> v{Main.PluginShowVersion}" + Debugver;
 #if DEBUG

@@ -65,7 +65,7 @@ namespace TownOfHost
                 roleCommands.Add(CustomRoles.Workhorse, "wh");
                 roleCommands.Add(CustomRoles.LastNeutral, "ln");
                 roleCommands.Add(CustomRoles.LastImpostor, "li");
-                roleCommands.Add(CustomRoles.OneWolf, "Ow");
+                roleCommands.Add(CustomRoles.OneWolf, "O");
                 //バフ
                 roleCommands.Add(CustomRoles.Watching, "wat");
                 roleCommands.Add(CustomRoles.Speeding, "sd");
@@ -86,7 +86,7 @@ namespace TownOfHost
                 roleCommands.Add(CustomRoles.MagicHand, "MaH");
                 roleCommands.Add(CustomRoles.Powerful, "pf");
                 roleCommands.Add(CustomRoles.Absorb, "Abs");
-                roleCommands.Add(CustomRoles.Trapping, "Ｔr");
+                roleCommands.Add(CustomRoles.Trapping, "tr");
 
                 //デバフ
                 roleCommands.Add(CustomRoles.SlowStarter, "sl");

@@ -16,6 +16,7 @@ using TownOfHost.Roles.AddOns.Common;
 
 using static TownOfHost.Translator;
 using TownOfHost.Roles.Madmate;
+using TownOfHost.Roles.Crewmate;
 
 namespace TownOfHost
 {
@@ -776,6 +777,12 @@ namespace TownOfHost
             {
                 return true;
             }
+            //偽装死ならtrue
+            if (target.GetRoleClass() is Busker busker && busker.NowFakeDeath)
+            {
+                return true;
+            }
+
             return !state.IsDead;
         }
 
@@ -785,7 +792,7 @@ namespace TownOfHost
 
             if (IsOneclick && !player.AmOwner) return player.TryGetKilltarget(true);
 
-            if (player.AmOwner && GameStates.IsInTask && !GameStates.Intro && !(playerrole.IsImpostor() || playerrole is CustomRoles.Egoist) && (playerrole.GetRoleInfo()?.IsDesyncImpostor ?? false) && !player.Data.IsDead)
+            if (player.AmOwner && GameStates.IsInTask && !GameStates.Intro && !(playerrole.IsImpostor() || playerrole is CustomRoles.Egoist) && (playerrole.GetRoleInfo()?.IsDesyncImpostor ?? false) && player.IsAlive())
             {
                 return player.TryGetKilltarget();
             }

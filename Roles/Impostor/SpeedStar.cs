@@ -5,7 +5,8 @@ using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 
 namespace TownOfHost.Roles.Impostor;
-
+// Memo
+// スピードブースター・トラッパーとの相性最悪だからどうにかする
 public sealed class SpeedStar : RoleBase, IImpostor, IUsePhantomButton
 {
     public static readonly SimpleRoleInfo RoleInfo =

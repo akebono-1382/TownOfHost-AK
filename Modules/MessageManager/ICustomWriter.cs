@@ -1,7 +1,7 @@
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
 using InnerNet;
 
-namespace TownOfHost
+namespace TownOfHost.Modules.MessageManager
 {
     public interface ICustomWriter
     {

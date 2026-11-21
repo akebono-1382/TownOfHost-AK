@@ -103,7 +103,6 @@ namespace TownOfHost
         public static string GetString(string s, Dictionary<string, string> replacementDic = null)
         {
             var langId = TranslationController.InstanceExists ? TranslationController.Instance.currentLanguage.languageID : SupportedLangs.English;
-            if (Main.ForceJapanese.Value) langId = SupportedLangs.Japanese;
             string str = GetString(s, langId);
             if (replacementDic != null)
                 foreach (var rd in replacementDic)
@@ -115,8 +114,9 @@ namespace TownOfHost
         public static List<string> NotString = new();
         public static string GetString(string str, SupportedLangs langId)
         {
-            //var res = str;
-            var res = $"<INVALID:{str}>";
+            //検索できないのが致命的すぎる。
+            var res = str;
+            //var res = $"<INVALID:{str}>";
             var ch = res;
             //InfoLong無効化で説明見れなくなるのは...
             if ((Event.OptionLoad.Contains(str) || str is "CakeshopInfo" or "Cakeshop") && !Event.Special && !Event.CheckRole(CustomRoles.Cakeshop)) return res;
@@ -280,13 +280,8 @@ namespace TownOfHost
         public static string GetRoleString(string str)
         {
             var CurrentLanguage = TranslationController.Instance.currentLanguage.languageID;
-            var lang = CurrentLanguage;
-            if (Main.ForceJapanese.Value && Main.JapaneseRoleName.Value)
-                lang = SupportedLangs.Japanese;
-            else if (CurrentLanguage == SupportedLangs.Japanese && !Main.JapaneseRoleName.Value)
-                lang = SupportedLangs.English;
 
-            return GetString(str, lang);
+            return GetString(str, CurrentLanguage);
         }
         public static void LoadCustomTranslation(string filename, SupportedLangs lang)
         {

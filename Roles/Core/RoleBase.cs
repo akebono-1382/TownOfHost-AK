@@ -114,7 +114,6 @@ public abstract class RoleBase : IDisposable
     /// RPC送信クラスの作成
     /// PlayerIdは自動的に追記されるので意識しなくてもよい。
     /// </summary>
-    /// <param name="rpcType">送信するCustomRPC</param>
     /// <returns>送信に使用するRoleRPCSender</returns>
     protected RoleRPCSender CreateSender()
     {
@@ -502,7 +501,6 @@ public abstract class RoleBase : IDisposable
     /// </summary>
     public virtual void OnVentilationSystemUpdate(PlayerControl user, VentilationSystem.Operation Operation, int ventId)
     { }
-
     /// <summary>
     /// 名前を一時的に変更する時に使う<br/>
     /// NotifyRoles時に呼び出される
@@ -601,6 +599,8 @@ public abstract class RoleBase : IDisposable
         CanNormalKill,
         NeedTaskWin,
         TaskWin,
+        SyncCoolKillcool,
+        FriendlyFire,
     }
     public enum DontReportreson
     {

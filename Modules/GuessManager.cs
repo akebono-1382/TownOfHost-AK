@@ -458,7 +458,7 @@ public static class GuessManager
 
         //判断选择的玩家是否合理
         PlayerControl target = PlayerCatch.GetPlayerById(id);
-        if (target == null || target.Data.IsDead)
+        if (target == null || !target.IsAlive())
         {
             error = GetString("GuessError2");
             role = new();

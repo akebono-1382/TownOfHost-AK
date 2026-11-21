@@ -1,13 +1,15 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
-
-using TownOfHost.Roles.Core;
+using System.Linq;
+using HarmonyLib;
+using LibCpp2IL;
 using TownOfHost.Roles.AddOns.Common;
 using TownOfHost.Roles.AddOns.Impostor;
 using TownOfHost.Roles.AddOns.Neutral;
-using HarmonyLib;
+using TownOfHost.Roles.Core;
+using TownOfHost.Roles.Impostor;
+using UnityEngine;
+using static UnityEngine.GraphicsBuffer;
 
 namespace TownOfHost.Modules;
 
@@ -341,6 +343,24 @@ public class MeetingVoteManager
                 }
             }
         }
+        foreach (var p in PlayerCatch.AllAlivePlayerControls)
+        {
+            if (!p.Is(CustomRoles.EvilSwapper) || p.GetRoleClass() is not EvilSwapper evilSwapper)
+                continue;
+
+            var one = evilSwapper.Swap1;
+            var two = evilSwapper.Swap2;
+
+            votes.TryGetValue(one, out int count1);
+            votes.TryGetValue(two, out int count2);
+            Tie.TryGetValue(one, out int tcount1);
+            Tie.TryGetValue(two, out int tcount2);
+
+            votes[one] = count2;
+            votes[two] = count1;
+            Tie[one] = tcount2;
+            Tie[two] = tcount1;
+        }
 
         foreach (var vote in votes.OrderBy(x => x.Value))
         {
@@ -413,7 +433,9 @@ public class MeetingVoteManager
 
     public static string GetVoteName(byte num, bool color = false)
     {
-        string name = "invalid";
+        string name = "Player";
+        //invalidきらーい
+        //string name = "invalid";
         var player = PlayerCatch.GetPlayerById(num);
         if (num < 15 && player != null)
         {
