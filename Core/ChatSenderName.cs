@@ -69,17 +69,21 @@ public static class ChatSenderName
     {
         if (!GameStates.IsInGame) return sender.Data.PlayerName;
         if (GameStates.IsMeeting) return sender.GetRealName(isMeeting: true);
-        if (seer != null && !seer.AmOwner && Main.LastNotifyNames != null
-            && Main.LastNotifyNames.TryGetValue((sender.PlayerId, seer.PlayerId), out var shown) && shown != null)
-            return shown;
         var name = Main.AllPlayerNames.TryGetValue(sender.PlayerId, out var realName) ? realName : sender.Data.PlayerName;
         if (Main.CheckShapeshift.TryGetValue(sender.PlayerId, out var shifted) && shifted
             && Main.ShapeshiftTarget.TryGetValue(sender.PlayerId, out var shiftTo) && shiftTo != sender.PlayerId
             && Main.AllPlayerNames.TryGetValue(shiftTo, out var shiftName))
             name = shiftName;
         if (NameParts.HideSeenName(false)) name = $"<size=0%>{name}</size>";
+        // 最後に送った名前 (役職の行や印を含む) が長い時は使わない。本文の予算は宛先に関わらない名前の長さで見積もっている
+        if (seer != null && !seer.AmOwner && Main.LastNotifyNames != null
+            && Main.LastNotifyNames.TryGetValue((sender.PlayerId, seer.PlayerId), out var shown) && shown != null
+            && System.Text.Encoding.UTF8.GetByteCount(shown) <= Math.Max(System.Text.Encoding.UTF8.GetByteCount(name ?? ""), ShownNameSlack))
+            return shown;
         return name;
     }
+    // 最後に送った名前を戻す時に、本名より長くてもよいバイト数 (キノコカオスの隠し名などが収まる長さ・Overhead の内)
+    private const int ShownNameSlack = 32;
 
     /// <summary>
     /// 全員宛ての 1 通を、宛先ごとに分けて送るか。キノコカオスで名前を隠した人が居る間は、戻す名前が人によって違い、

@@ -101,26 +101,19 @@ public static class MushroomMixupDeterioratePatch
     public static void RestorName()
     {
         if (!MushroomMixupUpdateSystemPatch.NameChanged) return;
-        var seers = MushroomMixupUpdateSystemPatch.ChangedPlayers.Where(x => TownOfHostL.Core.NativeObject.IsAlive(x)).ToList();
-
         MushroomMixupUpdateSystemPatch.TargetPlayers.Clear();
         MushroomMixupUpdateSystemPatch.ChangedPlayers.Clear();
         MushroomMixupUpdateSystemPatch.NameChanged = false;
         int token = ++MushroomMixupUpdateSystemPatch.Generation;
 
         if (!AmongUsClient.Instance.AmHost) return;
-        foreach (var seer in seers)
-            Utils.NotifyRolesNow(SpecifySeer: seer, NoCache: true);
-        // 起きている間は NotifyRoles を止めていたので、その間の変わり目 (死・印など) を全員に送る
-        Utils.NotifyRoles();
-        if (seers.Count == 0) return;
-
+        // 起きている間は NotifyRoles を止めていたので、全員の名前を組み直して送る
+        Utils.NotifyRolesNow(NoCache: true);
         _ = new LateTask(() =>
         {
             // 会議に入っていれば、会議の名前を上書きしない
             if (token != MushroomMixupUpdateSystemPatch.Generation || !GameStates.IsInTask) return;
-            foreach (var seer in seers)
-                if (TownOfHostL.Core.NativeObject.IsAlive(seer)) Utils.NotifyRoles(SpecifySeer: seer, NoCache: true);
+            Utils.NotifyRoles(NoCache: true);
         }, 0.3f, "MushroomMixupRestoreNotifyRoles");
     }
 }
