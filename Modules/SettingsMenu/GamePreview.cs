@@ -464,6 +464,7 @@ internal sealed class GamePreview : Widget
         {
             var f = Footage.Get("range");
             if (f != null) _rangeFoot.sprite = f.Frame(frame);
+            else { UseFootage(); _rangeFrame = -1; }
         }
         else if (_rangeTarget)
         {
@@ -516,7 +517,7 @@ internal sealed class GamePreview : Widget
         if (_vtaskFoot && _vtaskFoot.gameObject.activeSelf)
         {
             var f = Footage.Get("vtask");
-            if (f == null) return;
+            if (f == null) { UseFootage(); return; }
             var (start, count) = f.ClipOf(f.Nearest(_vtaskOn ? 1f : 0f));
             float play = count / Math.Max(f.Fps, 1f);
             if (_vtaskT >= play) _vtaskT -= play * MathF.Floor(_vtaskT / play);
@@ -536,7 +537,7 @@ internal sealed class GamePreview : Widget
         if (_speedFoot && _speedFoot.gameObject.activeSelf)
         {
             var f = Footage.Get("speed");
-            if (f == null) return;
+            if (f == null) { UseFootage(); return; }
             int clip = f.Nearest(_speed);
             if (clip != _speedClip) { _speedClip = clip; _speedT = 0f; }
             var (start, count) = f.ClipOf(clip);
@@ -583,7 +584,7 @@ internal sealed class GamePreview : Widget
         if (_killFoot && _killFoot.gameObject.activeSelf)
         {
             var f = Footage.Get("kill");
-            if (f == null) return;
+            if (f == null) { UseFootage(); return; }
             float wait = Math.Max(_cooldown * CooldownScale, 0.3f);
             float play = f.Count / Math.Max(f.Fps, 1f);
             _killT += dt;
