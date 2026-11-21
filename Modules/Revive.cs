@@ -219,6 +219,9 @@ public static class Revive
             CustomRoleManager.NotifyPlayerRevived(pc.PlayerId);
             PetAbility.EnsurePet(pc);
             Utils.NotifyRoles();
+            // 生き返った本人の画面は、幽霊の間に見えていた他人の役職を消すため全員の名前を送り直す
+            // (生きている人には他人の名前を回さない時があり、幽霊の間の名前が残る)
+            Utils.NotifyRoles(SpecifySeer: pc, ForceLoop: true);
         }, 0.2f, "Revive_Data", true);
     }
 

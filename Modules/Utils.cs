@@ -1513,50 +1513,55 @@ public static partial class Utils
                 {
                     //targetがseer自身の場合は何もしない
                     if (TownOfHostL.Core.NativeObject.Same(target, seer)) continue;
-                    if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:START");
-
-                    TargetMark.Clear();
-                    TownOfHostL.Core.NameParts.AppendMark(TargetMark, seer, target, isForMeeting);
-
-                    //他人の役職とタスクは幽霊が他人の役職を見れるようになっていてかつ、seerが死んでいる場合のみ表示されます。それ以外の場合は空になります。
-                    var targetRoleData = GetRoleNameAndProgressTextData(isForMeeting, seer, target);
-                    var TargetRoleText = targetRoleData.enabled ? $"<size={fontSize}>{targetRoleData.text}</size>\r\n" : "";
-
-                    TargetSuffix.Clear();
-                    TownOfHostL.Core.NameParts.AppendSeenSuffix(TargetSuffix, seer, target, isForMeeting);
-                    // 空でなければ先頭に改行を挿入
-                    if (TargetSuffix.Length > 0)
+                    // 見られる人 1 人分の例外 (その人の役職の表示や印) で、後ろの人の名前を配り損ねない
+                    try
                     {
-                        TargetSuffix.Insert(0, $"\r\n<size={fontSize}>");
-                        TargetSuffix.Append("</size>");
+                        if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:START");
+
+                        TargetMark.Clear();
+                        TownOfHostL.Core.NameParts.AppendMark(TargetMark, seer, target, isForMeeting);
+
+                        //他人の役職とタスクは幽霊が他人の役職を見れるようになっていてかつ、seerが死んでいる場合のみ表示されます。それ以外の場合は空になります。
+                        var targetRoleData = GetRoleNameAndProgressTextData(isForMeeting, seer, target);
+                        var TargetRoleText = targetRoleData.enabled ? $"<size={fontSize}>{targetRoleData.text}</size>\r\n" : "";
+
+                        TargetSuffix.Clear();
+                        TownOfHostL.Core.NameParts.AppendSeenSuffix(TargetSuffix, seer, target, isForMeeting);
+                        // 空でなければ先頭に改行を挿入
+                        if (TargetSuffix.Length > 0)
+                        {
+                            TargetSuffix.Insert(0, $"\r\n<size={fontSize}>");
+                            TargetSuffix.Append("</size>");
+                        }
+
+                        //RealNameを取得 なければ現在の名前をRealNamesに書き込む
+                        string TargetPlayerName = isForMeeting ? target.GetRealName(true): (Main.AllPlayerNames.TryGetValue(target.PlayerId, out var realName) ? realName : target.GetRealName());
+                        // 変身中の人は本編が変身先の名前を出している。本名を送ると正体が見えるので、変身先の名前にする
+                        if (!isForMeeting && Main.CheckShapeshift.TryGetValue(target.PlayerId, out var targetShifted) && targetShifted
+                            && Main.ShapeshiftTarget.TryGetValue(target.PlayerId, out var shiftTo) && shiftTo != target.PlayerId
+                            && Main.AllPlayerNames.TryGetValue(shiftTo, out var shiftName))
+                            TargetPlayerName = shiftName;
+
+                        //ターゲットのプレイヤー名の色を書き換えます。
+                        TargetPlayerName = TargetPlayerName.ApplyNameColorData(seer, target, isForMeeting);
+
+                        string TargetDeathReason = TownOfHostL.Core.NameParts.DeathReason(seer, target);
+
+                        if (hideSeenNames)
+                            TargetPlayerName = $"<size=0%>{TargetPlayerName}</size>";
+
+                        //全てのテキストを合成します。
+                        string TargetName = $"{TargetRoleText}{TargetPlayerName}{TargetDeathReason}{TargetMark}{TargetSuffix}";
+
+                        // バニラ視点にMOD名/Versionを記載
+                        TargetName = MeetingDisplayText.AddTextForVanilla(target, TargetName, TargetSuffix.ToString(), TargetRoleText, isForMeeting);
+
+                        //適用
+                        target.RpcSetNamePrivate(TargetName, true, seer, force: NoCache);
+
+                        if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:END");
                     }
-
-                    //RealNameを取得 なければ現在の名前をRealNamesに書き込む
-                    string TargetPlayerName = isForMeeting ? target.GetRealName(true): Main.AllPlayerNames[target.PlayerId];
-                    // 変身中の人は本編が変身先の名前を出している。本名を送ると正体が見えるので、変身先の名前にする
-                    if (!isForMeeting && Main.CheckShapeshift.TryGetValue(target.PlayerId, out var targetShifted) && targetShifted
-                        && Main.ShapeshiftTarget.TryGetValue(target.PlayerId, out var shiftTo) && shiftTo != target.PlayerId
-                        && Main.AllPlayerNames.TryGetValue(shiftTo, out var shiftName))
-                        TargetPlayerName = shiftName;
-
-                    //ターゲットのプレイヤー名の色を書き換えます。
-                    TargetPlayerName = TargetPlayerName.ApplyNameColorData(seer, target, isForMeeting);
-
-                    string TargetDeathReason = TownOfHostL.Core.NameParts.DeathReason(seer, target);
-
-                    if (hideSeenNames)
-                        TargetPlayerName = $"<size=0%>{TargetPlayerName}</size>";
-
-                    //全てのテキストを合成します。
-                    string TargetName = $"{TargetRoleText}{TargetPlayerName}{TargetDeathReason}{TargetMark}{TargetSuffix}";
-
-                    // バニラ視点にMOD名/Versionを記載
-                    TargetName = MeetingDisplayText.AddTextForVanilla(target, TargetName, TargetSuffix.ToString(), TargetRoleText, isForMeeting);
-
-                    //適用
-                    target.RpcSetNamePrivate(TargetName, true, seer, force: NoCache);
-
-                    if (loopLog) logger.Info($"NotifyRoles-Loop2-{target.GetNameWithRole()}:END");
+                    catch (Exception ex) { Logger.Exception(ex, "NotifyRoles.Target"); }
                 }
             }
             if (loopLog) logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:END");
