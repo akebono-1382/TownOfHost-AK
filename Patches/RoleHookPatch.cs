@@ -131,9 +131,8 @@ public static class RoleHooks
     public static byte PeekByte(MessageReader msgReader)
     {
         var r = MessageReader.Get(msgReader);
-        var b = r.ReadByte();
-        r.Recycle();
-        return b;
+        try { return r.ReadByte(); }
+        finally { r.Recycle(); }
     }
 
     /// <summary>ベントの中で隣へ移れる役職か</summary>
@@ -253,13 +252,18 @@ static class ExitVentHookPatch
 static class SabotageStartHookPatch
 {
     [HarmonyPriority(Priority.First)]
-    public static void Prefix([HarmonyArgument(1)] MessageReader msgReader, out byte __state)
-        => __state = RoleHooks.PeekByte(msgReader);
-    public static void Postfix([HarmonyArgument(0)] PlayerControl player, byte __state, bool __runOriginal)
+    public static void Prefix([HarmonyArgument(1)] MessageReader msgReader, out (byte type, bool wasActive) __state)
+    {
+        var type = RoleHooks.PeekByte(msgReader);
+        __state = (type, Utils.IsActive((SystemTypes)type));
+    }
+    public static void Postfix([HarmonyArgument(0)] PlayerControl player, (byte type, bool wasActive) __state, bool __runOriginal)
     {
         if (!__runOriginal || !AmongUsClient.Instance.AmHost || player == null) return;
-        if (!Main.IsActiveSabotage) GameLog.OnSabotage(player, (SystemTypes)__state);
-        Main.SabotageType = (SystemTypes)__state;
+        // 本編が始めなかった頼み (クールの途中・ほかのサボの最中・既に動いている種類) で、サボの記録と始めた人を書き換えない
+        if (__state.wasActive || !Utils.IsActive((SystemTypes)__state.type)) return;
+        if (!Main.IsActiveSabotage) GameLog.OnSabotage(player, (SystemTypes)__state.type);
+        Main.SabotageType = (SystemTypes)__state.type;
         Main.IsActiveSabotage = true;
         Main.LastSab = player.PlayerId;
         Main.SabotageActivetimer = 0;

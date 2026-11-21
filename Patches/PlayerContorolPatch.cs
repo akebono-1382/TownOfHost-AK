@@ -574,9 +574,6 @@ partial class ReportDeadBodyPatch
     public static Dictionary<byte, List<NetworkedPlayerInfo>> WaitReport = new();
     public static bool Prefix(PlayerControl __instance, [HarmonyArgument(0)] NetworkedPlayerInfo target)
     {
-        reporter = __instance.Data;
-        ReportTarget = target;
-        SpecialMeeting = reporter?.PlayerId == ReportTarget?.PlayerId;
         if (GameStates.IsMeeting) return false;
         // 試合の外や、試合の終わりを送っている間の通報は会議にしない。
         // 通すと下で「会議中」と全員の暗転を立てたまま本編に捨てられ、戻す会議が来ないまま残る
@@ -584,6 +581,10 @@ partial class ReportDeadBodyPatch
         if (AmongUsClient.Instance.AmHost
             && (!GameStates.IsInGame || AmongUsClient.Instance.IsGameOver || GameEndChecker.EndingStarted))
             return false;
+        // 会議の見出しが使う通報者と対象は、捨てる通報 (会議の始まった後に遅れて届いた物など) で書き換えない
+        reporter = __instance.Data;
+        ReportTarget = target;
+        SpecialMeeting = reporter?.PlayerId == ReportTarget?.PlayerId;
         Logger.Info($"{__instance.GetNameWithRole()} => {target?.Object?.GetNameWithRole() ?? "null"}", "ReportDeadBody");
         // 生き返った人の死体 (本編の死体は消せずに残る) は通報できない
         if (target != null && !SpecialMeeting && Revive.WasRevived(target.PlayerId) && !(PlayerState.GetByPlayerId(target.PlayerId)?.IsDead ?? true)) return false;

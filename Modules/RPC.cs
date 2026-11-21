@@ -35,7 +35,26 @@ namespace TownOfHostL
             // 本編の客なら送らない電文の受け口 (ホストのみ)
             if (RpcGuard.ShouldDrop(__instance, rpcType, reader)) return false;
             if (Logger.IsTagEnabled("ReceiveRPC")) Log.Info("ReceiveRPC", $"{__instance?.Data?.PlayerId}({__instance?.Data?.PlayerName}):{callId}({RPC.GetRpcName(callId)})");
+            switch (rpcType)
+            {
+                case RpcCalls.SetName:
+                case RpcCalls.SetRole:
+                case RpcCalls.SendChat:
+                case RpcCalls.StartMeeting:
+                    break;
+                case RpcCalls.CheckVanish:
+                case RpcCalls.MurderPlayer:
+                    return HandleWithoutRead(__instance, rpcType);
+                default:
+                    return true;
+            }
+            // 読む電文だけ写しを作り、読み終えたら返す (返さないと電文ごとに写しの入れ物が増える)
             MessageReader subReader = MessageReader.Get(reader);
+            try { return HandleRead(__instance, rpcType, subReader); }
+            finally { subReader.Recycle(); }
+        }
+        static bool HandleRead(PlayerControl __instance, RpcCalls rpcType, MessageReader subReader)
+        {
             switch (rpcType)
             {
                 case RpcCalls.SetName: //SetNameRPC
@@ -43,14 +62,10 @@ namespace TownOfHostL
                     string name = subReader.ReadString();
                     if (subReader.BytesRemaining > 0 && subReader.ReadBoolean()) return false;
                     Logger.Info("名前変更:" + __instance.GetNameWithRole() + " => " + name, "SetName");
+                    // 長すぎる名前は頭の 350 字だけを手元に当てる
                     if (name.Length > 350 && AmongUsClient.Instance.AmHost)
                     {
-                        int chunkSize = 350;
-                        for (int i = 0; i < name.Length; i += chunkSize)
-                        {
-                            string chunk = name.Substring(i, Math.Min(chunkSize, name.Length - i));
-                            __instance.SetName(chunk);
-                        }
+                        __instance.SetName(name.Substring(0, 350));
                         return false;
                     }
                     break;
@@ -62,8 +77,21 @@ namespace TownOfHostL
                 case RpcCalls.SendChat:
                     var text = subReader.ReadString();
                     Logger.Info($"{__instance.GetNameWithRole()}:{text}", "SendChat");
-                    ChatCommands.OnReceiveChat(__instance, text);
+                    // 発言の処理の例外で、本編の発言の処理 (他の客の画面に出す) まで止めない
+                    try { ChatCommands.OnReceiveChat(__instance, text); }
+                    catch (Exception ex) { Logger.Exception(ex, "OnReceiveChat"); }
                     break;
+                case RpcCalls.StartMeeting:
+                    var p = Utils.GetPlayerById(subReader.ReadByte());
+                    Logger.Info($"{__instance.GetNameWithRole()} => {p?.GetNameWithRole() ?? "null"}", "StartMeeting");
+                    break;
+            }
+            return true;
+        }
+        static bool HandleWithoutRead(PlayerControl __instance, RpcCalls rpcType)
+        {
+            switch (rpcType)
+            {
                 case RpcCalls.CheckVanish:
                     // 本人の画面だけファントムの役職 (デシンク) は、ホストの手元ではファントムでないので、本編が確認を捨てる。
                     // 本人の基底がファントムで生きている人の確認だけ、ホストの判定 (PlayerControlCheckVanishPatch) へ直接回す。
@@ -77,10 +105,6 @@ namespace TownOfHostL
                             __instance.CheckVanish();
                         return false;
                     }
-                    break;
-                case RpcCalls.StartMeeting:
-                    var p = Utils.GetPlayerById(subReader.ReadByte());
-                    Logger.Info($"{__instance.GetNameWithRole()} => {p?.GetNameWithRole() ?? "null"}", "StartMeeting");
                     break;
                 case RpcCalls.MurderPlayer: //MurderPlayerRPC
                     if (GameStates.IsLobby && Options.CheatLobbyKill.GetBool())
@@ -255,21 +279,10 @@ namespace TownOfHostL
         public static void Prefix(
             InnerNet.InnerNetClient __instance,
             [HarmonyArgument(0)] uint targetNetId,
-            ref byte callId,
+            byte callId,
             [HarmonyArgument(3)] int targetClientId = -1)
         {
-            switch ((RpcCalls)callId)
-            {
-                case RpcCalls.CheckMurder:
-                    callId = (byte)RpcCalls.MurderPlayer;
-                    break;
-                case RpcCalls.CheckProtect:
-                    callId = (byte)RpcCalls.ProtectPlayer;
-                    break;
-                case RpcCalls.SnapTo:
-                    Modules.Net.SnapToBudget.Record();
-                    break;
-            }
+            if ((RpcCalls)callId == RpcCalls.SnapTo) Modules.Net.SnapToBudget.Record();
 
             // 送るたびに通る。記録が切られている時は、名前を引く処理 (全員の走査など) をしない
             if (!Logger.IsTagEnabled("SendRPC")) return;
