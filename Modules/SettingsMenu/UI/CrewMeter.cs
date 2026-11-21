@@ -4,11 +4,11 @@ using UnityEngine;
 
 namespace TownOfHostL.SettingsUI;
 
-// 役職のカードの値を絵で見せる: 人数ぶんのクルーの人形 (5 人を超えると 1 体と ×人数) と出現率の字、その下に出現率の棒。
+// 役職のカードの値を絵で見せる: 人数ぶんのクルーの人形 (3 人を超えると 1 体と ×人数) と出現率の字、その下に出現率の棒。
 // 出ない役職は人形も棒の塗りも無く OFF の字だけ。値が変わったら棒は伸び縮みし、人形は増えた分が弾む。
 internal sealed class CrewMeter : Widget
 {
-    public const int MaxFigures = 5;
+    public const int MaxFigures = 3;
     private const float FigH = 0.27f, FigW = FigH * 0.8f, FigGap = 0.025f, BarH = 0.055f, RowGap = 0.05f;
 
     public float Width;
@@ -81,7 +81,7 @@ internal sealed class CrewMeter : Widget
     public bool On => _on;
 
     private float Target => _on ? Math.Clamp(_chance / 100f, 0f, 1f) : 0f;
-    // 5 人までは人数ぶん並べ、それより多い時は 1 体と「×人数」の字にする (並べきれない数を人形で数えさせない)
+    // 3 人までは人数ぶん並べ、それより多い時は 1 体と「×人数」の字にする (一目で数えられるのは 3 つほどまで・出現率の字も縮めずに済む)
     private int Figures => !_on || !_hasCount ? 0 : _count > MaxFigures ? 1 : Math.Max(_count, 0);
 
     // 値を書き換える。animate なら棒を伸び縮みさせ、増えた人形を弾ませる
@@ -129,7 +129,7 @@ internal sealed class CrewMeter : Widget
             f.color = figColor;
             if (show && popFrom >= 0 && i >= popFrom) UiFx.Pop(holder, 0.35f, 0.22f);
         }
-        // 人形の後ろに字 (5 人を超える時は ×人数)。出ない役職は OFF だけ
+        // 人形の後ろに字 (3 人を超える時は ×人数)。出ない役職は OFF だけ
         // 字の欄は人形の右から端まで (長い字はその幅に入るよう縮める)
         string text = !_on ? "OFF" : _hasCount && _count > MaxFigures ? $"×{_count}  {_chance}%" : $"{_chance}%";
         float left = n > 0 ? n * (FigW + FigGap) + 0.04f : 0f;
