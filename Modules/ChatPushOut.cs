@@ -90,6 +90,22 @@ public static class ChatPushOut
         if (history.Count > MaxHistory) history.RemoveAt(0);
     }
 
+    private const float HiddenCommandInterval = 3f;
+    private static float hiddenPushedAt = float.NegativeInfinity;
+    /// <summary>
+    /// 見せたくないコマンドを /cmd 無しで送られた時の押し出し。全員に見える発言 (ロビー・会議中の生きた人) の時だけ、
+    /// 3 秒に 1 回まで押し出す (連打で全員のチャット欄を消し続け、送信の列を埋めないように)
+    /// </summary>
+    public static void PushOutForHiddenCommand(PlayerControl sender)
+    {
+        bool visibleToAll = !GameStates.IsInGame || (GameStates.IsMeeting && sender != null && sender.IsAlive());
+        if (!visibleToAll) return;
+        float now = UnityEngine.Time.realtimeSinceStartup;
+        if (now - hiddenPushedAt < HiddenCommandInterval) return;
+        hiddenPushedAt = now;
+        PushOut();
+    }
+
     /// <summary>全員のチャット欄を大きな空白で押し出し、resend なら控えの会話を送り直す</summary>
     public static void PushOut(bool resend = true)
     {

@@ -246,8 +246,10 @@ public static class ChatCommandTable
             Usage = "CommandUsage.MessageWait",
             Host = c =>
             {
-                if (c.Args.Length > 1 && float.TryParse(c.Args[1], out float sec))
+                // 0・負・NaN だと送信待ちの列が毎フレーム送り、公式鯖に切られうるので 0.1 秒以上に丸める (設定に残るので)
+                if (c.Args.Length > 1 && float.TryParse(c.Args[1], out float sec) && !float.IsNaN(sec) && !float.IsInfinity(sec))
                 {
+                    sec = Math.Max(0.1f, sec);
                     Main.MessageWait.Value = sec;
                     Utils.SendMessageAutoSplit(string.Format(GetString("Message.SetToSeconds"), sec), true, sendTo: 0);
                 }
@@ -508,6 +510,7 @@ public static class ChatCommandTable
 
     private static void ForceDisconnectEnd(ChatCommandContext c)
     {
+        if (!GameStates.IsInGame) return;
         switch (c.Arg(1))
         {
             case "crewmate":

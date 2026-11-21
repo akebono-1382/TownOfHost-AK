@@ -69,13 +69,16 @@ namespace TownOfHostL
             // 自分の画面だけで動くコマンド (ホストでなくても使える)
             var ctx = new ChatCommandContext(args, PlayerControl.LocalPlayer, __instance);
             var local = command?.Local;
-            local?.Invoke(ctx);
+            // コマンドの例外で前置きが途中で止まり、入力欄の文字やコマンド中の旗が残らないよう囲う
+            try { local?.Invoke(ctx); }
+            catch (Exception ex) { Logger.Exception(ex, "ChatCommand.Local"); }
             canceled = local != null;
             Main.isChatCommand = local != null;
             if (AmongUsClient.Instance.AmHost)
             {
                 var host = command?.Host;
-                host?.Invoke(ctx);
+                try { host?.Invoke(ctx); }
+                catch (Exception ex) { Logger.Exception(ex, "ChatCommand.Host"); }
                 canceled |= host != null;
                 Main.isChatCommand = host != null;
             }
@@ -230,9 +233,10 @@ namespace TownOfHostL
                 .SendMessage();
             TownOfHostL.Core.ChatSenderName.Restored(sender, restoreName, -1);
 
+            // 吹き出しの例外で、手元の名前が見出しのまま残らないように戻しは finally で行う
             sender.SetName(SendName);
-            DestroyableSingleton<HudManager>.Instance.Chat.AddChat(sender, text);
-            sender.SetName(name);
+            try { DestroyableSingleton<HudManager>.Instance.Chat.AddChat(sender, text); }
+            finally { sender.SetName(name); }
         }
 
         // 全員へ同じ名前を一時的に見せた後、見る人ごとの名前へ戻す。記録を捨てて NotifyRoles に全員分を組み直させる
@@ -521,7 +525,7 @@ namespace TownOfHostL
             // 見せたくないコマンドを /cmd 無しで送られた時は、本編がもう全員に配っているので、返事より先に空白で押し出す
             // (後に押し出すと、返事まで画面の上へ消える)。返事の間隔で止めた時も押し出す
             bool pushedOut = command?.Remote != null && command.Hidden && !viaCmd;
-            if (pushedOut) ChatPushOut.PushOut();
+            if (pushedOut) ChatPushOut.PushOutForHiddenCommand(player);
 
             bool isNimrodMeeting = Nimrod.IsExecutionMeeting() || MadNimrod.IsExecutionMeeting();
             // モデレーターはホストの一部のコマンドを使える (ホストが選んだ人なので、返事の間隔の制限はかけない)
@@ -573,19 +577,31 @@ namespace TownOfHostL
         private const float SameTargetWait = 0.3f;
         // 宛先ごとの最後に送った時刻 (宛先が交互に並んでも、同じ相手への間隔を守る)
         private static readonly Dictionary<byte, float> lastSentAt = new();
+        private static readonly HashSet<byte> seenTargets = new();
         public static void Postfix(ChatController __instance)
         {
             if (!AmongUsClient.Instance.AmHost || Main.MessagesToSend.Count < 1) return;
-            byte next = Main.MessagesToSend[0].Item2;
-            float wait = next == byte.MaxValue ? Main.MessageWait.Value : DirectWait;
-            if (wait > __instance.timeSinceLastMessage) return;
-            float now = UnityEngine.Time.realtimeSinceStartup;
-            if (next != byte.MaxValue && lastSentAt.TryGetValue(next, out var last) && now - last < SameTargetWait) return;
             if (DoBlockChat) return;
             var player = PlayerControl.LocalPlayer;
             if (player == null) return;
-            (string msg, byte sendTo, string title, bool custom) = Main.MessagesToSend[0];
-            Main.MessagesToSend.RemoveAt(0);
+            float now = UnityEngine.Time.realtimeSinceStartup;
+            // 先頭が同じ相手への間隔待ちでも、後ろの別の宛先 (全員宛てを含む) は先に送る。
+            // 同じ宛先の中の順 (割った続きなど) は崩さないよう、宛先ごとに最初の 1 通だけを候補にする
+            int index = -1;
+            seenTargets.Clear();
+            for (int i = 0; i < Main.MessagesToSend.Count; i++)
+            {
+                byte dest = Main.MessagesToSend[i].Item2;
+                if (!seenTargets.Add(dest)) continue;
+                float wait = dest == byte.MaxValue ? Main.MessageWait.Value : DirectWait;
+                if (wait > __instance.timeSinceLastMessage) continue;
+                if (dest != byte.MaxValue && lastSentAt.TryGetValue(dest, out var last) && now - last < SameTargetWait) continue;
+                index = i;
+                break;
+            }
+            if (index < 0) return;
+            (string msg, byte sendTo, string title, bool custom) = Main.MessagesToSend[index];
+            Main.MessagesToSend.RemoveAt(index);
             if (sendTo != byte.MaxValue) lastSentAt[sendTo] = now;
             __instance.timeSinceLastMessage = 0f;
 
@@ -602,8 +618,8 @@ namespace TownOfHostL
             {
                 var name = player.Data.PlayerName;
                 player.SetName(title);
-                AddChatAsAlive(player, msg);
-                player.SetName(name);
+                try { AddChatAsAlive(player, msg); }
+                finally { player.SetName(name); }
                 if (target != null) return;
             }
             Send(TownOfHostL.Core.ChatSenderName.Sender(), title, msg, sendTo, target == null ? -1 : target.GetClientId());
@@ -619,8 +635,8 @@ namespace TownOfHostL
             {
                 var name = host.Data?.PlayerName;
                 host.SetName(SendName);
-                AddChatAsAlive(host, "\n\n");
-                host.SetName(name);
+                try { AddChatAsAlive(host, "\n\n"); }
+                finally { host.SetName(name); }
                 if (target != null) return;
             }
             Send(sender ?? TownOfHostL.Core.ChatSenderName.Sender(), SendName, "\n\n", sendTo, target == null ? -1 : target.GetClientId());
