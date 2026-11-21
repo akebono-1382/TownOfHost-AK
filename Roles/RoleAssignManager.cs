@@ -203,7 +203,8 @@ namespace TownOfHostL.Roles
                     foreach (var (roleType, options) in otherRoleTypesOptions)
                     {
                         //追加人数を取得
-                        int additionalCount = Math.Max(0, rand.Next(options.Max - options.Min + 1));
+                        // 最多が最少より小さい設定 (最少を先に上げた時など) は最少と同じとみなす。負の上限は Next が例外を出す
+                        int additionalCount = rand.Next(Math.Max(0, options.Max - options.Min) + 1);
 
                         additionalList.AddRange(Enumerable.Repeat(roleType, additionalCount).ToList());
                     }
@@ -221,7 +222,7 @@ namespace TownOfHostL.Roles
             {
                 if (roleTypes == CustomRoleTypes.Impostor)
                 {
-                    int impAssignCount = Math.Min(numImpostors, rand.Next(options.Min, options.Max + 1));
+                    int impAssignCount = Math.Min(numImpostors, rand.Next(options.Min, Math.Max(options.Min, options.Max) + 1));
                     AssignCount.Add(roleTypes, impAssignCount);
                 }
                 else
