@@ -292,6 +292,7 @@ public abstract class VoteGuesser : RoleBase
     }
     public void RpcGuesserMurderPlayer(PlayerControl target, CustomDeathReason reason)
     {
+        target.SetRealKiller(Player, true);
         target.Data.IsDead = true;
         target.RpcExileV3(reason);
         var targetState = PlayerState.GetByPlayerId(target.PlayerId);
