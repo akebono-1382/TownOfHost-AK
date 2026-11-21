@@ -72,7 +72,8 @@ public sealed class Workaholic : RoleBase
 
     public override bool OnCompleteTask()
     {
-        if (IsTaskFinished && !(CannotWinAtDeath && !Player.IsAlive()))
+        // 終わりを送り始めた後 (ほかの勝ちや、同時に終えたもう 1 人のワーカホリック) は、終わりの流れを重ねない
+        if (IsTaskFinished && !(CannotWinAtDeath && !Player.IsAlive()) && !GameEndChecker.EndingStarted)
         {   //全タスク完了で、死亡後勝利無効でない場合
             //生存者は全員爆破
             //foreach (var otherPlayer in Main.AllAlivePlayerControls)

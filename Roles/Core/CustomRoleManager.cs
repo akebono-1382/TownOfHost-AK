@@ -151,8 +151,9 @@ public static partial class CustomRoleManager
         {
             //MurderPlayer用にinfoを保存
             CheckMurderInfos[appearanceKiller.PlayerId] = info;
-            // キルを捨てた時 (会議の直後・連打・ガード) に見た目の役職の電文を出さないよう、通すと決めた後で送る
-            CheckMurderPatch.RevealVisualRoleBeforeMurder(appearanceKiller, appearanceTarget);
+            // キルを捨てた時 (会議の直後・連打・ガード) に見た目の役職の電文を出さないよう、通すと決めた後で送る。
+            // 役職が起こす自滅に見せたキル (範囲のキルで同じフレームに何人も) では送らない (見る人ごとの電文が人数分重なる)
+            if (!info.IsFakeSuicide) CheckMurderPatch.RevealVisualRoleBeforeMurder(appearanceKiller, appearanceTarget);
             bool killerIsViper = appearanceKiller.Is(RoleTypes.Viper);
             if (killerIsViper)
             {

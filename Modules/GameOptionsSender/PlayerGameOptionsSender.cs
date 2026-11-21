@@ -35,6 +35,7 @@ namespace TownOfHostL.Modules
         public PlayerControl player;
         // 最後に送った設定のバイト列。同じなら送らない。会議中に送った物は覚えない (会議の後に必ず送り直す)
         byte[] lastSent;
+        bool skippedLastSend;
 
         public PlayerGameOptionsSender(PlayerControl player)
         {
@@ -79,6 +80,8 @@ namespace TownOfHostL.Modules
         // 送り終えてから覚える (送る途中で例外になった物を「送った」とみなすと、同じ内容を二度と送らない)
         protected override void OnSent(Il2CppStructArray<byte> optionArray)
         {
+            // 客の接続が引けずに送らなかった時は覚えない (覚えると、繋がった後に同じ内容を送らない)
+            if (skippedLastSend) { lastSent = null; return; }
             int n = optionArray.Length;
             if (GameStates.IsMeeting) lastSent = null;
             else
@@ -93,7 +96,8 @@ namespace TownOfHostL.Modules
         public override void SendOptionsArray(Il2CppStructArray<byte> optionArray)
         {
             // 宛先 -1 は全員宛てになり、この人の設定 (視界・クールなど) が全員に効いてしまう
-            if (player.LacksClient("GameOptions")) return;
+            skippedLastSend = player.LacksClient("GameOptions");
+            if (skippedLastSend) return;
             for (byte i = 0; i < GameManager.Instance.LogicComponents.Count; i++)
             {
                 if (GameManager.Instance.LogicComponents[i].TryCast<LogicOptions>(out _))
