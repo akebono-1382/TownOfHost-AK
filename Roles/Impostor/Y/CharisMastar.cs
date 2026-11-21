@@ -118,8 +118,8 @@ public sealed class CharismaStar : RoleBase, IImpostor
         killCooldown = 0.1f;
         canResetAbilityCooldown = true;
 
-        // 使用回数がない時は無視
-        if (GatherLimitCount == 0) return false;
+        // 使用回数がない時と、死んだ後や会議中に届いた要求は無視 (回数を減らさない)
+        if (GatherLimitCount == 0 || !Player.IsAlive() || GameStates.IsMeeting) return false;
 
         // リストに誰も登録されていない
         if (GatherChoosePlayer.Count == 0)

@@ -90,7 +90,8 @@ public sealed class Telepathisters : RoleBase, IImpostor, IKillFlashSeeable
     public bool CanUseImpostorVentButton() => VentCountLimit > 0;
     public override bool OnEnterVent(PlayerPhysics physics, int ventId)
     {
-        if (VentCountLimit <= 0) return false;
+        // 死んだ後や会議中に届いたベントの電文では回数を減らさない
+        if (VentCountLimit <= 0 || !Player.IsAlive() || GameStates.IsMeeting) return false;
 
         VentCountLimit--;
         //テレパシスターズのみ呼び出し
