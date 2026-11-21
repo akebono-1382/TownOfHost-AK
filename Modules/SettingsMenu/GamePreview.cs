@@ -6,7 +6,7 @@ using UnityEngine;
 namespace TownOfHostL.SettingsUI;
 
 // ゲームの頁の右の欄に出す、本編の設定の意味を見せる動く図。字は使わない。
-// 移動速度 = 本編で撮った 1 倍の歩きの映像を、値の倍率で再生する / 視界 = 本編で撮った値ごとの止め絵 (いちばん近い値) /
+// 移動速度 = 本編の速さを値ごとに変えて撮った、止めたカメラの前を同じ距離だけ歩く映像を、撮った時の速さのまま流す (速いほど早く渡り切る) / 視界 = 本編で撮った値ごとの止め絵 (いちばん近い値) /
 // キルのクールダウン = 本編のキルボタンが暗くなって秒を数え (10 秒を 1 秒に縮める)、明けたら本編で撮ったキルの映像を流す /
 // キルの距離 = 本編で撮った、相手が届く距離のすぐ内と外に立つ止め絵を交互に出し、届く範囲の円 (撮った時の縮尺どおり) と本編のキルボタンの点き消えを重ねる。
 // 映像が読めない時は自前の図: 移動速度 = 基準 (1 倍・灰) と今の速さのクルーが並んで走る / 視界 = 暗い中のクルーとインポスターの明かりの大きさ (半径は値の平方根) /
@@ -48,7 +48,8 @@ internal sealed class GamePreview : Widget
     private GameObject _speedDrawn, _visionDrawn;
     private SpriteRenderer _speedFoot, _visionFoot;
     private float _speedT;
-    private int _speedFrame = -1;
+    private int _speedFrame = -1, _speedClip = -1;
+    private const float SpeedHold = 0.45f; // 渡り切った後に止めておく秒数
     private float _crewValue = 1f, _impValue = 1.5f;
 
     private Transform _refCrew, _curCrew;
@@ -129,7 +130,10 @@ internal sealed class GamePreview : Widget
     // 値を読み直す (変えた時・外で変わった時)。毎フレームは読まない
     public void Refresh()
     {
-        _speed = Math.Max(Value(Find(StringNames.GamePlayerSpeed), 1f), 0.05f);
+        float speed = Math.Max(Value(Find(StringNames.GamePlayerSpeed), 1f), 0.05f);
+        // 値が変わったら、その値の映像を始めから流す
+        if (speed != _speed) { _speedClip = -1; _speedT = 0f; }
+        _speed = speed;
         var crew = Find(StringNames.GameCrewLight);
         var imp = Find(StringNames.GameImpostorLight);
         // 明かりの半径は値の平方根に比べる (最大でも欄に入り、小さい値でもクルーより大きく見えるように。段ごとの差は残る)
@@ -174,7 +178,7 @@ internal sealed class GamePreview : Widget
         bool hasSpeed = speed != null && _speedFoot;
         if (_speedFoot) _speedFoot.gameObject.SetActive(hasSpeed);
         if (_speedDrawn) _speedDrawn.SetActive(!hasSpeed);
-        if (hasSpeed && _speedFrame < 0) { _speedFrame = 0; _speedFoot.sprite = speed.Frame(0); }
+        if (hasSpeed && _speedFrame < 0) { _speedClip = -1; _speedT = 0f; }
 
         var kill = _scene == Scene.KillCooldown ? Footage.Get("kill") : null;
         // 本編のキルボタンを借りられない時 (ロビーの外で頁を組んだ時など) は、待ち時間を見せられないので自前の図にする
@@ -478,14 +482,18 @@ internal sealed class GamePreview : Widget
 
     private void TickSpeed(float now, float dt)
     {
-        // 映像: 1 倍で撮った歩きを値の倍率で進める (歩幅と足の運びが速さに比べて変わるのは本編の速さと同じ)
+        // 映像: 今の値に最も近い値で撮った歩きを、撮った速さのまま流し、渡り切ったら少し止めて始めに戻る
         if (_speedFoot && _speedFoot.gameObject.activeSelf)
         {
             var f = Footage.Get("speed");
             if (f == null) return;
-            _speedT += dt * _speed * f.Fps;
-            if (_speedT >= f.Count) _speedT -= f.Count * MathF.Floor(_speedT / f.Count);
-            int i = (int)_speedT;
+            int clip = f.Nearest(_speed);
+            if (clip != _speedClip) { _speedClip = clip; _speedT = 0f; }
+            var (start, count) = f.ClipOf(clip);
+            float play = count / Math.Max(f.Fps, 1f);
+            _speedT += dt;
+            if (_speedT >= play + SpeedHold) _speedT = 0f;
+            int i = start + Math.Min((int)(_speedT * f.Fps), count - 1);
             if (i != _speedFrame) { _speedFrame = i; _speedFoot.sprite = f.Frame(i); }
             return;
         }

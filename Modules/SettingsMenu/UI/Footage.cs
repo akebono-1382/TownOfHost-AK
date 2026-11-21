@@ -14,6 +14,8 @@ internal sealed class Footage
     public int W, H, Cols, Count;
     public float Fps = 20f;
     public float[] Values = Array.Empty<float>();
+    // 値ごとの動画の時の、各値の始めのコマ (Values と同じ並び)。止め絵・1 本の動画の時は空
+    public int[] Starts = Array.Empty<int>();
     private Texture2D _tex;
     private Sprite[] _frames;
 
@@ -76,6 +78,7 @@ internal sealed class Footage
                         case "count": f.Count = int.Parse(v); break;
                         case "fps": f.Fps = float.Parse(v, CultureInfo.InvariantCulture); break;
                         case "values": f.Values = Array.ConvertAll(v.Split(','), s => float.Parse(s, CultureInfo.InvariantCulture)); break;
+                        case "starts": f.Starts = Array.ConvertAll(v.Split(','), int.Parse); break;
                     }
                 }
             }
@@ -112,7 +115,16 @@ internal sealed class Footage
         return sp;
     }
 
-    // 値ごとの止め絵で、v にいちばん近い値のコマ
+    // 値ごとの動画で、i 番目の値のコマの範囲 (始め・数)
+    public (int start, int count) ClipOf(int i)
+    {
+        if (Starts.Length == 0) return (0, Count);
+        i = Math.Clamp(i, 0, Starts.Length - 1);
+        int end = i + 1 < Starts.Length ? Starts[i + 1] : Count;
+        return (Starts[i], Math.Max(end - Starts[i], 1));
+    }
+
+    // 値ごとの止め絵・動画で、v にいちばん近い値の番号 (止め絵ならコマの番号と同じ)
     public int Nearest(float v)
     {
         int best = 0;
