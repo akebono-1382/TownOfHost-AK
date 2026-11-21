@@ -83,6 +83,9 @@ public static class MushroomMixupUpdateSystemPatch
         instance = __instance;
         NameChanged = true;
     }
+
+    /// <summary>本編の客の直った時の胞子の演出が終わって名前を付け直すまでの待ち。演出の約 1.8 秒に、回線の遅れと遅い端末の分を足した</summary>
+    public const float EffectSettleDelay = 3f;
 }
 [HarmonyPatch(typeof(MushroomMixupSabotageSystem), nameof(MushroomMixupSabotageSystem.Deteriorate))]
 public static class MushroomMixupDeterioratePatch
@@ -96,7 +99,9 @@ public static class MushroomMixupDeterioratePatch
     }
     /// <summary>
     /// 隠した名前を戻す。名前は NotifyRoles で組み直して送る (変身中は変身先の名前・仲間の色などをそのまま出す)。
-    /// ホストの名前は本編が直った時に送り直すので、少し遅らせてもう一度送る
+    /// 本編の客は、直った時の胞子の演出の終わり (直ってから 1.4〜1.8 秒) に全員の名前を素の名前へ戻し、
+    /// それより前に届いた名前は上書きされる (自分の役職の表示も消える)。なので演出が終わった後にもう一度全員へ送る
+    /// (2026-11-22 実機の録画で確認)
     /// </summary>
     public static void RestorName()
     {
@@ -114,6 +119,6 @@ public static class MushroomMixupDeterioratePatch
             // 会議に入っていれば、会議の名前を上書きしない
             if (token != MushroomMixupUpdateSystemPatch.Generation || !GameStates.IsInTask) return;
             Utils.NotifyRoles(NoCache: true);
-        }, 0.3f, "MushroomMixupRestoreNotifyRoles");
+        }, MushroomMixupUpdateSystemPatch.EffectSettleDelay, "MushroomMixupRestoreNotifyRoles");
     }
 }
