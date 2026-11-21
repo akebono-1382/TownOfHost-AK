@@ -1424,7 +1424,8 @@ public static partial class Utils
 
             //if (seer.IsModClient()) continue;
             string fontSize = isForMeeting ? "1.5" : Main.RoleTextSize.ToString();
-            if (isForMeeting && (seer.GetClient().PlatformData.Platform is Platforms.Playstation or Platforms.Switch)) fontSize = "70%";
+            // 練習の人形などは客の接続を持たない
+            if (isForMeeting && (seer.GetClient()?.PlatformData?.Platform is Platforms.Playstation or Platforms.Switch)) fontSize = "70%";
             if (loopLog) logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:START");
 
             SelfMark.Clear();

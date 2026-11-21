@@ -697,13 +697,19 @@ partial class ReportDeadBodyPatch
         // 役職変更表示のリセット
         Main.ShowChangeMainRole.Clear();
 
-        MeetingTimeManager.OnReportDeadBody();
-        // 会議で死体は全部片付くので、死体の覆いも外す
-        DeadBodyEraser.OnReportDeadBody();
+        // 会議を開くと決めた後なので、付随の処理の例外で本編の通報まで止めない
+        // (止まると会議中の旗と全員の暗転が立ったまま会議が開かない)
+        try
+        {
+            MeetingTimeManager.OnReportDeadBody();
+            // 会議で死体は全部片付くので、死体の覆いも外す
+            DeadBodyEraser.OnReportDeadBody();
 
-        Utils.NotifyRoles(isForMeeting: true, NoCache: true);
+            Utils.NotifyRoles(isForMeeting: true, NoCache: true);
 
-        Utils.SyncAllSettings();
+            Utils.SyncAllSettings();
+        }
+        catch (System.Exception ex) { Logger.Exception(ex, "ReportDeadBody"); }
 
         if (ShapeKiller.DummyReportDeadBody(__instance, target)) return false;
 
