@@ -402,7 +402,7 @@ class IntroCutsceneDestroyPatch
             if (PlayerControl.LocalPlayer.GetCustomRole().IsSpectator())
             {
                 PlayerControl.LocalPlayer.RpcExile();
-                PlayerState.GetByPlayerId(PlayerControl.LocalPlayer.PlayerId).SetDead();
+                PlayerState.GetByPlayerId(PlayerControl.LocalPlayer.PlayerId).SetDead(CustomDeathReason.etc);
             }
 
             switch ((MapNames)mapId)

@@ -384,7 +384,7 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
 
             {
 
-                target.RpcExileV3();
+                target.RpcExileV3(CustomDeathReason.Magic);
 
             }
 
@@ -397,7 +397,7 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
 
             magiccount++;
 
-            state.SetDead();
+            state.SetDead(CustomDeathReason.Magic);
 
             var roomName = target.GetShipRoomName();
 

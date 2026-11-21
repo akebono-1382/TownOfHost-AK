@@ -533,9 +533,7 @@ public sealed class Spelunker : RoleBase, ISystemTypeUpdateHook
 
 
 
-        state.DeathReason = reason;
-
-        state.SetDead();
+        state.SetDead(reason);
 
         Player.RpcMurderPlayerV2(Player);
 

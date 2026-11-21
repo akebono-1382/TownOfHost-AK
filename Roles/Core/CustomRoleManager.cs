@@ -233,16 +233,12 @@ public static partial class CustomRoleManager
 
         //以降共通処理
         var targetState = PlayerState.GetByPlayerId(attemptTarget.PlayerId);
-        if (targetState.DeathReason == CustomDeathReason.etc)
-        {
-            //死因が設定されていない場合は、キルの判定に渡された死因 (既定は Kill)
-            targetState.DeathReason = info.DeathReason;
-        }
         // 死の知らせの受け手が殺し手を読めるよう、死を確定する前に書く
         attemptTarget.SetRealKiller(attemptKiller, true);
 
+        // 死因が書かれていなければ、キルの判定に渡された死因 (既定は Kill)。
         // ホストの死後のタスク免除は SetDead の中で行う (キル以外の死に方でも効かせるため)
-        targetState.SetDead();
+        targetState.SetDead(info.DeathReason, keepExisting: true);
 
         Utils.CountAlivePlayers(true);
 
@@ -482,7 +478,7 @@ public static partial class CustomRoleManager
         var state = PlayerState.GetByPlayerId(playerId);
         if (state == null) return;
         ExileWrapUpPlayerId = playerId;
-        try { state.SetDead(); }
+        try { state.SetDead(CustomDeathReason.Vote, keepExisting: true); }
         finally { ExileWrapUpPlayerId = byte.MaxValue; }
     }
     public static void NotifyPlayerDead(byte playerId, CustomDeathReason reason)

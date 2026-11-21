@@ -207,10 +207,7 @@ namespace TownOfHostL
                         }
                         if (wasAlive) GameLog.OnDisconnected(playerId);
                         if (state.DeathReason == CustomDeathReason.etc) //死因が設定されていなかったら
-                        {
-                            state.DeathReason = CustomDeathReason.Disconnected;
-                            state.SetDead();
-                        }
+                            state.SetDead(CustomDeathReason.Disconnected);
                         if (GameData.Instance != null && GameData.Instance.GetPlayerById(playerId) is NetworkedPlayerInfo info)
                             AntiBlackout.OnDisconnect(info);
                         PlayerGameOptionsSender.RemoveSender(playerId);

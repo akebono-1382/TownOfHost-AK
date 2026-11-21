@@ -819,11 +819,12 @@ static partial class ExtendedPlayerControl
         }
         return !state.IsDead;
     }
-    public static void RpcExileV3(this PlayerControl player)
+    /// <summary>死体なしで死なせる。死因は <see cref="PlayerState.SetDead"/> と同じ</summary>
+    public static void RpcExileV3(this PlayerControl player, CustomDeathReason reason, bool keepExisting = false)
     {
         if (player == null) return;
         player.Exiled();
-        PlayerState.GetByPlayerId(player.PlayerId).SetDead();
+        PlayerState.GetByPlayerId(player.PlayerId).SetDead(reason, keepExisting);
         player.Data.IsDead = true;
         GameDataSerializePatch.SerializeMessageCount++;
         try

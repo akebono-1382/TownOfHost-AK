@@ -295,11 +295,7 @@ public sealed class MeetingSheriff : RoleBase, ISelfVoter
 
             state = PlayerState.GetByPlayerId(target.PlayerId);
 
-            state.DeathReason = CustomDeathReason.Kill;
-
-            target.RpcExileV3();
-
-            state.SetDead();
+            target.RpcExileV3(CustomDeathReason.Kill);
 
 
 
@@ -335,11 +331,7 @@ public sealed class MeetingSheriff : RoleBase, ISelfVoter
 
         }
 
-        MyState.DeathReason = target.Is(CustomRoles.Tairou) && Tairou.TairoDeathReason ? CustomDeathReason.Counter : CustomDeathReason.Misfire;
-
-        Player.RpcExileV3();
-
-        MyState.SetDead();
+        Player.RpcExileV3(target.Is(CustomRoles.Tairou) && Tairou.TairoDeathReason ? CustomDeathReason.Counter : CustomDeathReason.Misfire);
 
 
 

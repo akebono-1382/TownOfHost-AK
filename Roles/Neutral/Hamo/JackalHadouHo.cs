@@ -1159,11 +1159,7 @@ public sealed class JackalHadouHo : RoleBase, ILNKiller, IUsePhantomButton, ISel
 
             {
 
-                PlayerState.GetByPlayerId(pc.PlayerId).DeathReason = CustomDeathReason.etc;
-
-                pc.RpcExileV3();
-
-                PlayerState.GetByPlayerId(pc.PlayerId).SetDead();
+                pc.RpcExileV3(CustomDeathReason.etc);
 
                 Utils.AddGameLog("JackalHadouHo", $"<color=#ff0000>【超波動砲】</color> 弾({pc.ColoredName()})を消費しました");
 

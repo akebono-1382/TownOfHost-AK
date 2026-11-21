@@ -145,8 +145,7 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
         {
             if (Utils.AllAlivePlayersCount <= DieAliveCount)
             {
-                MyState.DeathReason = CustomDeathReason.Spell;
-                Player.RpcExileV3();
+                Player.RpcExileV3(CustomDeathReason.Spell);
                 Utils.AddGameLog($"Fox", $"{Player.ColoredName()}(<b>{RoleText.GetRoleNameText(Player.PlayerId, showSubRole: false)}</b>) [{Utils.GetVitalText(Player.PlayerId, true)}]");
             }
         }
@@ -335,9 +334,7 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
         //ぽんこつ占い師のぽんこつ占い師で死ぬのはかわいそう('ω')
         if (AmongUsClient.Instance.AmHost && IsTellDie && player != null && player.IsAlive() && Player.IsAlive())
         {
-            MyState.DeathReason = CustomDeathReason.Spell;
-            Player.RpcExileV3();
-            MyState.SetDead();
+            Player.RpcExileV3(CustomDeathReason.Spell);
 
             if (Main.AllPlayerControls.Any(pc => pc.Is(CustomRoles.Guesser)))
                 ChatPushOut.PushOut();

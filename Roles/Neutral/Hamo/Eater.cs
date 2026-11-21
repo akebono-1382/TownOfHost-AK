@@ -210,8 +210,7 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
                     }
                     Player.SetKillCooldown(ForceProtect: true);
                     ++eatOrSwallowCount;
-                    PlayerState.GetByPlayerId(target.PlayerId).DeathReason = CustomDeathReason.Swallowed;
-                    target.RpcExileV3();
+                    target.RpcExileV3(CustomDeathReason.Swallowed);
                     Logger.Info($"食べた数：{eatOrSwallowCount}", "Eater");
 
                     if (eatOrSwallowCount >= OptionWinCount.GetInt())

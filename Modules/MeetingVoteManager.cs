@@ -509,9 +509,10 @@ public class MeetingVoteManager
         if (AmongUsClient.Instance.AmHost)
         {
             pc.Data.IsDead = true;
-            pc.RpcExileV3();
+            pc.RpcExileV3(CustomDeathReason.etc, keepExisting: true);
         }
-        PlayerState.GetByPlayerId(killtargetid).SetDead();
+        // 死因は呼び元が先に書いている
+        PlayerState.GetByPlayerId(killtargetid).SetDead(CustomDeathReason.etc, keepExisting: true);
 
         MeetingHud meetingHud = MeetingHud.Instance;
         if (meetingHud == null) return;

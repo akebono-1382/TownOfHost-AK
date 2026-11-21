@@ -249,8 +249,7 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
             AntiBlackout.RunAfterRevert(() =>
             {
                 if (Player == null) return;
-                Player.RpcExileV3();
-                MyState.SetDead();
+                Player.RpcExileV3(CustomDeathReason.etc, keepExisting: true);
             });
             return;
         }

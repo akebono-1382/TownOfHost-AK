@@ -108,14 +108,21 @@ public partial class PlayerState
             SubRoles.Remove(role);
     }
 
-    public void SetDead()
+    /// <summary>
+    /// 死を確定する。死因を書いてから、最初の 1 回だけ「死んだ」の知らせ (役職の OnPlayerDead・死因の演出) を出す。
+    /// キル (RpcMurderPlayer) は送った所で死を確定するので、キルで殺す時は死因を送る前に DeathReason へ書くか、キルの判定に渡す。
+    /// </summary>
+    /// <param name="keepExisting">既に死因が書いてあればそれを保つ (キルの既定・切断・追放の締めのように、先に個別の死因が書かれうる所)</param>
+    public void SetDead(CustomDeathReason reason, bool keepExisting = false)
     {
+        if (!keepExisting || DeathReason == CustomDeathReason.etc) DeathReason = reason;
         var wasDead = IsDead;
         IsDead = true;
         if (AmongUsClient.Instance.AmHost)
         {
             var host = PlayerControl.LocalPlayer;
             if (host != null && host.PlayerId == PlayerId) CompleteHostTasksOnDeath(host);
+            if (!wasDead) Logger.Info($"{PlayerId}: {DeathReason} by {(RealKiller.Item1 != DateTime.MinValue ? RealKiller.Item2 : "-")}", "SetDead");
             // 死に方によらない「誰かが死んだ」の知らせ。同じ人に 2 度呼ばれても 1 度だけ
             if (!wasDead) CustomRoleManager.NotifyPlayerDead(PlayerId, DeathReason);
             if (!wasDead) TownOfHostL.Modules.DeathBurst.OnDead(PlayerId);

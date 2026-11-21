@@ -170,7 +170,7 @@ public static class SurrogateSystem
         var state = PlayerState.GetByPlayerId(proxy.PlayerId);
         if (state != null) state.DeathReason = CustomDeathReason.FollowingSuicide;
         bool duringMeeting = GameStates.CalledMeeting || GameStates.ExiledAnimate || AntiBlackout.IsCached;
-        if (duringMeeting) proxy.RpcExileV3();
+        if (duringMeeting) proxy.RpcExileV3(CustomDeathReason.FollowingSuicide);
         else proxy.RpcMurderPlayerV2(proxy);
     }
 }

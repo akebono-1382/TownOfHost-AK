@@ -271,7 +271,7 @@ public static class ChatCommandTable
         new("/exile")
         {
             Usage = "CommandUsage.PlayerId",
-            Host = c => { if (c.Args.Length > 1 && int.TryParse(c.Args[1], out int id)) Utils.GetPlayerById(id)?.RpcExileV3(); },
+            Host = c => { if (c.Args.Length > 1 && int.TryParse(c.Args[1], out int id)) Utils.GetPlayerById(id)?.RpcExileV3(CustomDeathReason.etc, keepExisting: true); },
         },
         new("/kill")
         {

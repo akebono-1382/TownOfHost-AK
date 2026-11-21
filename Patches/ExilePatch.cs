@@ -152,9 +152,9 @@ namespace TownOfHostL
                         // 暗転対策で生きたクルーに見せている追放者は、客の締めの判定の後 (RevertFilledCrew) まで死なせない
                         var obj = exiled.Object;
                         if (AntiBlackout.IsDeathDeferred(exiled.PlayerId))
-                            _ = new LateTask(() => { if (obj != null) obj.RpcExileV3(); }, 2f, "Restore IsDead Task (deferred)");
+                            _ = new LateTask(() => { if (obj != null) obj.RpcExileV3(CustomDeathReason.Vote, keepExisting: true); }, 2f, "Restore IsDead Task (deferred)");
                         else
-                            obj.RpcExileV3();
+                            obj.RpcExileV3(CustomDeathReason.Vote, keepExisting: true);
                     }
                 }, 0.5f, "Restore IsDead Task");
 
@@ -171,11 +171,10 @@ namespace TownOfHostL
                             var requireResetCam = player?.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true;
                             var state = PlayerState.GetByPlayerId(playerId);
                             Logger.Info($"{player.GetNameWithRole()}を{reason}で死亡させました", "AfterMeetingDeath");
-                            if (state != null) state.DeathReason = reason;
                             if (reason == CustomDeathReason.Suicide)
                                 player?.SetRealKiller(player, true);
-                            player?.RpcExileV3();
-                            state?.SetDead();
+                            player?.RpcExileV3(reason);
+                            state?.SetDead(reason);
                             if (requireResetCam)
                                 player?.ResetPlayerCam(1f);
                             // エクスキューショナー・弁護士・ジャッカルは SetDead の「誰かが死んだ」の知らせで動く

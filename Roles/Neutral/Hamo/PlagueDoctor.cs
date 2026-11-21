@@ -323,7 +323,7 @@ public sealed class PlagueDoctor : RoleBase, IKiller
                 var state = PlayerState.GetByPlayerId(player.PlayerId);
                 state.DeathReason = CustomDeathReason.Infected;
                 player.RpcMurderPlayer(player);
-                state.SetDead();
+                state.SetDead(CustomDeathReason.Infected);
             }
             foreach (var plagueDoctor in Main.AllPlayerControls.Where(p => p.Is(CustomRoles.PlagueDoctor)))
             {
