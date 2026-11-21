@@ -174,6 +174,7 @@ public sealed class SillySheriff : RoleBase, IKiller, ISchrodingerCatOwner
         if ((CanBeKilledBy(target) && chance <= probability) || (!CanBeKilledBy(target) && chance >= probability))
         {
             //自殺処理
+            PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;
             switch (nowSuicideMotion)
             {
                 case SuicideMotionOption.Default://自殺モーション起こさない＝自身が自爆
@@ -183,7 +184,6 @@ public sealed class SillySheriff : RoleBase, IKiller, ISchrodingerCatOwner
                     target.RpcMurderPlayer(killer);
                     break;
             }
-            PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;
 
             if (!MisfireKillsTarget.GetBool())
             {

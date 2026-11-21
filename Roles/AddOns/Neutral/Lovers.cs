@@ -82,9 +82,9 @@ public static class Lovers
         {
             if (lover == target) continue;
 
-            lover.RpcMurderPlayer(lover);
             lover.SetRealKiller(target);
             PlayerState.GetByPlayerId(lover.PlayerId).DeathReason = CustomDeathReason.FollowingSuicide;
+            lover.RpcMurderPlayer(lover);
             Logger.Info($"{target.GetNameWithRole()}のLover後追い:{lover.GetNameWithRole()}", "KillFollowingSuicide");
         }
     }

@@ -172,10 +172,10 @@ namespace TownOfHostL
                             var state = PlayerState.GetByPlayerId(playerId);
                             Logger.Info($"{player.GetNameWithRole()}を{reason}で死亡させました", "AfterMeetingDeath");
                             if (state != null) state.DeathReason = reason;
-                            player?.RpcExileV3();
-                            state?.SetDead();
                             if (reason == CustomDeathReason.Suicide)
                                 player?.SetRealKiller(player, true);
+                            player?.RpcExileV3();
+                            state?.SetDead();
                             if (requireResetCam)
                                 player?.ResetPlayerCam(1f);
                             // エクスキューショナー・弁護士・ジャッカルは SetDead の「誰かが死んだ」の知らせで動く

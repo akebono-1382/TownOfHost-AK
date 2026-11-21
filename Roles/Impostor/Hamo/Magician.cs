@@ -362,6 +362,7 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
             if (!target.IsAlive()) continue;
 
             var state = PlayerState.GetByPlayerId(target.PlayerId);
+            state.DeathReason = CustomDeathReason.Magic;
 
 
             if (ShowDeadbody)
@@ -395,8 +396,6 @@ public sealed class Magician : RoleBase, IImpostor, IUsePhantomButton
             }
 
             magiccount++;
-
-            state.DeathReason = CustomDeathReason.Magic;
 
             state.SetDead();
 

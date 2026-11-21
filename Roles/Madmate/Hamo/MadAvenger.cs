@@ -211,8 +211,8 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
                     {
                         if (AmongUsClient.Instance.AmHost)
                         {
-                            Player.RpcExileV3();
                             MyState.DeathReason = CustomDeathReason.Misfire;
+                            Player.RpcExileV3();
                             MyState.SetDead();
                             Utils.SendMessage(Player.ColoredName() + GetString("Meetingkill"), title: GetString("MSKillTitle"));
                             MeetingVoteManager.Instance.ClearAndExile(Player.PlayerId, 253);
@@ -246,9 +246,9 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
             {
                 if (pc.Is(CustomRoles.Terrorist)) continue;
                 pc.SetRealKiller(Player);
-                pc.RpcMurderPlayer(pc);
                 var state = PlayerState.GetByPlayerId(pc.PlayerId);
                 state.DeathReason = CustomDeathReason.Bombed;
+                pc.RpcMurderPlayer(pc);
                 state.SetDead();
                 killcount++;
             }

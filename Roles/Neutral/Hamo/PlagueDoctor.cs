@@ -320,9 +320,9 @@ public sealed class PlagueDoctor : RoleBase, IKiller
                 if (player.Is(CustomRoles.PlagueDoctor)) continue;
                 i++;
                 player.SetRealKiller(null);
-                player.RpcMurderPlayer(player);
                 var state = PlayerState.GetByPlayerId(player.PlayerId);
                 state.DeathReason = CustomDeathReason.Infected;
+                player.RpcMurderPlayer(player);
                 state.SetDead();
             }
             foreach (var plagueDoctor in Main.AllPlayerControls.Where(p => p.Is(CustomRoles.PlagueDoctor)))

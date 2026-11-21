@@ -71,6 +71,7 @@ public sealed class CursedWolf : RoleBase, IImpostor
         Logger.Info($"{target.GetNameWithRole()} : 残り{SpellCount}回", "CursedWolf");
 
         //切り返す
+        PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Spell;
         switch (nowKillMotion)
         {
             case KillMotionOption.MotionKill://自身がキル
@@ -80,7 +81,6 @@ public sealed class CursedWolf : RoleBase, IImpostor
                 killer.RpcMurderPlayer(killer);
                 break;
         }
-        PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Spell;
         // 呪殺した後のキルクールは通常の半分
         target.ResetKillCooldown();
         target.SetKillCooldown(Main.AllPlayerKillCooldown[target.PlayerId] / 2f);

@@ -121,9 +121,8 @@ namespace TownOfHostL.Roles.Impostor
 
                     if (CustomRoleManager.OnCheckMurder(
                         vampire, target,
-                        target, target))
+                        target, target, false, deathReason: CustomDeathReason.Bite))
                     {
-                        PlayerState.GetByPlayerId(target.PlayerId).DeathReason = CustomDeathReason.Bite;
                         target.SetRealKiller(vampire);
                         Logger.Info($"Vampireに噛まれている{target.name}を自爆させました。", "Vampire.KillBitten");
                         if (!isButton && vampire.IsAlive())

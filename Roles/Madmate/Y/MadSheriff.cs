@@ -74,6 +74,7 @@ public sealed class MadSheriff : RoleBase, IKiller
         (var killer, var target) = info.AttemptTuple;
         // ガード持ちに関わらず能力発動する直接キル役職
         //自殺処理
+        PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;
         switch (nowSuicideMotion)
         {
             case SuicideMotionOption.Default://自殺モーション起こさない＝自身が自爆
@@ -83,7 +84,6 @@ public sealed class MadSheriff : RoleBase, IKiller
                 target.RpcMurderPlayer(killer);
                 break;
         }
-        PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;
 
         if (!MisfireKillsTarget) info.DoKill = false;
     }

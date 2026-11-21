@@ -235,13 +235,14 @@ public static partial class CustomRoleManager
         var targetState = PlayerState.GetByPlayerId(attemptTarget.PlayerId);
         if (targetState.DeathReason == CustomDeathReason.etc)
         {
-            //死因が設定されていない場合は死亡判定
-            targetState.DeathReason = CustomDeathReason.Kill;
+            //死因が設定されていない場合は、キルの判定に渡された死因 (既定は Kill)
+            targetState.DeathReason = info.DeathReason;
         }
+        // 死の知らせの受け手が殺し手を読めるよう、死を確定する前に書く
+        attemptTarget.SetRealKiller(attemptKiller, true);
 
         // ホストの死後のタスク免除は SetDead の中で行う (キル以外の死に方でも効かせるため)
         targetState.SetDead();
-        attemptTarget.SetRealKiller(attemptKiller, true);
 
         Utils.CountAlivePlayers(true);
 

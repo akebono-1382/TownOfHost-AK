@@ -115,11 +115,11 @@ public sealed class Janitor : RoleBase, IImpostor
         target.MarkDirtySettings();
 
         /* ターゲットを死体なしで霊界転送する */
+        targetPlayerState.DeathReason = CustomDeathReason.Clean;
         targetPlayerState.SetDead();
         target.RpcSetRoleNormal(RoleTypes.CrewmateGhost);
         target.Exiled();
         target.RpcExileV3();
-        targetPlayerState.DeathReason = CustomDeathReason.Clean;
         Logger.Info($"{Player.GetNameWithRole()} : ターゲット({target.GetNameWithRole()})を掃除", "G&J");
 
         // 自身のキルクールリセット

@@ -371,10 +371,10 @@ public static partial class MeetingHudPatch
                 {
                     var player = Utils.GetPlayerById(x.PlayerId);
                     // ゲッサーと完全同等の方式でキル（バン・hacking判定回避）
-                    player.Data.IsDead = true;
-                    player.RpcExileV3();
                     var state = PlayerState.GetByPlayerId(player.PlayerId);
                     state.DeathReason = CustomDeathReason.Execution;
+                    player.Data.IsDead = true;
+                    player.RpcExileV3();
                     CustomRoleManager.CheckMurderInfos[player.PlayerId] = new MurderInfo(PlayerControl.LocalPlayer, player, player, player);
                     CustomRoleManager.OnMurderPlayer(player, player);
                     Main.AllPlayerControls.Do(pc => pc.KillFlash());
