@@ -240,6 +240,7 @@ namespace TownOfHostL
         public static void ReportDeadBodyForced(this PlayerControl player, NetworkedPlayerInfo target)
         {
             if (!AmongUsClient.Instance.AmHost) return;
+            Logger.Info($"会議を開く: {player?.GetNameWithRole()} (dead={player?.Data?.IsDead}) => {target?.PlayerName ?? "button"}", "ReportDeadBody");
             MeetingRoomManager.Instance.AssignSelf(player, target);
             if (AmongUsClient.Instance.AmHost)
             {
