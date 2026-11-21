@@ -289,7 +289,7 @@ public static partial class MeetingStates
     public static int Day { get; private set; } = 1;
     static bool dayEnded;
     [Attributes.GameModuleInitializer]
-    public static void InitDay() { Day = 1; dayEnded = false; }
+    public static void InitDay() { Day = 1; dayEnded = false; MeetingCalled = false; }
     /// <summary>会議の始めに呼ぶ (その日の終わりの処理をまた受け付ける)</summary>
     public static void BeginMeeting() => dayEnded = false;
     /// <summary>その日の会議の終わり。会議の後の処理は 1 回の会議で 2 度呼ばれるので、最初の 1 回だけ true を返して日を進める</summary>

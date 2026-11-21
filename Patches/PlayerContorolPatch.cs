@@ -574,6 +574,11 @@ partial class ReportDeadBodyPatch
         ReportTarget = target;
         SpecialMeeting = reporter?.PlayerId == ReportTarget?.PlayerId;
         if (GameStates.IsMeeting) return false;
+        // 試合の外や、勝者が決まって終わりを送っている間の通報は会議にしない。
+        // 通すと下で「会議中」と全員の暗転を立てたまま本編に捨てられ、戻す会議が来ないまま残る
+        if (AmongUsClient.Instance.AmHost
+            && (!GameStates.IsInGame || AmongUsClient.Instance.IsGameOver || CustomWinnerHolder.WinnerTeam != CustomWinner.Default))
+            return false;
         Logger.Info($"{__instance.GetNameWithRole()} => {target?.Object?.GetNameWithRole() ?? "null"}", "ReportDeadBody");
         // 生き返った人の死体 (本編の死体は消せずに残る) は通報できない
         if (target != null && !SpecialMeeting && Revive.WasRevived(target.PlayerId) && !(PlayerState.GetByPlayerId(target.PlayerId)?.IsDead ?? true)) return false;
