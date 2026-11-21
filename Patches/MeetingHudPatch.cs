@@ -414,20 +414,26 @@ public static partial class MeetingHudPatch
                     if (!GameStates.IsInGame) return;
 
 
+                    // 1 人分の例外で、残りの人の役職の戻しと下の名前の配り直しを飛ばさない
                     foreach (var pc in Main.AllPlayerControls)
                     {
-                        if (pc.GetClientId() == -1) continue;
+                        try { SyncRole(pc); }
+                        catch (System.Exception ex) { Logger.Exception(ex, "AfterMeeting_RoleSync"); }
+                    }
+                    void SyncRole(PlayerControl pc)
+                    {
+                        if (pc.GetClientId() == -1) return;
 
                         var role = pc.GetCustomRole();
                         var roleInfo = role.GetRoleInfo();
 
 
                         if (pc.PlayerId == PlayerControl.LocalPlayer.PlayerId
-                            && Options.EnableGM.GetBool()) continue;
+                            && Options.EnableGM.GetBool()) return;
 
 
                         // 霊界（死亡済み）プレイヤーにはSetRoleしない
-                        if (PlayerState.GetByPlayerId(pc.PlayerId).IsDead) continue;
+                        if (PlayerState.GetByPlayerId(pc.PlayerId).IsDead) return;
 
                         // 会議の前の見え方 (役職の能力で変えた物も含む) に戻す。覚えていなければ規則どおり
                         var baseRole = RoleView.Living(pc, pc);
@@ -444,7 +450,7 @@ public static partial class MeetingHudPatch
                                 if (AntiBlackout.IsPendingDummy(pc, viewerClientId)) continue;
                                 pc.RpcSetRoleDesync(RoleView.Living(pc, viewer), viewerClientId);
                             }
-                            continue;
+                            return;
                         }
 
                         if (!AntiBlackout.IsPendingDummy(pc, pc.GetClientId())) pc.RpcSetRoleDesync(baseRole, pc.GetClientId());
