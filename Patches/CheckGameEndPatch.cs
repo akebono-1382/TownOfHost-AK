@@ -79,8 +79,13 @@ namespace TownOfHostL
             predicate = null;
             return false;
         }
+        /// <summary>この試合の終わりの送信 (CoEndGame) を始めたか。始めた後の通報などは受けない</summary>
+        public static bool EndingStarted { get; private set; }
+        [Attributes.GameModuleInitializer]
+        public static void ResetEnding() => EndingStarted = false;
         public static void StartEndGame(GameOverReason reason)
         {
+            EndingStarted = true;
             AmongUsClient.Instance.StartCoroutine(CoEndGame(AmongUsClient.Instance, reason).WrapToIl2Cpp());
         }
         private static IEnumerator CoEndGame(AmongUsClient self, GameOverReason reason)
