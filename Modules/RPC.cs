@@ -223,21 +223,6 @@ namespace TownOfHostL
                 }
             }
         }
-        public static void SendRpcLogger(uint targetNetId, byte callId, int targetClientId = -1)
-        {
-            // RPC を送るたびに通るので、タグが止まっている時は名前を引く前に抜ける
-            if (!DebugModeManager.AmDebugger || !Log.IsEnabled("SendRPC")) return;
-            string rpcName = GetRpcName(callId);
-            string from = targetNetId.ToString();
-            string target = targetClientId.ToString();
-            try
-            {
-                target = targetClientId < 0 ? "All" : AmongUsClient.Instance.GetClient(targetClientId).PlayerName;
-                from = Main.AllPlayerControls.Where(c => c.NetId == targetNetId).FirstOrDefault()?.Data?.PlayerName;
-            }
-            catch { }
-            Log.Info("SendRPC", $"FromNetID:{targetNetId}({from}) TargetClientID:{targetClientId}({target}) CallID:{callId}({rpcName})");
-        }
         public static string GetRpcName(byte callId)
         {
             string rpcName;
@@ -261,15 +246,6 @@ namespace TownOfHostL
                 DestroyableSingleton<HudManager>.Instance.OpenMeetingRoom(player);
                 player.RpcStartMeeting(target);
             }
-        }
-    }
-
-    [HarmonyPatch(typeof(InnerNet.InnerNetClient), nameof(InnerNet.InnerNetClient.StartRpcImmediately))]
-    class StartRpcImmediatelyLoggerPatch
-    {
-        public static void Prefix(InnerNet.InnerNetClient __instance, uint targetNetId, byte callId, int targetClientId = -1)
-        {
-            RPC.SendRpcLogger(targetNetId, callId, targetClientId);
         }
     }
 
