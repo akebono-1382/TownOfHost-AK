@@ -949,7 +949,7 @@
 "PowerfulInfoLong","An attribute granted only to roles capable of performing kills. \nThe kill power of a standard kill becomes 2.","キル可能役職にのみ付与される属性。\n通常キルのキルパワーが2になる。"
 "AbsorbInfoLong","Prevents you from being killed while the number of survivors remains above the set threshold or until the set number of days has passed.","設定人数以上が生存または、設定日数までの間、キルをガードする。"
 "TrappingInfoLong","Add-ons:\nWhen you are killed, you immobilize your killer for a configurable amount of time.","(属性):\nキルされると、キルした人を数秒間移動不可+通報不可にすることができる。\nトラッパーに付与された場合、トラッパーの移動不可秒数 + この役職の移動不可秒数間移動不可になる。\nラストインポスター・属性付与設定等で重複付与された場合、属性付与設定側の移動不可秒数 + この属性全体の設定の移動不可秒数間移動不可になる。","(船员阵营):\n陷阱师被击杀时，凶手一段时间内将不能移动。","(船員):\n如果設限者被殺,殺他的兇手將會被困在原地幾秒(可以設定)","(Член Экипажа):\nПосле того как Охотника убьют, то его убийца будет обездвижен на несколько секунд. (время зависит от настроек)","(Tripulantes): \nAo ser morto, imobilize o seu assassino por um certo período. (configurável)",""
-"MedicalrecordInfoLong","Add-ons:\n","(属性):\n死亡すると全員に死因が"
+"MedicalrecordInfoLong","Add-ons:\n","(属性):\n死亡すると全員に死因が公開される。"
 
 "# デバフ属性"
 "SlowStarterInfoLong","Add-ons:\nGive to Impostor Only.\nCan't make a kill until the number of imposters is reduced.","(属性):\nインポスターにしか付与されない。\n味方の生存人数が一定人数を下回るまでキルできない。"
