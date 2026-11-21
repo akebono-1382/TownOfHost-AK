@@ -75,7 +75,7 @@ internal sealed class GamePreview : Widget
 
     private GameObject _vtaskRoot, _vtaskDrawn;
     private SpriteRenderer _vtaskFoot, _vtaskBeam;
-    private bool _vtaskOn = true;
+    private bool _vtaskOn = true, _vtaskBeamOn = true;
     private int _vtaskFrame = -1;
     private float _vtaskT;
 
@@ -195,6 +195,8 @@ internal sealed class GamePreview : Widget
         bool hasVtask = vtask != null && _vtaskFoot;
         if (_vtaskFoot) _vtaskFoot.gameObject.SetActive(hasVtask);
         if (_vtaskDrawn) _vtaskDrawn.SetActive(!hasVtask);
+        // 出した時から今の値の最初のコマを入れておく (捨てた映像のコマを 1 フレームも映さない)
+        if (hasVtask && _vtaskFrame < 0) { _vtaskT = 0f; _vtaskFrame = vtask.ClipOf(vtask.Nearest(_vtaskOn ? 1f : 0f)).start; _vtaskFoot.sprite = vtask.Frame(_vtaskFrame); }
 
         var kill = _scene == Scene.KillCooldown ? Footage.Get("kill") : null;
         // 本編のキルボタンを借りられない時 (ロビーの外で頁を組んだ時など) は、待ち時間を見せられないので自前の図にする
@@ -526,7 +528,7 @@ internal sealed class GamePreview : Widget
             return;
         }
         if (!_vtaskBeam) return;
-        _vtaskBeam.enabled = _vtaskOn;
+        if (_vtaskBeamOn != _vtaskOn) { _vtaskBeamOn = _vtaskOn; _vtaskBeam.enabled = _vtaskOn; }
         float y = MathF.Sin(_vtaskT * 4f) * CrewH * 0.45f;
         _vtaskBeam.transform.localPosition = new Vector3(0f, y, 0f);
     }
