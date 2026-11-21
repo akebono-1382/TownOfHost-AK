@@ -421,6 +421,15 @@ public static partial class AntiBlackout
                     deferredDead[info.PlayerId] = val;
                     continue;
                 }
+                // 退避の間に死んだ人 (退避中は死を送らないので、控えのまま戻すと客の画面で生きたままになる)。
+                // 客の追放の演出の締めより前に死を送ると暗転しうるので、生きたクルーに見せた死者と同じく戻しの後で送る
+                if (!val.isDead && PlayerState.GetByPlayerId(info.PlayerId)?.IsDead == true)
+                {
+                    logger.Info($"{info.PlayerName}: 退避の間に死んだので、死を戻しの後で送る");
+                    deferredDead[info.PlayerId] = (true, val.Disconnected);
+                    info.IsDead = false;
+                    continue;
+                }
                 info.IsDead = val.isDead;
                 info.Disconnected = val.Disconnected;
             }

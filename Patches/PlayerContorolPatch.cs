@@ -117,6 +117,9 @@ class CheckMurderPatch
         }
     }
 
+    /// <summary>通報の前置きで役職の OnReportDeadBody を回している間</summary>
+    public static bool InReportHooks;
+
     // 不正キル防止チェック
     public static bool CheckForInvalidMurdering(MurderInfo info, bool killerMyselfInvoke)
     {
@@ -154,14 +157,15 @@ class CheckMurderPatch
             return false;
         }
         // 会議中・または会議コール直後のキルでないか
-        if (MeetingHud.Instance != null || MeetingStates.MeetingCalled)
+        // 追放の演出の間 (ホストの演出が客より遅れた時の客のキル) も通さない。生死の控えを退避している間の死は会議明けまで客に届かない
+        if (MeetingHud.Instance != null || (MeetingStates.MeetingCalled && !InReportHooks) || ExileController.Instance != null || AntiBlackout.IsCached)
         {
             Logger.Info("会議中（またはコール直後）のためキルをキャンセルしました。", "CheckMurder");
             return false;
         }
 
-        // 連打キルでないか
-        if (!killerMyselfInvoke)
+        // 連打キルでないか (キルのボタンの連打を止める物。役職が起こす自滅に見せたキルは、同じフレームに何人も起こしうるので見ない)
+        if (!killerMyselfInvoke && !info.IsFakeSuicide)
         {
             float minTime = Mathf.Max(0.02f, AmongUsClient.Instance.Ping / 1000f * 6f); //※AmongUsClient.Instance.Pingの値はミリ秒(ms)なので÷1000
             //TimeSinceLastKillに値が保存されていない || 保存されている時間がminTime以上 => キルを許可
@@ -698,7 +702,10 @@ partial class ReportDeadBodyPatch
 
         MushroomMixupDeterioratePatch.RestorName();
 
-        RoleHooks.ForEachRole(role => role.OnReportDeadBody(__instance, target), "OnReportDeadBody");
+        // 通報の時に起こす役職のキル (吸血鬼の噛んだ相手など) は、会議の呼び出し直後の止めを通す
+        CheckMurderPatch.InReportHooks = true;
+        try { RoleHooks.ForEachRole(role => role.OnReportDeadBody(__instance, target), "OnReportDeadBody"); }
+        finally { CheckMurderPatch.InReportHooks = false; }
 
         // 役職変更表示のリセット
         Main.ShowChangeMainRole.Clear();
