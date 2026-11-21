@@ -141,8 +141,9 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
             }
         }
 
-        // 生存者が設定人数以下になったら死ぬ (ホストだけが行う。MOD の客はタイマーだけ進める)
-        if (AmongUsClient.Instance.AmHost)
+        // 生存者が設定人数以下になったら死ぬ (ホストだけが行う。MOD の客はタイマーだけ進める)。
+        // 追放で人数が減った時は、暗転対策が客の画面の役職を戻し終えてから死を送る (先に送ると客の画面の頭数が崩れて暗転しうる)
+        if (AmongUsClient.Instance.AmHost && !GameStates.InMeetingWindow)
         {
             if (Utils.AllAlivePlayersCount <= DieAliveCount)
             {

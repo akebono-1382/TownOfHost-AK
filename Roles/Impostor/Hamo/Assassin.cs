@@ -323,7 +323,9 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
                     if (info == null) continue;
                     if (isDeadCache.TryGetValue(info.PlayerId, out var val))
                     {
-                        info.IsDead = val.isDead;
+                        // 控えを取った後に死んだ人 (待ちの間の遅延のキルなど) は、控えの「生きている」へ戻さない
+                        info.IsDead = val.isDead
+                            || (info.PlayerId != Player.PlayerId && PlayerState.GetByPlayerId(info.PlayerId)?.IsDead == true);
                         info.Disconnected = val.Disconnected;
                     }
                 }

@@ -151,6 +151,8 @@ public static partial class CustomRoleManager
         {
             //MurderPlayer用にinfoを保存
             CheckMurderInfos[appearanceKiller.PlayerId] = info;
+            // キルを捨てた時 (会議の直後・連打・ガード) に見た目の役職の電文を出さないよう、通すと決めた後で送る
+            CheckMurderPatch.RevealVisualRoleBeforeMurder(appearanceKiller, appearanceTarget);
             bool killerIsViper = appearanceKiller.Is(RoleTypes.Viper);
             if (killerIsViper)
             {
@@ -158,6 +160,7 @@ public static partial class CustomRoleManager
                 var capTarget = appearanceTarget;
                 _ = new LateTask(() =>
                 {
+                    if (capKiller == null || capTarget == null || capTarget.Data == null || capTarget.Data.Disconnected) return;
                     capKiller.RpcMurderPlayer(capTarget);
                 }, 0.2f, "ViperMurderDelay");
             }

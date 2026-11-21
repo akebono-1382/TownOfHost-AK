@@ -1419,6 +1419,9 @@ public static partial class Utils
         //target:seerが見ることができる変更の対象となるプレイヤー
         foreach (var seer in seerList)
         {
+            // 1 人分の例外 (役職の印や接尾の組み立て) で、後ろの見る人の名前を配り損ねない
+            try
+            {
             //seerが落ちているときに何もしない
             if (!TownOfHostL.Core.NativeObject.IsAlive(seer) || seer.Data.Disconnected) continue;
 
@@ -1557,6 +1560,8 @@ public static partial class Utils
                 }
             }
             if (loopLog) logger.Info($"NotifyRoles-Loop1-{seer.GetNameWithRole()}:END");
+            }
+            catch (Exception ex) { Logger.Exception(ex, "NotifyRoles.Seer"); }
         }
     }
     public static void MarkEveryoneDirtySettings()

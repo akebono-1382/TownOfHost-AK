@@ -65,7 +65,6 @@ class CheckMurderPatch
         if (!AmongUsClient.Instance.AmHost || AmongUsClient.Instance.IsGameOver) return false;
         // CNO へのキルは Core の前置で捨てている (前置は全部走るので、ここでも見る)
         if (Core.CustomNetObject.Is(target) || Core.CustomNetObject.Is(__instance)) return false;
-        RevealVisualRoleBeforeMurder(__instance, target);
 
         if (!CustomRoleManager.OnCheckMurder(__instance, target))
         {
@@ -74,7 +73,8 @@ class CheckMurderPatch
 
         return false;
     }
-    private static void RevealVisualRoleBeforeMurder(PlayerControl killer, PlayerControl target)
+    /// <summary>キルを通すと決めた後、キルの電文より前に送る見た目 (ヴァイパーの役職・狙われたノイズメーカー)</summary>
+    public static void RevealVisualRoleBeforeMurder(PlayerControl killer, PlayerControl target)
     {
 
         bool killerIsViper = killer.Is(RoleTypes.Viper);

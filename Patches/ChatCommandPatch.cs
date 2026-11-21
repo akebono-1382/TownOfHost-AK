@@ -667,8 +667,9 @@ namespace TownOfHostL
         {
             var wasDead = player.Data.IsDead;
             if (wasDead) player.Data.IsDead = false;
-            DestroyableSingleton<HudManager>.Instance.Chat.AddChat(player, msg);
-            if (wasDead) player.Data.IsDead = true;
+            // 吹き出しの例外で、死んだ人をホストの手元で生きたまま残さない
+            try { DestroyableSingleton<HudManager>.Instance.Chat.AddChat(player, msg); }
+            finally { if (wasDead) player.Data.IsDead = true; }
         }
         private static void SendMessageAsDeadSender(PlayerControl sender, string msg, string title, byte sendTo)
         {
@@ -677,6 +678,7 @@ namespace TownOfHostL
                 : new[] { Utils.GetPlayerById(sendTo) };
 
             GameDataSerializePatch.SerializeMessageCount++;
+            var senderWasDead = sender.Data.IsDead;
             try
             {
                 foreach (var target in targets)
@@ -727,6 +729,8 @@ namespace TownOfHostL
             }
             finally
             {
+                // 途中の例外で、死んだ送り手をホストの手元で生きたまま残さない
+                if (sender.Data != null) sender.Data.IsDead = senderWasDead;
                 GameDataSerializePatch.SerializeMessageCount--;
             }
         }
