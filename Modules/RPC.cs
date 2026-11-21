@@ -94,6 +94,7 @@ namespace TownOfHostL
             }
             return true;
         }
+        static float lastRetryVersionCheck = float.NegativeInfinity;
         public static void Postfix(PlayerControl __instance, [HarmonyArgument(0)] byte callId, [HarmonyArgument(1)] MessageReader reader)
         {
             switch ((RpcCalls)callId)
@@ -132,6 +133,10 @@ namespace TownOfHostL
                     }
                     break;
                 case CustomRPC.RequestRetryVersionCheck:
+                    // 頼むのはホストだけ。1 通で全員宛ての Reliable を出し直すので、ホスト以外の頼みと連打は受けない
+                    if (__instance.OwnerId != AmongUsClient.Instance.HostId) break;
+                    if (UnityEngine.Time.realtimeSinceStartup - lastRetryVersionCheck < 1f) break;
+                    lastRetryVersionCheck = UnityEngine.Time.realtimeSinceStartup;
                     RPC.RpcVersionCheck();
                     break;
             }
