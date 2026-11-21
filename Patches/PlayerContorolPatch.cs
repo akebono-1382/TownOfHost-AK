@@ -413,9 +413,13 @@ class ShapeshiftPatch
         if (shapeshifting)
         {
             Utils.NotifyRoles(NoCache: true);
+            byte shifterId = shapeshifter.PlayerId, targetId = target.PlayerId;
             _ = new LateTask(() =>
             {
                 if (!GameStates.IsInTask) return;
+                // 1.2 秒の間に解除した (解除の側が送り直す)・別の人へ変身し直した (そちらの送り直しが走る) なら送らない
+                if (!Main.CheckShapeshift.TryGetValue(shifterId, out var still) || !still) return;
+                if (!Main.ShapeshiftTarget.TryGetValue(shifterId, out var nowTarget) || nowTarget != targetId) return;
                 Utils.NotifyRoles(NoCache: true);
             },
             1.2f, "ShapeShiftNotifyAfterEffect");
