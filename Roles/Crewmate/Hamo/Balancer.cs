@@ -144,6 +144,19 @@ public sealed class Balancer : RoleBase, ISelfVoter
 
 
 
+    /// <summary>
+    /// 天秤の名前を戻す。素の本名でなく、他人の名前として送る形 (変身先の名前・通信妨害のカモフラ中は隠す) で戻す。
+    /// 抜けた人は戻さない
+    /// </summary>
+    private static void RestoreName(byte id)
+    {
+        var pc = Utils.GetPlayerById(id);
+        if (pc == null || pc.Data == null) return;
+        // 試合の外では手元の名前が天秤の見出しのままなので、控えの本名で戻す
+        var name = GameStates.IsInGame ? TownOfHostL.Core.ChatSenderName.RestoreFor(pc)
+            : Main.AllPlayerNames.TryGetValue(id, out var realName) ? realName : null;
+        if (name != null) pc.RpcSetName(name);
+    }
     public override void OnDestroy()
 
     {
@@ -165,9 +178,9 @@ public sealed class Balancer : RoleBase, ISelfVoter
             {
 
                 // 抜けた人は戻さない (null のまま呼ぶと、ここで後始末が止まる)
-                Utils.GetPlayerById(Target1)?.RpcSetName(Main.AllPlayerNames[Target1]);
+                RestoreName(Target1);
 
-                Utils.GetPlayerById(Target2)?.RpcSetName(Main.AllPlayerNames[Target2]);
+                RestoreName(Target2);
 
             }
 
@@ -649,8 +662,8 @@ public sealed class Balancer : RoleBase, ISelfVoter
                 _ = new LateTask(() => Utils.AllPlayerKillFlash(), 1f, "BMkillf");
 
                 // 名前は会議を開く前に戻す (開いた後に戻すと、会議用に送った名前を素の名前で上書きする)
-                Utils.GetPlayerById(Target1)?.RpcSetName(Main.AllPlayerNames[Target1]);
-                Utils.GetPlayerById(Target2)?.RpcSetName(Main.AllPlayerNames[Target2]);
+                RestoreName(Target1);
+                RestoreName(Target2);
                 MeetingTargets = new[] { Target1, Target2 };
                 ReportDeadBodyPatch.ExReportDeadBody(reporter, oniku.Data, false, "Balancer.meeting", Utils.GetRoleColorCode(CustomRoles.Balancer));
 
@@ -722,9 +735,9 @@ public sealed class Balancer : RoleBase, ISelfVoter
 
             //名前を戻す
 
-            Utils.GetPlayerById(Target1)?.RpcSetName(Main.AllPlayerNames[Target1]);
+            RestoreName(Target1);
 
-            Utils.GetPlayerById(Target2)?.RpcSetName(Main.AllPlayerNames[Target2]);
+            RestoreName(Target2);
 
 
 
