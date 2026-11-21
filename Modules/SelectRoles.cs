@@ -15,6 +15,8 @@ public static class SelectRoles
 
     public static void Set(byte playerId, CustomRoles role) => reserved[playerId] = role;
     public static void Clear() => reserved.Clear();
+    /// <summary>抜けた人の予約を捨てる (空いた番号に後から入った別人に役職が付かないように)</summary>
+    public static void OnPlayerLeft(byte playerId) => reserved.Remove(playerId);
 
     public static void AddToAssignRoleList(List<CustomRoles> assignRoleList)
     {

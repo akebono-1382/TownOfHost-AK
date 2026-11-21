@@ -224,6 +224,7 @@ namespace TownOfHostL
                     Main.playerVersion.Remove(playerId);
                     AfkDetector.OnPlayerLeft(playerId);
                     LobbyPoll.OnPlayerLeft(playerId);
+                    if (!GameStates.IsInGame) SelectRoles.OnPlayerLeft(playerId);
                     Logger.Info($"{data.PlayerName}(ClientID:{data.Id})が切断(理由:{reason}, ping:{AmongUsClient.Instance.Ping})", "Session");
                 }
             }

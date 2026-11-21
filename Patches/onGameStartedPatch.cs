@@ -508,7 +508,9 @@ class SelectRolesPatch
         {
             if (!pc.GetCustomRole().IsSpectator()) allPlayersbySub.Add(pc);
         }
-        if (!CustomRoles.PlatonicLover.IsEnable() && CustomRoles.Lovers.IsEnable())
+        // ラバーズは 2 人で 1 組。出る確率を引き (IsEnable は確率が 0 より大きいかしか見ない)、相手がいない時は配らない
+        if (!CustomRoles.PlatonicLover.IsEnable() && CustomRoles.Lovers.IsEnable() && allPlayersbySub.Count >= 2
+            && IRandom.Instance.Next(100) < CustomRoles.Lovers.GetChance())
             AssignCustomSubRolesFromList(CustomRoles.Lovers, allPlayersbySub, 2);
         foreach (var info in TownOfHostL.Roles.AddOns.AddOnList.All)
         {
@@ -1022,48 +1024,53 @@ public static class StandardIntroHelper
             if (pc.PlayerId == PlayerControl.LocalPlayer.PlayerId) continue;
             if (pc.GetClientId() == -1) continue;
 
-            var role = pc.GetCustomRole();
-            var roleInfo = role.GetRoleInfo();
-            var roleType = role.GetRoleTypes();
-
-            if (roleInfo?.IsDesyncImpostor == true && role.IsCrewmate())
+            // 1 人分の例外で、後ろの人の役職の送りとイントロを止めない
+            try
             {
-                pc.RpcSetRoleDesync(roleInfo.BaseRoleType.Invoke(), pc.GetClientId());
-                foreach (var viewer in Main.AllPlayerControls)
+                var role = pc.GetCustomRole();
+                var roleInfo = role.GetRoleInfo();
+                var roleType = role.GetRoleTypes();
+
+                if (roleInfo?.IsDesyncImpostor == true && role.IsCrewmate())
                 {
-                    if (viewer.PlayerId == pc.PlayerId) continue;
-                    if (viewer.GetClientId() == -1) continue;
-                    pc.RpcSetRoleDesync(RoleTypes.Crewmate, viewer.GetClientId());
+                    pc.RpcSetRoleDesync(roleInfo.BaseRoleType.Invoke(), pc.GetClientId());
+                    foreach (var viewer in Main.AllPlayerControls)
+                    {
+                        if (viewer.PlayerId == pc.PlayerId) continue;
+                        if (viewer.GetClientId() == -1) continue;
+                        pc.RpcSetRoleDesync(RoleTypes.Crewmate, viewer.GetClientId());
+                    }
+                    continue;
                 }
-                continue;
+
+                if (roleInfo?.IsDesyncImpostor == true || role.IsMadmate()
+                    || (role.IsNeutral() && !role.IsImpostor()))
+                {
+                    if (role.IsCrewmate()) roleType = RoleTypes.Crewmate;
+                    else if (role.IsMadmate()) roleType = RoleTypes.Crewmate;
+                    else if (role.IsNeutral()) roleType = RoleTypes.Impostor;
+                }
+
+                pc.RpcSetRoleDesync(roleType, pc.GetClientId());
+
+
+                foreach (var seen in Main.AllPlayerControls)
+                {
+                    if (role.GetCustomRoleTypes() != CustomRoleTypes.Impostor) continue;
+                    if (seen.GetCustomRole().GetCustomRoleTypes() != CustomRoleTypes.Impostor) continue;
+                    if (role.GetRoleInfo()?.IsDesyncImpostor == true) continue;
+                    if (seen.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true) continue;
+                    if (pc.GetCustomRole().GetRoleTypes() == RoleTypes.Phantom) continue;
+
+                    if (seen.PlayerId == pc.PlayerId) continue;
+                    var capPc = pc;
+                    var capSeen = seen;
+                    _ = new LateTask(() =>
+                        capSeen.RpcSetRoleDesync(RoleTypes.Impostor, capPc.GetClientId()),
+                        0.1f, "StandardIntro_ImpSync");
+                }
             }
-
-            if (roleInfo?.IsDesyncImpostor == true || role.IsMadmate()
-                || (role.IsNeutral() && !role.IsImpostor()))
-            {
-                if (role.IsCrewmate()) roleType = RoleTypes.Crewmate;
-                else if (role.IsMadmate()) roleType = RoleTypes.Crewmate;
-                else if (role.IsNeutral()) roleType = RoleTypes.Impostor;
-            }
-
-            pc.RpcSetRoleDesync(roleType, pc.GetClientId());
-
-
-            foreach (var seen in Main.AllPlayerControls)
-            {
-                if (role.GetCustomRoleTypes() != CustomRoleTypes.Impostor) continue;
-                if (seen.GetCustomRole().GetCustomRoleTypes() != CustomRoleTypes.Impostor) continue;
-                if (role.GetRoleInfo()?.IsDesyncImpostor == true) continue;
-                if (seen.GetCustomRole().GetRoleInfo()?.IsDesyncImpostor == true) continue;
-                if (pc.GetCustomRole().GetRoleTypes() == RoleTypes.Phantom) continue;
-
-                if (seen.PlayerId == pc.PlayerId) continue;
-                var capPc = pc;
-                var capSeen = seen;
-                _ = new LateTask(() =>
-                    capSeen.RpcSetRoleDesync(RoleTypes.Impostor, capPc.GetClientId()),
-                    0.1f, "StandardIntro_ImpSync");
-            }
+            catch (System.Exception ex) { Logger.Exception(ex, "Intoro"); }
         }
 
 
