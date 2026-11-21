@@ -283,6 +283,10 @@ class SelectRolesPatch
                 .StartMessage(pc.GetClientId());
         }
         RpcSetRoleReplacer.StartReplace(senders);
+        // 接続の引けない人 (開始の間に抜けた人) 宛ての送信器は宛先が -1 (全員宛て) になり、
+        // その人の画面の役職の見え方 (インポスターの仲間など) が全員に届くので送らない
+        foreach (var pc in Main.AllPlayerControls)
+            if (pc.GetClientId() < 0) RpcSetRoleReplacer.OverriddenSenderList.Add(senders[pc.PlayerId]);
 
         RoleAssignManager.SelectAssignRoles();
 

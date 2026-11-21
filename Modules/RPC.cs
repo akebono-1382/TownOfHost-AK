@@ -85,6 +85,7 @@ namespace TownOfHostL
                     {
                         //ロビーキルチート
                         var client = __instance.GetClient();
+                        if (client == null) return false;
                         if (Options.CheaterAutoBan.GetBool()) BanManager.AddBanPlayer(client, true);
                         AmongUsClient.Instance.KickPlayer(client.Id, false);
                         Logger.Info($"LobbyKillCancel {client.PlayerName}, FriendCode={client.FriendCode}, ProductUserId={client.ProductUserId}", "RPCHandlerPatch");
