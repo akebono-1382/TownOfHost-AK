@@ -1,19 +1,21 @@
 using System;
 using System.Collections.Generic;
+using AmongUs.GameOptions;
 using UnityEngine;
 
 namespace TownOfHostL.SettingsUI;
 
 // ゲームの頁の右の欄に出す、本編の設定の意味を見せる動く図。字は使わない。
 // 移動速度 = 本編で撮った 1 倍の歩きの映像を、値の倍率で再生する / 視界 = 本編で撮った値ごとの止め絵 (いちばん近い値) /
-// キルのクールダウン = 本編のキルボタンが暗くなって秒を数え (10 秒を 1 秒に縮める)、明けたら本編で撮ったキルの映像を流す。
+// キルのクールダウン = 本編のキルボタンが暗くなって秒を数え (10 秒を 1 秒に縮める)、明けたら本編で撮ったキルの映像を流す /
+// キルの距離 = 本編で撮った、相手が届く距離のすぐ内と外に立つ止め絵を交互に出し、届く範囲の円 (撮った時の縮尺どおり) と本編のキルボタンの点き消えを重ねる。
 // 映像が読めない時は自前の図: 移動速度 = 基準 (1 倍・灰) と今の速さのクルーが並んで走る / 視界 = 暗い中のクルーとインポスターの明かりの大きさ (半径は値の平方根) /
 // キルのクールダウン = インポスターの周りの目盛りが埋まる速さ (10 秒で 1 周を 1 秒に縮めて見せる)。
 // どの図を出すかは、最後に当てた・変えた本編の設定で決める (かくれんぼの設定など図の無い項目では変えない)。
 // 図はすべて作った時に用意しておき、出し入れだけをする (後から作ると描く順が付かないため)。
 internal sealed class GamePreview : Widget
 {
-    private enum Scene { Speed, Vision, KillCooldown }
+    private enum Scene { Speed, Vision, KillCooldown, KillRange }
 
     private static readonly Color Panel = new(0.06f, 0.07f, 0.1f, 1f);
     private static readonly Color Lane = new(0.22f, 0.24f, 0.3f, 1f);
@@ -27,6 +29,10 @@ internal sealed class GamePreview : Widget
     private const float CrewH = 0.34f;
     private const float RefCross = 2.2f;     // 1 倍の速さで欄を横切る秒数
     private const float CooldownScale = 0.1f; // クールダウンの 1 秒を何秒で見せるか
+    // キルの距離の映像: 縦 6 マスを 144 画素で撮った (1 マス = 24 画素)。止め絵は値ごとに 2 枚 (内・外)
+    private const float RangePxPerUnit = 24f;
+    private const float RangeIn = 1.4f, RangeOut = 1.0f; // 内・外の絵を出す秒数
+    private const float RangeCrewH = 0.2f;
 
     // 最後に選んだ図 (頁を作り直しても残す)
     private static Scene _scene = Scene.Speed;
@@ -59,6 +65,12 @@ internal sealed class GamePreview : Widget
     private static readonly int DesatId = Shader.PropertyToID("_Desat");
     private float _killPercent = -1f;
 
+    private GameObject _rangeRoot;
+    private SpriteRenderer _rangeFoot, _rangeDisk, _rangeRing, _rangeBtn, _rangeHost, _rangeTarget;
+    private static Material _rangeMat;
+    private int _rangeIndex = 1, _rangeFrame = -1;
+    private float _rangeT;
+
     private float _speed = 1f;
     private float _crewR, _impR, _crewTarget, _impTarget;
     private float _cooldown = 25f;
@@ -81,6 +93,7 @@ internal sealed class GamePreview : Widget
         StringNames.GamePlayerSpeed => Scene.Speed,
         StringNames.GameCrewLight or StringNames.GameImpostorLight => Scene.Vision,
         StringNames.GameKillCooldown => Scene.KillCooldown,
+        StringNames.GameKillDistance => Scene.KillRange,
         _ => null,
     } : null;
 
@@ -126,6 +139,10 @@ internal sealed class GamePreview : Widget
         _crewTarget = LightRadius(_crewValue);
         _impTarget = LightRadius(_impValue);
         _cooldown = Value(Find(StringNames.GameKillCooldown), 25f);
+        var dist = Find(StringNames.GameKillDistance);
+        _rangeIndex = dist != null ? Math.Clamp(dist.Index, 0, NormalGameOptionsV12.KillDistances.Length - 1) : 1;
+        _rangeFrame = -1;
+        LayoutRange();
         ApplyFocusAlpha();
         ShowVisionStill();
     }
@@ -145,9 +162,14 @@ internal sealed class GamePreview : Widget
     // 今の図に映像があれば出し、自前の図を隠す
     private void UseFootage()
     {
-        Footage.KeepOnly(_scene switch { Scene.Speed => "speed", Scene.Vision => "vision", _ => "kill" });
+        Footage.KeepOnly(_scene switch { Scene.Speed => "speed", Scene.Vision => "vision", Scene.KillRange => "range", _ => "kill" });
         // 捨てた映像のコマを握ったままにしない (次に出す時に今の映像のコマを入れ直す)
-        _speedFrame = _killFrame = -1;
+        _speedFrame = _killFrame = _rangeFrame = -1;
+        var range = _scene == Scene.KillRange ? Footage.Get("range") : null;
+        bool hasRange = range != null && _rangeFoot;
+        if (_rangeFoot) _rangeFoot.gameObject.SetActive(hasRange);
+        if (_rangeHost) _rangeHost.gameObject.SetActive(!hasRange);
+        if (_rangeTarget) _rangeTarget.gameObject.SetActive(!hasRange);
         var speed = _scene == Scene.Speed ? Footage.Get("speed") : null;
         bool hasSpeed = speed != null && _speedFoot;
         if (_speedFoot) _speedFoot.gameObject.SetActive(hasSpeed);
@@ -221,6 +243,17 @@ internal sealed class GamePreview : Widget
         (_crewGlow, _crewLight, _crewBody) = Lit(_visionDrawn.transform, crew, circle, CrewColor, -side);
         (_impGlow, _impLight, _impBody) = Lit(_visionDrawn.transform, crew, circle, ImpColor, side);
 
+        // キルの距離: 映像 (無い時は自前のクルー 2 人) に、届く範囲の円と本編のキルボタン
+        _rangeRoot = Node("Range", go.transform, layer);
+        _rangeFoot = FootagePart(_rangeRoot.transform);
+        _rangeDisk = Part(_rangeRoot.transform, "Reach", circle, new Color(ImpColor.r, ImpColor.g, ImpColor.b, 0.16f), 2);
+        _rangeRing = Part(_rangeRoot.transform, "ReachEdge", Ring, new Color(ImpColor.r, ImpColor.g, ImpColor.b, 0.85f), 2);
+        _rangeHost = Figure(_rangeRoot.transform, crew, ImpColor, 0f, 3, RangeCrewH);
+        _rangeTarget = Figure(_rangeRoot.transform, crew, CrewColor, 0f, 3, RangeCrewH);
+        _rangeTarget.flipX = true;
+        // ボタンは左下 (右には遠い相手が立つ)
+        _rangeBtn = BorrowKillButton(_rangeRoot.transform, ref _rangeMat, "TohlPreviewRangeButton", left: true);
+
         // キルのクールダウン: 映像と本編のキルボタン (無い時はインポスターの周りの目盛り・右に狙われるクルー)
         _killRoot = Node("Kill", go.transform, layer);
         _killFoot = FootagePart(_killRoot.transform);
@@ -251,31 +284,67 @@ internal sealed class GamePreview : Widget
     // 本編のキルボタンの絵と、待ち時間の暗い覆いの材質 (本編のボタンと同じ _Percent で暗くする) を借りる。秒の字は上に重ねる
     private void BuildKillButton(BuildCtx ctx)
     {
+        _killBtn = BorrowKillButton(_killRoot.transform, ref _killMat, "TohlPreviewKillButton");
+        if (!_killBtn) return;
+        float size = Height * 0.42f;
+        _killNum = new Label("", 3.2f) { Bold = true, Width = size, TextAlign = TMPro.TextAlignmentOptions.Center };
+        var t = _killNum.Build(_killRoot.transform, ctx, size, out _);
+        t.transform.localPosition = _killBtn.transform.localPosition + new Vector3(0f, 0f, -0.02f);
+        t.SetActive(false);
+    }
+
+    // 本編のキルボタンの絵を右下 (left なら左下) に置く (材質は図ごとに 1 つを使い回す。頁を組み直すたびに作ると積み上がる)。借りられなければ null
+    private SpriteRenderer BorrowKillButton(Transform parent, ref Material mat, string matName, bool left = false)
+    {
         var src = HudManager.InstanceExists ? HudManager.Instance.KillButton : null;
         var g = src ? src.graphic : null;
-        if (!g || !g.sprite) return;
-        _killBtn = Part(_killRoot.transform, "KillButton", g.sprite, Color.white, 3);
-        // 材質は 1 つを使い回す (頁を組み直すたびに作ると積み上がる)
-        if (!_killMat && g.sharedMaterial)
+        if (!g || !g.sprite) return null;
+        var btn = Part(parent, "KillButton", g.sprite, Color.white, 3);
+        if (!mat && g.sharedMaterial)
         {
-            _killMat = new Material(g.sharedMaterial) { name = "TohlPreviewKillButton" };
-            _killMat.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+            mat = new Material(g.sharedMaterial) { name = matName };
+            mat.hideFlags |= HideFlags.DontUnloadUnusedAsset;
             // 写した時のボタンの状態 (使えない時の灰色) を持ち込まない
-            _killMat.SetFloat(DesatId, 0f);
-            _killMat.SetFloat(PercentId, 0f);
+            mat.SetFloat(DesatId, 0f);
+            mat.SetFloat(PercentId, 0f);
         }
-        if (_killMat) _killBtn.sharedMaterial = _killMat;
+        if (mat) btn.sharedMaterial = mat;
         var b = g.sprite.bounds.size;
         float size = Height * 0.42f;
         float sc = size / Math.Max(Math.Max(b.x, b.y), 0.0001f);
-        _killBtn.transform.localScale = new Vector3(sc, sc, 1f);
-        var pos = new Vector3(Width / 2f - size / 2f - 0.08f, -Height / 2f + size / 2f + 0.06f, 0f);
-        _killBtn.transform.localPosition = pos;
-        _killBtn.gameObject.SetActive(false);
-        _killNum = new Label("", 3.2f) { Bold = true, Width = size, TextAlign = TMPro.TextAlignmentOptions.Center };
-        var t = _killNum.Build(_killRoot.transform, ctx, size, out _);
-        t.transform.localPosition = pos + new Vector3(0f, 0f, -0.02f);
-        t.SetActive(false);
+        btn.transform.localScale = new Vector3(sc, sc, 1f);
+        float x = Width / 2f - size / 2f - 0.08f;
+        btn.transform.localPosition = new Vector3(left ? -x : x, -Height / 2f + size / 2f + 0.06f, 0f);
+        btn.gameObject.SetActive(false);
+        return btn;
+    }
+
+    // 直径 1 単位の細い輪 (届く範囲の縁)
+    private static Sprite _ring;
+    private static Sprite Ring => _ring ? _ring : _ring = BakeRing();
+
+    private static Sprite BakeRing()
+    {
+        const int n = 256;
+        const float w = 2.5f; // 線の太さ (画素)
+        var px = new byte[n * n * 4];
+        for (int y = 0; y < n; y++)
+        for (int x = 0; x < n; x++)
+        {
+            float fx = x + 0.5f - n / 2f, fy = y + 0.5f - n / 2f;
+            float d = MathF.Abs(MathF.Sqrt(fx * fx + fy * fy) - (n / 2f - w));
+            float a = Math.Clamp(w / 2f + 0.5f - d, 0f, 1f);
+            int i = (y * n + x) * 4;
+            px[i] = px[i + 1] = px[i + 2] = 255;
+            px[i + 3] = (byte)(a * 255f + 0.5f);
+        }
+        var tex = new Texture2D(n, n, TextureFormat.RGBA32, false) { name = "TohlPreviewRing", filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+        tex.LoadRawTextureData(px);
+        tex.Apply(false, true);
+        tex.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        var sp = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), n);
+        sp.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        return sp;
     }
 
     private SpriteRenderer Part(Transform parent, string name, Sprite sprite, Color c, int order)
@@ -313,6 +382,7 @@ internal sealed class GamePreview : Widget
         if (_speedRoot) _speedRoot.SetActive(_scene == Scene.Speed);
         if (_visionRoot) _visionRoot.SetActive(_scene == Scene.Vision);
         if (_killRoot) _killRoot.SetActive(_scene == Scene.KillCooldown);
+        if (_rangeRoot) _rangeRoot.SetActive(_scene == Scene.KillRange);
         UseFootage();
     }
 
@@ -334,6 +404,50 @@ internal sealed class GamePreview : Widget
                 c.a = a * k;
                 r.color = c;
             }
+    }
+
+    // ---- キルの距離 ----
+
+    // 映像の 1 マスが欄の何単位か (映像は幅いっぱいに出している)
+    private float RangeUnit => (Width - 0.08f) / 256f * RangePxPerUnit;
+
+    // 届く範囲の円を今の値の大きさにする (中心 = 撮った時のカメラの中心 = 自分)
+    private void LayoutRange()
+    {
+        if (!_rangeDisk) return;
+        float r = NormalGameOptionsV12.KillDistances[_rangeIndex] * RangeUnit;
+        _rangeDisk.transform.localScale = new Vector3(r * 2f, r * 2f, 1f);
+        _rangeRing.transform.localScale = new Vector3(r * 2f, r * 2f, 1f);
+    }
+
+    private void TickRange(float dt)
+    {
+        _rangeT += dt;
+        if (_rangeT >= RangeIn + RangeOut) _rangeT -= (RangeIn + RangeOut) * MathF.Floor(_rangeT / (RangeIn + RangeOut));
+        bool inside = _rangeT < RangeIn;
+        int frame = _rangeIndex * 2 + (inside ? 0 : 1);
+        if (frame == _rangeFrame) return;
+        _rangeFrame = frame;
+        if (_rangeFoot && _rangeFoot.gameObject.activeSelf)
+        {
+            var f = Footage.Get("range");
+            if (f != null) _rangeFoot.sprite = f.Frame(frame);
+        }
+        else if (_rangeTarget)
+        {
+            // 映像の無い時: 撮った時と同じ距離 (内 = 0.06 手前・外 = 0.45 先) に相手を置く
+            float d = NormalGameOptionsV12.KillDistances[_rangeIndex] + (inside ? -0.06f : 0.45f);
+            _rangeTarget.transform.localPosition = new Vector3(d * RangeUnit, 0f, 0f);
+        }
+        // 本編のキルボタン: 届く相手がいる時は点き、いない時は灰色で薄い (本編の使えない時と同じ)
+        if (_rangeBtn)
+        {
+            _rangeBtn.gameObject.SetActive(true);
+            if (_rangeMat) _rangeMat.SetFloat(DesatId, inside ? 0f : 1f);
+            var c = _rangeBtn.color;
+            c.a = inside ? 1f : 0.3f;
+            _rangeBtn.color = c;
+        }
     }
 
     // ---- 毎フレーム (ゲームの頁が見えている間だけ) ----
@@ -358,6 +472,7 @@ internal sealed class GamePreview : Widget
             case Scene.Speed: TickSpeed(now, dt); break;
             case Scene.Vision: TickVision(dt); break;
             case Scene.KillCooldown: TickKill(now, dt); break;
+            case Scene.KillRange: TickRange(dt); break;
         }
     }
 
