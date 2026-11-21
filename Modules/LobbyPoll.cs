@@ -35,6 +35,9 @@ public static class LobbyPoll
     static int gameId;
     static bool announcedTen;
 
+    /// <summary>抜けた人の票を捨てる (空いた番号に後から入った別人の票として数えないように)</summary>
+    public static void OnPlayerLeft(byte playerId) => votes.Remove(playerId);
+
     // 抜けた人の票は数えない
     public static int CountOf(int choice) => votes.Count(kv => kv.Value == choice && Utils.GetPlayerById(kv.Key) != null);
     public static int? VoteOf(byte playerId) => votes.TryGetValue(playerId, out var v) ? v : null;

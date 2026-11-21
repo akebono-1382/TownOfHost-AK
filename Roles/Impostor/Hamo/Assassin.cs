@@ -200,6 +200,14 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
 
             _ = new LateTask(() =>
             {
+                // 待つ 1 秒の間に別の会議が始まった時は、全員を生きているとして送らず、その会議が明けてから開き直す
+                // (会議中に送ると、その会議の死者が生きて見え、控えの生死が次の会議まで残る)
+                if (GameStates.IsMeeting || GameStates.CalledMeeting || GameStates.ExiledAnimate || !GameStates.IsInTask
+                    || CustomWinnerHolder.WinnerTeam is not CustomWinner.Default)
+                {
+                    if (NowState is AssassinMeeting.CallMetting) NowState = AssassinMeeting.WaitMeeting;
+                    return;
+                }
                 MyState.IsDead = false;
                 foreach (var info in GameData.Instance.AllPlayers)
                 {

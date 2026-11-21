@@ -253,6 +253,16 @@ public static class VanillaHideAndSeek
         }
         Players.Invalidate();
         if (!AmongUsClient.Instance || !AmongUsClient.Instance.AmHost) return;
+        // 休んでいる間は版の電文を受けず、抜けた人の版も消していない (空いた番号に入った別人が前の人の版を持つ)。
+        // 版の記録を作り直し、客に版を送り直してもらう
+        try
+        {
+            Main.playerVersion = new();
+            RPC.RpcVersionCheck();
+            var writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.RequestRetryVersionCheck, Hazel.SendOption.Reliable, -1);
+            AmongUsClient.Instance.FinishRpcImmediately(writer);
+        }
+        catch (Exception ex) { Logger.Warn($"版の確認をやり直せませんでした: {ex.Message}", "VanillaHideAndSeek"); }
         // 休んでいる間に入ってきた人は、参加の時の確認 (BAN・名前) を通っていない
         foreach (var client in AmongUsClient.Instance.allClients)
         {

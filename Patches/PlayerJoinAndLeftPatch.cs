@@ -27,6 +27,10 @@ namespace TownOfHostL
 
                 Logger.Info($"{__instance?.GameId}に参加 (公式サーバー: {Modules.Net.OfficialServer.IsActive})", "OnGameJoined");
                 Main.playerVersion = new Dictionary<byte, PlayerVersion>();
+                // 試合の途中で部屋を抜けた時に残った、人ごとの設定の送り手を捨てる
+                // (試合の終わりを通らないので、ロビーの設定を全員へ送る送り手が無いままになる)
+                GameOptionsSender.AllSenders.Clear();
+                GameOptionsSender.AllSenders.Add(new NormalGameOptionsSender());
                 try { AutoRehost.OnGameJoined(); } catch (Exception ex) { Logger.Warn($"AutoRehost.OnGameJoined failed: {ex.Message}", "OnGameJoined"); }
                 OnPlayerLeftPatch.ResetHandled();
                 // 客の版は送らない (客の間は本編の客のまま動くので、ホストが知る必要が無い。
@@ -216,6 +220,7 @@ namespace TownOfHostL
                     }
                     Main.playerVersion.Remove(playerId);
                     AfkDetector.OnPlayerLeft(playerId);
+                    LobbyPoll.OnPlayerLeft(playerId);
                     Logger.Info($"{data.PlayerName}(ClientID:{data.Id})が切断(理由:{reason}, ping:{AmongUsClient.Instance.Ping})", "Session");
                 }
             }
