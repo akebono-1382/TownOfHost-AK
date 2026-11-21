@@ -12,6 +12,8 @@
 		<Product>TownOfHost_L</Product>
 		<AssemblyName>TownOfHost_L</AssemblyName>
 		<RootNamespace>TownOfHost_L</RootNamespace>
+		<!-- [CallerFilePath] と PDB にビルドした機械の絶対パスを埋めない -->
+		<PathMap>$(MSBuildProjectDirectory)=TownOfHost_L</PathMap>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DefineConstants>TRACE</DefineConstants>
