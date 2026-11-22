@@ -5,7 +5,11 @@ using System.IO;
 using System.Net.Http;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json.Nodes;
+using System.Threading.Tasks;
+using HarmonyLib;
 using TownOfHostL.Attributes;
+using TownOfHostL.Core.Modes;
 
 namespace TownOfHostL
 {
@@ -16,7 +20,11 @@ namespace TownOfHostL
         private static bool InitFinished = false;
 
         private static string UrlBoyomi = "http://localhost:50080";
-        private static string UrlVoiceVox = "http://localhost:50021";
+        // VOICEVOX は 127.0.0.1 でだけ待つ。localhost だと先に ::1 へ繋ぎに行って断られる分だけ遅れる
+        private static string UrlVoiceVox = "http://127.0.0.1:50021";
+        // VoiceList.txt に声の行が無い時は、VOICEVOX の声の一覧を取って使う
+        private static bool AutoVoices;
+        private static bool ModeSpecified;
         private static Dictionary<int, int> VoiceType = new();
         private static Dictionary<int, string> VoiceName = new();
         private static Dictionary<int, int> VoiceVolume = new();
@@ -36,20 +44,188 @@ namespace TownOfHostL
         public static void Init()
         {
             LoadVoiceList();
+            if (VoiceType.Count == 0 && (!ModeSpecified || ReadMode == Mode.VoiceVox))
+            {
+                AutoVoices = true;
+                ReadMode = Mode.VoiceVox;
+                // 前回取った一覧で先に設定を作る (保存した声の番号が、読み込みの時に選択肢の数で切られないように)
+                var cached = LoadSpeakerCache();
+                if (cached.Count > 0) SetVoices(cached);
+                Task.Run(FetchSpeakersLoop);
+            }
         }
         public static void SetupCustomOption()
         {
-            if (!InitFinished) return;
-            if (VoiceType.Count == 0) return;
+            if (VoiceType.Count == 0 && !AutoVoices) return;
 
+            RegisterVoiceNames();
+            // 一覧がまだ無い時は仮の選択肢で作って隠し、VOICEVOX から一覧が届いたら差し替えて出す
+            var names = VoiceType.Count > 0 ? VoiceName.Values.ToArray() : new[] { PlaceholderName };
+            bool hidden = VoiceType.Count == 0;
             VoiceReaderMode = BooleanOptionItem.Create("VoiceReaderMode", false, TabGroup.ModMainSettings, true)
                 .SetColor(Palette.CrewmateBlue)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderHost = StringOptionItem.Create("VoiceReaderHost", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
+                .SetGameMode(CustomGameMode.All)
+                .SetHidden(hidden);
+            // 既定では色ごとに別の声にする。自動の一覧はキャラごとに散らして並べてあるので、隣の色が同じキャラになりにくい
+            VoiceReaderHost = StringOptionItem.Create("VoiceReaderHost", names, ColorKeys.Length, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
+                .SetGameMode(CustomGameMode.All)
+                .SetHidden(hidden);
             for (int i = 0; i < ColorKeys.Length; i++)
-                ColorVoices[i] = StringOptionItem.Create("VoiceReader" + ColorKeys[i], VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                    .SetGameMode(CustomGameMode.All);
+                ColorVoices[i] = StringOptionItem.Create("VoiceReader" + ColorKeys[i], names, i, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
+                    .SetGameMode(CustomGameMode.All)
+                    .SetHidden(hidden);
+        }
+        private const string PlaceholderName = "VOICEVOX";
+        // 声の名前は訳さずそのまま出す
+        private static void RegisterVoiceNames()
+        {
+            foreach (var voiceName in VoiceName.Values.Append(PlaceholderName))
+            {
+                if (Translator.translateMaps.ContainsKey(voiceName)) continue;
+                Dictionary<int, string> dic = new();
+                foreach (int langId in Enum.GetValues(typeof(SupportedLangs)))
+                    dic[langId] = voiceName;
+                Translator.translateMaps[voiceName] = dic;
+            }
+        }
+        private static void SetVoices(List<(int id, string label)> voices)
+        {
+            VoiceType.Clear();
+            VoiceName.Clear();
+            for (int i = 0; i < voices.Count; i++)
+            {
+                VoiceType[i] = voices[i].id;
+                VoiceName[i] = voices[i].label;
+            }
+            InitFinished = voices.Count > 0;
+        }
+
+        // ---- VOICEVOX の声の一覧 ----
+        private static readonly string SPEAKER_CACHE_PATH = @"./TOHL_DATA/VoiceVoxSpeakers.txt";
+        private static readonly HttpClient speakerClient = new() { Timeout = TimeSpan.FromSeconds(5) };
+        private const int RetrySeconds = 60;
+        // 裏の作業が取った一覧。設定とゲームの物はメインスレッドで触るので、受け渡しだけをここでする
+        private static volatile List<(int id, string label)> fetchedSpeakers;
+
+        private static async Task FetchSpeakersLoop()
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                var list = await FetchSpeakers();
+                if (list.Count > 0)
+                {
+                    SaveSpeakerCache(list);
+                    fetchedSpeakers = list;
+                    Logger.Info($"VOICEVOX voices: {list.Count} ({UrlVoiceVox})", "VoiceReader");
+                    return;
+                }
+                // VOICEVOX を後から立ち上げても拾えるよう、見つかるまで間を空けて取り直す
+                if (attempt == 0) Logger.Info($"VOICEVOX not found ({UrlVoiceVox}), retry every {RetrySeconds}s", "VoiceReader");
+                await Task.Delay(TimeSpan.FromSeconds(RetrySeconds));
+            }
+        }
+        /// <summary>GET /speakers から話し声の型だけを取り、キャラごとの 1 番目の型・2 番目の型…の順に並べる</summary>
+        private static async Task<List<(int id, string label)>> FetchSpeakers()
+        {
+            var result = new List<(int, string)>();
+            try
+            {
+                using var resp = await speakerClient.GetAsync($"{UrlVoiceVox}/speakers");
+                if (!resp.IsSuccessStatusCode) return result;
+                var root = JsonNode.Parse(await resp.Content.ReadAsStringAsync())?.AsArray();
+                if (root == null) return result;
+
+                var perSpeaker = new List<List<(int, string)>>();
+                foreach (var speaker in root)
+                {
+                    string name = speaker?["name"]?.GetValue<string>() ?? "";
+                    var styles = speaker?["styles"]?.AsArray();
+                    if (styles == null) continue;
+                    var list = new List<(int, string)>();
+                    foreach (var style in styles)
+                    {
+                        // 歌の型は読み上げに使えない。古いエンジンは type を持たないので話し声として扱う
+                        string type = style?["type"]?.GetValue<string>() ?? "talk";
+                        if (type != "talk") continue;
+                        int id = style?["id"]?.GetValue<int>() ?? -1;
+                        if (id < 0) continue;
+                        list.Add((id, $"{name}（{style?["name"]?.GetValue<string>() ?? ""}）"));
+                    }
+                    if (list.Count > 0) perSpeaker.Add(list);
+                }
+                for (int round = 0; ; round++)
+                {
+                    bool any = false;
+                    foreach (var list in perSpeaker)
+                    {
+                        if (round >= list.Count) continue;
+                        result.Add(list[round]);
+                        any = true;
+                    }
+                    if (!any) break;
+                }
+            }
+            catch (Exception) { result.Clear(); }
+            return result;
+        }
+        private static List<(int id, string label)> LoadSpeakerCache()
+        {
+            var result = new List<(int, string)>();
+            try
+            {
+                if (!File.Exists(SPEAKER_CACHE_PATH)) return result;
+                foreach (var line in File.ReadAllLines(SPEAKER_CACHE_PATH, Encoding.UTF8))
+                {
+                    int comma = line.IndexOf(',');
+                    if (comma <= 0 || !int.TryParse(line[..comma], out int id)) continue;
+                    result.Add((id, line[(comma + 1)..]));
+                }
+            }
+            catch (Exception ex) { Logger.Exception(ex, "VoiceReader"); }
+            return result;
+        }
+        // 次の起動で先に使う控え。VoiceList.txt に書く声の番号を調べるのにも使える
+        private static void SaveSpeakerCache(List<(int id, string label)> list)
+        {
+            try
+            {
+                Directory.CreateDirectory("TOHL_DATA");
+                File.WriteAllLines(SPEAKER_CACHE_PATH, list.Select(v => $"{v.id},{v.label}"), Encoding.UTF8);
+            }
+            catch (Exception ex) { Logger.Exception(ex, "VoiceReader"); }
+        }
+        /// <summary>届いた一覧を設定の選択肢へ入れる。保存してある声の番号はそのまま残す</summary>
+        private static void ApplyFetchedSpeakers()
+        {
+            var list = fetchedSpeakers;
+            fetchedSpeakers = null;
+            if (list == null) return;
+            bool same = list.Count == VoiceType.Count;
+            for (int i = 0; same && i < list.Count; i++)
+                same = VoiceType[i] == list[i].id && VoiceName[i] == list[i].label;
+            if (same) return;
+
+            SetVoices(list);
+            if (VoiceReaderMode == null) return;   // 設定はまだ作られていない。作る時にこの一覧を使う
+            RegisterVoiceNames();
+            var names = VoiceName.Values.ToArray();
+            VoiceReaderMode.SetHidden(false);
+            foreach (var item in ColorVoices.Append(VoiceReaderHost))
+            {
+                if (item is not StringOptionItem opt) continue;
+                opt.Selections = names;
+                opt.Rule = (0, names.Length - 1, 1);
+                opt.SetHidden(false);
+            }
+        }
+        [PatchBundle(PatchBundles.Core)]
+        [HarmonyPatch(typeof(ModManager), nameof(ModManager.LateUpdate))]
+        private static class SpeakerPollPatch
+        {
+            public static void Postfix()
+            {
+                if (fetchedSpeakers != null) ApplyFetchedSpeakers();
+            }
         }
         private static readonly string VOICE_LIST_PATH = @"./TOHL_DATA/VoiceList.txt";
         public static void LoadVoiceList()
@@ -72,6 +248,7 @@ namespace TownOfHostL
                     if (line.ToLower().StartsWith("mode=") && line.Length > 5)
                     {
                         line = line.Substring(5, line.Length - 5);
+                        ModeSpecified = true;
                         if (line.ToLower() == "voicevox") ReadMode = Mode.VoiceVox;
                         Logger.Info($"modeSet", "LoadVoiceList");
                     }
@@ -93,11 +270,6 @@ namespace TownOfHostL
                             var voiceName = lines[1];
                             VoiceType.TryAdd(voiceNo, voiceType);
                             VoiceName.TryAdd(voiceNo, lines[1]);
-
-                            Dictionary<int, string> dic = new();
-                            foreach (int langId in Enum.GetValues(typeof(SupportedLangs)))
-                                dic[langId] = voiceName;
-                            Translator.translateMaps.TryAdd(voiceName, dic);
 
                             if (lines.Length >= 3 && int.TryParse(lines[2], out int volume))
                                 VoiceVolume.TryAdd(voiceNo, volume);
@@ -168,7 +340,7 @@ namespace TownOfHostL
         {
             if (!InitFinished) return;
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return;
-            foreach (var item in ColorVoices) item?.SetValue(0);
+            foreach (var item in ColorVoices) item?.SetValue(item.DefaultValue);
         }
         public static void SetRandomVoiceNo()
         {
@@ -250,15 +422,7 @@ namespace TownOfHostL
         }
         private static int GetVoiceNo(int voiceTypeIdx)
         {
-            try
-            {
-                var value = VoiceType.Values.ToArray().GetValue(voiceTypeIdx);
-                return (int)value;
-            }
-            catch
-            {
-                return 0;
-            }
+            return VoiceType.GetValueOrDefault(voiceTypeIdx, 0);
         }
         private static int GetVoiceIdx(int colorId)
         {
