@@ -148,6 +148,7 @@ public static partial class MeetingHudPatch
         }
         public static void Postfix(MeetingHud __instance)
         {
+            MeetingStates.BeginMeeting();
             MeetingVoteManager.Start();
 
             SoundManager.Instance.ChangeAmbienceVolume(0f);
@@ -202,6 +203,8 @@ public static partial class MeetingHudPatch
                 // 以前のように NameText 自体をずらす必要はない
             }
             RoleHooks.ForEachRole(role => role.OnStartMeeting(), "OnStartMeeting");
+            // 役職が OnStartMeeting で積んだ知らせを送るので、その後に呼ぶ
+            RoleHooks.OnMeetingStart();
 
             List<string> messageList = new();
 

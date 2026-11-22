@@ -199,10 +199,10 @@ public static class RoleHooks
         return skip;
     }
 
-    /// <summary>会議の始め: 役職が積んだ文・役職の MeetingAddMessage・投票結果の文を、少し待ってから送る</summary>
+    /// <summary>会議の始め: 役職が積んだ文・役職の MeetingAddMessage・投票結果の文を、少し待ってから送る。
+    /// 役職の OnStartMeeting の後に呼ぶ (そこで積まれた文も同じ会議で送る)</summary>
     public static void OnMeetingStart()
     {
-        MeetingStates.BeginMeeting();
         if (!AmongUsClient.Instance.AmHost) return;
         var sends = MeetingStartMessages.ToArray();
         MeetingStartMessages.Clear();
@@ -235,11 +235,6 @@ public partial class Main
     public static float SabotageActivetimer;
 }
 
-[HarmonyPatch(typeof(MeetingHud), nameof(MeetingHud.Start))]
-static class MeetingStartHookPatch
-{
-    public static void Postfix() => RoleHooks.OnMeetingStart();
-}
 [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.CoExitVent))]
 static class ExitVentHookPatch
 {
