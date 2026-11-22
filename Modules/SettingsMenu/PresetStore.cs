@@ -172,6 +172,8 @@ internal static class PresetStore
             if (gm == null || string.IsNullOrEmpty(b64)) return;
             var opts = gm.gameOptionsFactory.FromBytes(Convert.FromBase64String(b64));
             if (opts == null || gm.CurrentGameOptions == null || opts.GameMode != gm.CurrentGameOptions.GameMode) return;
+            // 人が入った時に本編のおすすめの値で上書きされないように
+            VanillaGame.MarkCustom(opts);
             // 保存されるのはホストの設定の方 (今の設定と別に持っている) なので両方を置き換える
             gm.GameHostOptions = opts;
             gm.CurrentGameOptions = opts;

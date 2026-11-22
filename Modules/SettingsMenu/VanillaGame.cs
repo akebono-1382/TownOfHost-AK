@@ -46,6 +46,23 @@ internal static class VanillaGame
         }
     }
 
+    // 本編は、設定が初期値のまま (IsDefaults) の間、人が入るたびに人数のおすすめの値で設定を上書きする。
+    // 本編の画面は値を変えると初期値の印を下ろしてカスタムに切り替えるので、こちらで値を書いた時も同じにする
+    public static void MarkCustom(IGameOptions opts)
+    {
+        if (opts == null) return;
+        if (opts.TryCast<NormalGameOptionsV12>() is { } normal)
+        {
+            normal.IsDefaults = false;
+            normal.RulesPreset = RulesPresets.Custom;
+        }
+        else if (opts.TryCast<HideNSeekGameOptionsV12>() is { } hns)
+        {
+            hns.IsDefaults = false;
+            hns.RulesPreset = RulesPresets.Custom;
+        }
+    }
+
     // 設定画面を閉じた時 (ホスト): 本編の設定を変えていれば本編の保存と同期を回す
     public static void OnMenuClosed()
     {
@@ -250,6 +267,7 @@ internal sealed class VanillaMenuOpt : MenuOpt
         else if (_string != null) o.SetInt(_string.OptionName, index);
         else if (_player != null) o.SetInt(_player.OptionName, _playerIds[Math.Clamp(index, 0, _playerIds.Count - 1)]);
         else o.SetBool(_check.OptionName, index != 0);
+        VanillaGame.MarkCustom(o);
         VanillaGame.Dirty = true;
     }
 }
