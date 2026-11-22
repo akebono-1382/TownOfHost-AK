@@ -39,14 +39,23 @@ public static class ModClientSync
     private const float PeerInterval = 0.25f;
     private const int OptionPairsPerMessage = 100;
     private const int EndPlayersPerMessage = 4;
-    private const int MaxProgressLength = 120;
+    private const int RolePlayersPerMessage = 8;
+    // 1 人の進み具合の文字列の上限 (バイト)。役職の数や名前の上限と合わせ、1 本が下の上限に収まるようにする
+    private const int MaxProgressBytes = 120;
+    private const int MaxMainRoles = 6;
+    private const int MaxSubRoles = 12;
+    // 1 本の上限。公式サーバーは 1199B までを通し 1250B で切るので、それより小さく取り、超えたら送らない
+    private const int MaxMessageBytes = 1100;
 
-    private static bool drainScheduled;
-    private static bool optionFlushScheduled;
+    // 予約した時刻 (LateTask は部屋を出る・休む・客になる時にまとめて捨てられるので、古い予約は無いものとして扱う)
+    private static float drainScheduledAt = float.NegativeInfinity;
+    private static float optionFlushScheduledAt = float.NegativeInfinity;
+    private static float roleFlushScheduledAt = float.NegativeInfinity;
+    private const float ScheduleStale = 2f;
+    private static bool Pending(float at) => Time.realtimeSinceStartup - at < ScheduleStale;
     private static bool fullOptionsPending;
     private static readonly HashSet<int> dirtyOptions = new();
     private static bool rolesSent;
-    private static bool roleFlushScheduled;
 
     private static bool AmHost => AmongUsClient.Instance && AmongUsClient.Instance.AmHost;
 
@@ -74,6 +83,7 @@ public static class ModClientSync
     {
         if (!AmHost || pc == null || pc.AmOwner) return;
         int clientId = pc.OwnerId;
+        if (clientId < 0) return;
         if (!IsSameBuild(version))
         {
             peers.Remove(clientId);
@@ -89,13 +99,23 @@ public static class ModClientSync
     private static void Enqueue(int clientId, CustomRPC call, Action<MessageWriter> write)
     {
         if (!peers.TryGetValue(clientId, out var peer)) return;
-        peer.Queue.Enqueue((call, write));
-        Drain();
+        if (call == CustomRPC.ModClientRoles && peer.Queue.Count > 0)
+        {
+            // 役職は設定の送りの後ろに並べない (イントロに間に合わせる)。役職どうしの順は保つ
+            var rest = peer.Queue.ToArray();
+            peer.Queue.Clear();
+            int i = 0;
+            for (; i < rest.Length && rest[i].call == CustomRPC.ModClientRoles; i++) peer.Queue.Enqueue(rest[i]);
+            peer.Queue.Enqueue((call, write));
+            for (; i < rest.Length; i++) peer.Queue.Enqueue(rest[i]);
+        }
+        else peer.Queue.Enqueue((call, write));
+        if (!Pending(drainScheduledAt)) Drain();
     }
 
     private static void Drain()
     {
-        drainScheduled = false;
+        drainScheduledAt = float.NegativeInfinity;
         if (!AmHost || PlayerControl.LocalPlayer == null) { peers.Clear(); return; }
         Prune();
         float now = Time.realtimeSinceStartup;
@@ -111,10 +131,10 @@ public static class ModClientSync
             }
             if (peer.Queue.Count > 0) more = true;
         }
-        if (more && !drainScheduled)
+        if (more && !Pending(drainScheduledAt))
         {
-            drainScheduled = true;
-            _ = new LateTask(Drain, 0.05f, "ModClientSync.Drain");
+            drainScheduledAt = Time.realtimeSinceStartup;
+            _ = new LateTask(Drain, 0.05f, "", true);
         }
     }
 
@@ -122,9 +142,15 @@ public static class ModClientSync
     {
         try
         {
+            if (clientId < 0) return;
             var writer = AmongUsClient.Instance.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)call, SendOption.Reliable, clientId);
             write(writer);
-            if (writer.Length > 1100) Logger.Warn($"{call} が {writer.Length}B になりました", "ModClientSync");
+            if (writer.Length > MaxMessageBytes)
+            {
+                Logger.Error($"{call} が {writer.Length}B になったので送りません", "ModClientSync");
+                writer.Recycle();
+                return;
+            }
             AmongUsClient.Instance.FinishRpcImmediately(writer);
         }
         catch (Exception ex)
@@ -151,15 +177,15 @@ public static class ModClientSync
 
     private static void ScheduleOptionFlush()
     {
-        if (optionFlushScheduled) return;
-        optionFlushScheduled = true;
+        if (Pending(optionFlushScheduledAt)) return;
+        optionFlushScheduledAt = Time.realtimeSinceStartup;
         // 続けて変わった値 (プリセットの切り替え・スライダーの連打) を 1 本にまとめる
-        _ = new LateTask(FlushOptions, 0.3f, "ModClientSync.FlushOptions");
+        _ = new LateTask(FlushOptions, 0.3f, "", true);
     }
 
     private static void FlushOptions()
     {
-        optionFlushScheduled = false;
+        optionFlushScheduledAt = float.NegativeInfinity;
         if (!AmHost || !HasPeers) { dirtyOptions.Clear(); fullOptionsPending = false; return; }
         if (fullOptionsPending)
         {
@@ -197,6 +223,8 @@ public static class ModClientSync
             Enqueue(clientId, CustomRPC.ModClientOptions, w =>
             {
                 w.Write(first);
+                // 設定の番号は作った順の位置なので、数が違えば並びも違う。客は数が合わなければ使わない
+                if (first) w.WritePacked(OptionItem.AllOptions.Count);
                 w.WritePacked(count);
                 for (int i = from; i < from + count; i++)
                 {
@@ -224,52 +252,79 @@ public static class ModClientSync
     /// <summary>試合の途中で役職・属性が変わった時。少し待ってから全員の分を送り直す</summary>
     public static void MarkRolesDirty()
     {
-        if (!rolesSent || peers.Count == 0 || !AmHost || roleFlushScheduled) return;
-        roleFlushScheduled = true;
+        if (!rolesSent || peers.Count == 0 || !AmHost || Pending(roleFlushScheduledAt) || !GameStates.IsInGame) return;
+        roleFlushScheduledAt = Time.realtimeSinceStartup;
         _ = new LateTask(() =>
         {
-            roleFlushScheduled = false;
+            roleFlushScheduledAt = float.NegativeInfinity;
             if (rolesSent && GameStates.IsInGame) SendRoles(initial: false);
-        }, 0.3f, "ModClientSync.FlushRoles");
+        }, 0.3f, "", true);
     }
 
     private static void EnqueueRoles(int clientId, bool initial)
     {
-        Enqueue(clientId, CustomRPC.ModClientRoles, w =>
+        // 1 本に 8 人まで。始めの 1 本だけが「新しい配役」の印を持つ
+        var ids = new List<byte>(PlayerState.AllPlayerStates.Keys);
+        int start = 0;
+        do
         {
-            w.Write(initial);
-            var receiver = AmongUsClient.Instance.GetClient(clientId)?.Character;
-            var states = PlayerState.AllPlayerStates;
-            w.WritePacked(states.Count);
-            foreach (var (id, state) in states)
+            int from = start, count = Math.Min(RolePlayersPerMessage, ids.Count - start);
+            bool first = initial && start == 0;
+            Enqueue(clientId, CustomRPC.ModClientRoles, w =>
             {
-                w.Write(id);
-                WritePlayer(w, id);
-                // 本人には、本人に見せる役職 (別の役職として見せる役職) を最後の役職として送る
-                CustomRoles? shown = receiver != null && receiver.PlayerId == id ? CustomRoleManager.GetByPlayerId(id)?.DisplayedRole : null;
-                WriteRoles(w, state, shown);
-            }
-        });
+                w.Write(first);
+                var receiver = AmongUsClient.Instance.GetClient(clientId)?.Character;
+                int n = 0;
+                for (int i = from; i < from + count; i++) if (PlayerState.GetByPlayerId(ids[i]) != null) n++;
+                w.WritePacked(n);
+                for (int i = from; i < from + count; i++)
+                {
+                    var id = ids[i];
+                    var state = PlayerState.GetByPlayerId(id);
+                    if (state == null) continue;
+                    w.Write(id);
+                    WritePlayer(w, id);
+                    // 本人には、本人に見せる役職 (別の役職として見せる役職) を最後の役職として送る
+                    CustomRoles? shown = receiver != null && receiver.PlayerId == id ? CustomRoleManager.GetByPlayerId(id)?.DisplayedRole : null;
+                    WriteRoles(w, state, shown);
+                }
+            });
+            start += Math.Max(count, 1);
+        } while (start < ids.Count);
     }
 
     private static void WritePlayer(MessageWriter w, byte id)
     {
-        w.Write(Main.AllPlayerNames.TryGetValue(id, out var name) ? name ?? "" : "");
+        var name = Main.AllPlayerNames != null && Main.AllPlayerNames.TryGetValue(id, out var n) ? n ?? "" : "";
+        w.Write(name.Length > 20 ? name.Substring(0, 20) : name);
         Color32 c = Main.PlayerColors.TryGetValue(id, out var color) ? color : Color.white;
         w.Write(c.r); w.Write(c.g); w.Write(c.b);
     }
 
     private static void WriteRoles(MessageWriter w, PlayerState state, CustomRoles? shownLast)
     {
+        // 役職の移り変わりは新しい方から決まった数まで (1 本の大きさを抑える)
         var mains = state.MainRoleList;
-        w.WritePacked(mains.Count);
-        for (int i = 0; i < mains.Count; i++)
+        int skip = Math.Max(0, mains.Count - MaxMainRoles);
+        w.WritePacked(mains.Count - skip);
+        for (int i = skip; i < mains.Count; i++)
             w.WritePacked((int)(i == mains.Count - 1 && shownLast is CustomRoles s ? s : mains[i]));
-        w.WritePacked(state.SubRoles.Count);
-        foreach (var sub in state.SubRoles) w.WritePacked((int)sub);
+        int subs = Math.Min(state.SubRoles.Count, MaxSubRoles);
+        w.WritePacked(subs);
+        for (int i = 0; i < subs; i++) w.WritePacked((int)state.SubRoles[i]);
     }
 
     // ── 結果 ──
+
+    /// <summary>UTF-8 で <paramref name="maxBytes"/> に収める。収まらない時は色の札を外してから後ろを切る (札の途中で切らない)</summary>
+    private static string FitBytes(string text, int maxBytes)
+    {
+        var enc = System.Text.Encoding.UTF8;
+        if (enc.GetByteCount(text) <= maxBytes) return text;
+        text = text.RemoveHtmlTags();
+        while (text.Length > 0 && enc.GetByteCount(text) > maxBytes) text = text.Substring(0, text.Length - 1);
+        return text;
+    }
 
     /// <summary>試合を終える電文の直前 (どの終わり方でもここを通る)。勝者と、結果画面の一覧に要る物を送る</summary>
     public static void SendEnd()
@@ -285,12 +340,19 @@ public static class ModClientSync
             string text;
             try { text = Utils.GetProgressTextFor(id); }
             catch (Exception ex) { text = ""; Logger.Exception(ex, "ModClientSync.Progress"); }
-            if (text.Length > MaxProgressLength) text = text.Substring(0, MaxProgressLength);
-            progress[id] = text;
+            progress[id] = FitBytes(text, MaxProgressBytes);
         }
         int parts = Math.Max(1, (ids.Count + EndPlayersPerMessage - 1) / EndPlayersPerMessage);
         foreach (var clientId in new List<int>(peers.Keys))
         {
+            // 待っている役職の送り直しは捨てる (結果に全員の役職が載る。結果より後に届くと、客が新しい配役と取り違える)。
+            // 残りは先に流し、結果より前に届ける
+            if (peers.TryGetValue(clientId, out var peer) && peer.Queue.Count > 0)
+            {
+                foreach (var (call, write) in peer.Queue)
+                    if (call != CustomRPC.ModClientRoles) Send(clientId, call, write);
+                peer.Queue.Clear();
+            }
             for (int part = 0; part < parts; part++)
             {
                 int p = part, from = part * EndPlayersPerMessage, count = Math.Min(EndPlayersPerMessage, ids.Count - from);
@@ -384,11 +446,19 @@ public static class ModClientSync
         endReady = false;
         endProgress.Clear();
         OptionItem.EndRemoteValues();
+        // 自分がホストだった試合の役職のインスタンスを、客の画面の描き方 (別の役職としての見せ方など) に拾わせない
+        CustomRoleManager.AllActiveRoles.Clear();
+        Main.ShowChangeMainRole.Clear();
         if (had)
         {
             PlayerState.Clear();
             HudManagerPatch.HideOptionShower();
         }
+        // ホストとしての送り先と待ち
+        peers.Clear();
+        dirtyOptions.Clear();
+        fullOptionsPending = false;
+        rolesSent = false;
     }
 
     /// <summary>客の側でホストからの電文を受ける。読んだら true</summary>
@@ -414,7 +484,17 @@ public static class ModClientSync
 
     private static void ReadOptions(MessageReader reader)
     {
-        if (reader.ReadBoolean()) OptionItem.BeginRemoteValues();
+        if (reader.ReadBoolean())
+        {
+            int total = reader.ReadPackedInt32();
+            if (total != OptionItem.AllOptions.Count)
+            {
+                Logger.Warn($"ホストの設定の数 ({total}) が手元 ({OptionItem.AllOptions.Count}) と違うので、TOHL の画面をやめます", "ModClientSync");
+                Reset();
+                return;
+            }
+            OptionItem.BeginRemoteValues();
+        }
         int count = reader.ReadPackedInt32();
         for (int i = 0; i < count; i++)
         {
@@ -453,10 +533,15 @@ public static class ModClientSync
 
     private static void ReadRoles(MessageReader reader)
     {
-        if (reader.ReadBoolean() || !rolesReady)
+        bool initial = reader.ReadBoolean();
+        // 結果を受けた後に遅れて届いた送り直しは、次の試合の物ではないので読まない
+        if (!initial && !rolesReady) return;
+        if (initial)
         {
             // 新しい試合の配役。前の試合の物を捨てる
             PlayerState.Clear();
+            CustomRoleManager.AllActiveRoles.Clear();
+            Main.ShowChangeMainRole.Clear();
             Main.AllPlayerNames = new();
             Main.PlayerColors = new();
             endReady = false;
