@@ -26,16 +26,21 @@ public static class SkinControle
 
     static bool IsWorn(string id, string none) => !string.IsNullOrEmpty(id) && id != "missing" && id != none;
 
-    // 確かめ待ちの人。入室した時は帽子・スキン・バイザー・ペットの RPC が続けて届くので、揃うのを待って 1 回だけ確かめる
-    static readonly HashSet<byte> waiting = new();
+    // 確かめ待ちの人と、待ちを始めた時刻。入室した時は帽子・スキン・バイザー・ペットの RPC が続けて届くので、揃うのを待って 1 回だけ確かめる。
+    // 待ちの LateTask はかくれんぼで休む時・客になる時にまとめて捨てられるので、古い待ちは無いものとして扱う (残すとその人を二度と確かめない)
+    static readonly Dictionary<byte, float> waiting = new();
     const float CheckDelay = 0.5f;
+    const float WaitStale = 2f;
 
     // 客が帽子などを変えた時 (入室した時も含む) にホストで呼ぶ
     public static void Check(PlayerControl target)
     {
         if (!AmongUsClient.Instance.AmHost || !GameStates.IsLobby || !Options.SkinControle.GetBool()) return;
-        if (target == null || target.AmOwner || !waiting.Add(target.PlayerId)) return;
+        if (target == null || target.AmOwner) return;
         var id = target.PlayerId;
+        float now = UnityEngine.Time.realtimeSinceStartup;
+        if (waiting.TryGetValue(id, out var since) && now - since < WaitStale) return;
+        waiting[id] = now;
         _ = new LateTask(() =>
         {
             waiting.Remove(id);

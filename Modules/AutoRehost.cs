@@ -60,6 +60,18 @@ public static class AutoRehost
     const float StabilizeSeconds = 60f;
 
     public static bool Pending { get; private set; }
+    // 作り直しの流れが最後に進んだ時刻。流れは LateTask でつなぐので、かくれんぼで休む時・客になる時に
+    // LateTask がまとめて捨てられると、Pending が立ったまま誰も下ろさなくなる。長く進まない時は止まったとみなして下ろす
+    static float lastProgressAt;
+    static void Progressed() => lastProgressAt = Time.realtimeSinceStartup;
+    static void ClearIfStalled()
+    {
+        if (!Pending) return;
+        var limit = Mathf.Max(1, Delay?.GetInt() ?? 5) + AttemptTimeout + 10f;
+        if (Time.realtimeSinceStartup - lastProgressAt <= limit) return;
+        Logger.Warn("作り直しの流れが止まっていたので、作り直し中の印を下ろす", "AutoRehost");
+        ResetState();
+    }
     public static int Attempts { get; private set; }
     public static int AttemptLimit => Mathf.Max(1, MaxAttempts?.GetInt() ?? 3);
     /// <summary>最後に止まった理由 (メニューに出す)。作り直せた・取り消した時は null</summary>
@@ -112,6 +124,7 @@ public static class AutoRehost
                 : string.Format(GetString("AutoRehost.Fatal"), reason);
             return;
         }
+        ClearIfStalled();
         if (Pending) return;
         Begin(c.GameId, c.IsGamePublic, $"切断 ({reason})");
     }
@@ -121,6 +134,7 @@ public static class AutoRehost
     public static bool RehostNow(string why)
     {
         var c = AmongUsClient.Instance;
+        ClearIfStalled();
         if (Pending || c == null || !c.AmHost || !GameStates.IsOnlineGame || GameStates.IsNotJoined) return false;
         Begin(c.GameId, c.IsGamePublic, why);
         selfLeaving = true;
@@ -142,6 +156,7 @@ public static class AutoRehost
     /// <summary>メインメニューから部屋を作る (番犬に起動し直された後)</summary>
     public static void HostFromMenu(bool isPublic, string why)
     {
+        ClearIfStalled();
         if (Pending) return;
         Attempts = 0;
         Begin(-1, isPublic, why);
@@ -150,6 +165,7 @@ public static class AutoRehost
     static void Begin(int gameId, bool isPublic, string why)
     {
         Pending = true;
+        Progressed();
         FailureText = null;
         oldGameId = gameId;
         wasPublic = isPublic;
@@ -164,6 +180,7 @@ public static class AutoRehost
     static void BeginAttempt()
     {
         if (!Pending) return;
+        Progressed();
         if (++Attempts > AttemptLimit)
         {
             GiveUp();
@@ -185,6 +202,7 @@ public static class AutoRehost
     static void Tick(int mySeq)
     {
         if (!Pending || seq != mySeq) return;
+        Progressed();
         if (Time.realtimeSinceStartup > deadline)
         {
             Logger.Warn($"{Attempts} 回目は新しい部屋に入れなかった ({phase})。やり直す", "AutoRehost");
@@ -347,6 +365,7 @@ public static class AutoRehost
     /// <summary>メニューに出す今の様子</summary>
     public static string StatusText()
     {
+        ClearIfStalled();
         if (Pending) return string.Format(GetString("AutoRehost.Status"), Mathf.Max(1, Attempts), AttemptLimit);
         return FailureText;
     }
