@@ -531,7 +531,9 @@ public static class ChatCommandTable
 
     private static void HostVoice(ChatCommandContext c)
     {
-        if (c.Arg(1) == "reset")
+        if (!VoiceReader.Enabled)
+            Utils.SendMessageAutoSplit(GetString("Message.VoiceNotAvailable"), true, sendTo: 0);
+        else if (c.Arg(1) == "reset")
             VoiceReader.ResetVoiceNo();
         else if (c.Arg(1) == "random")
             VoiceReader.SetRandomVoiceNo();
