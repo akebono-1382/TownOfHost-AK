@@ -368,14 +368,10 @@ public static class VanillaHideAndSeek
     }
 
     // 休んでいる間は TOHL のチャットの処理が無いので、/mode だけをここで拾う
-    // 客の間も TOHL のチャットの処理 (Standard) が無いので、ホストで動くコマンドに /cmd を付けて他の人に見えないようにする
+    // 客の間は TOHL のチャットの処理 (Standard) が無いので、ここでコマンドを受ける (SendChatAsClient)
     private static bool SendChatPrefix(ChatController __instance)
     {
-        if (state == State.Client)
-        {
-            PrefixCmdAsClient(__instance);
-            return true;
-        }
+        if (state == State.Client) return SendChatAsClient(__instance);
         if (state != State.Suspended) return true;
         var field = __instance.freeChatField;
         if (!field || !field.textArea) return true;
@@ -388,22 +384,39 @@ public static class VanillaHideAndSeek
         return false;
     }
 
-    private static void PrefixCmdAsClient(ChatController chat)
+    /// <summary>
+    /// 客の間のチャットの送信。客の間は TOHL のコマンドの処理 (Standard の束) を外しているので、ここで代わりに受ける。
+    /// 自分の画面だけで動くコマンドはその場で動かして送らない。ホストで動くコマンドは /cmd を付けて送る (付けると他の人に見えない)。
+    /// 送るなら true
+    /// </summary>
+    private static bool SendChatAsClient(ChatController chat)
     {
         try
         {
             var field = chat.freeChatField;
-            if (!field || !field.textArea) return;
+            if (!field || !field.textArea) return true;
             var text = field.textArea.text;
-            if (string.IsNullOrEmpty(text)) return;
+            if (string.IsNullOrEmpty(text)) return true;
             TownOfHostL.Modules.ChatInput.Remember(text);
             var args = text.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (args.Length == 0 || args[0].Equals("/cmd", StringComparison.OrdinalIgnoreCase)) return;
-            if (TownOfHostL.ChatCommandTable.Find(args[0])?.Remote == null) return;
+            if (args.Length == 0) return true;
+            bool viaCmd = TownOfHostL.ChatCommands.StripCmd(ref args);
+            var command = TownOfHostL.ChatCommandTable.Find(args[0]);
+            if (command?.Local != null)
+            {
+                var ctx = new TownOfHostL.ChatCommandContext(args, PlayerControl.LocalPlayer, chat);
+                try { command.Local(ctx); }
+                catch (Exception ex) { Logger.Exception(ex, "ClientMode.Local"); }
+                field.textArea.Clear();
+                field.textArea.SetText(ctx.CancelText);
+                return false;
+            }
+            if (viaCmd || command?.Remote == null) return true;
             var cmdText = $"/cmd {text.Trim()}";
             TownOfHostL.Modules.ChatInput.SetText(field.textArea, cmdText, cmdText.Length);
         }
         catch (Exception ex) { Logger.Exception(ex, "ClientMode"); }
+        return true;
     }
 
     private static void Say(string text)
