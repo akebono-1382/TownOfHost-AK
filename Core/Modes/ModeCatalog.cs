@@ -117,7 +117,9 @@ public sealed class HideAndSeekMode : GameMode
             else if (role == CustomRoles.HASFox && CustomWinnerHolder.WinnerTeam != CustomWinner.HASTroll && !pc.Data.IsDead)
             {
                 winners.Add(pc);
-                CustomWinnerHolder.AdditionalWinnerRoles.Add(CustomRoles.HASFox);
+                // 勝者は結果を送る時と結果画面の時の 2 回求めるので、追加の勝者を重ねない
+                if (!CustomWinnerHolder.AdditionalWinnerRoles.Contains(CustomRoles.HASFox))
+                    CustomWinnerHolder.AdditionalWinnerRoles.Add(CustomRoles.HASFox);
             }
         }
         return winners;
