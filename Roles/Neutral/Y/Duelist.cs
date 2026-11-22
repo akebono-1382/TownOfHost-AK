@@ -95,7 +95,8 @@ public sealed class Duelist : RoleBase, IAdditionalWinner, IAdditionalWinGranter
 
     public bool CheckWin(ref CustomRoles winnerRole)
     {
-        return Player.IsAlive() && !Archenemy.IsAlive();
+        // 宿敵を決める前 (最初の会議の前) に終わった時は、宿敵が「死んでいる」扱いにならないよう勝たない
+        return Archenemy != null && Player.IsAlive() && !Archenemy.IsAlive();
     }
 
     /// <summary>自分が死んで宿敵が生きていれば、宿敵が追加勝利する</summary>
