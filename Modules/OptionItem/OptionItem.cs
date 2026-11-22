@@ -28,9 +28,8 @@ namespace TownOfHost
         public string Name { get; }
         public int DefaultValue { get; }
         public TabGroup Tab { get; }
-        public bool IsSingleValue { get; }
-
         // 任意情報 (空・nullを許容する または、ほとんど初期値で問題ない値)
+        public bool IsSingleValue { get; }
         public Color NameColor { get; protected set; }
         public string NameColorCode { get; protected set; }
         public string Fromtext { get; protected set; }
@@ -284,6 +283,11 @@ namespace TownOfHost
                     default: break;
                 }
             }
+            else if (int.TryParse(value, out int num))
+            {
+                //最小Value取る方法なさそう。
+            }
+
             if (ValueFormat == OptionFormat.None) return value;
             if (CustomRole is not CustomRoles.NotAssigned)
             {

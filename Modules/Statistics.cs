@@ -87,7 +87,6 @@ namespace TownOfHost
                             {
                                 case CustomRoles.Amanojaku: id = 19100; break;
                                 case CustomRoles.AsistingAngel: id = 22000; break;
-                                case CustomRoles.SKMadmate: id = CustomRoles.Madmate.GetRoleInfo().ConfigId; break;
                             }
                         }
                         t += $"{id}${role.Value.Item1}${role.Value.Item2}&";

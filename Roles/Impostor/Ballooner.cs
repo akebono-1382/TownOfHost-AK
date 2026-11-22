@@ -15,7 +15,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
             CustomRoles.Ballooner,
             () => RoleTypes.Phantom,
             CustomRoleTypes.Impostor,
-            2500,
+            3900,
             SetupOptionItem,
             "Ba",
             OptionSort: (3, 0),
@@ -49,7 +49,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
     static OptionItem OptionChargeStep;//どれくらいチャージされるか
     static float chargestep;
     static OptionItem OptionAfterMeetingRemoveCharge;//会議後どれだけ空気が抜けるか
-    static OptionItem OptionSuicide;//爆破時、自殺するか
+    public static OptionItem OptionSuicide;//爆破時、自殺するか
     static OptionItem OptionTargetImpostor;//爆破時、味方を巻き込むか
     static OptionItem OptionSyncKillCool; //キルクと同期するか
     float NowBoomDis;//現在の爆破範囲 0以下なら使用不可

@@ -265,8 +265,6 @@ namespace TownOfHost
                     break;
 
                 case CustomRoles.GM:
-                    __instance.TeamTitle.text = UtilsRoleText.GetRoleName(role);
-                    __instance.TeamTitle.color = UtilsRoleText.GetRoleColor(role);
                     __instance.BackgroundBar.material.color = UtilsRoleText.GetRoleColor(role);
                     __instance.ImpostorText.gameObject.SetActive(false);
                     break;
@@ -454,13 +452,6 @@ namespace TownOfHost
 
                 if (!(GameModeManager.IsStandardClass() && Main.SetRoleOverride))
                     _ = new LateTask(() => PlayerCatch.AllPlayerControls.Do(pc => pc.RpcSetRoleDesync(RoleTypes.Shapeshifter, -3)), 2f, "SetImpostorForServer");
-
-                if (PlayerControl.LocalPlayer.Is(CustomRoles.GM))
-                {
-                    PlayerControl.LocalPlayer.RpcExileV3();
-                    PlayerState.GetByPlayerId(PlayerControl.LocalPlayer.PlayerId).SetDead();
-                }
-
                 if (RandomSpawn.IsRandomSpawn())
                 {
                     RandomSpawn.SpawnMap map;

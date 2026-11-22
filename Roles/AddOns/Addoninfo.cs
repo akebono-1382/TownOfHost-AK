@@ -63,17 +63,13 @@ class AddondataInfo
         Main.roleColors = new Dictionary<CustomRoles, string>()
                 {
                     // マッドメイト役職
-                    {CustomRoles.SKMadmate, "#ff1919"},
                     //特殊クルー役職
                     //ニュートラル役職
-                    {CustomRoles.Emptiness ,"#221d26"},
                     //HideAndSeek
                     {CustomRoles.HASFox, "#e478ff"},
                     {CustomRoles.HASTroll, "#00ff00"},
                     //TaskBattle
                     {CustomRoles.TaskPlayerB, "#9adfff"},
-                    // GM
-                    {CustomRoles.GM, "#ff5b70"},
 
                     //属性
                     {CustomRoles.LastImpostor, "#ff1919"},

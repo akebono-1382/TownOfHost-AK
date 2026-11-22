@@ -650,7 +650,6 @@ namespace TownOfHost.Modules
         {
             CustomRoles.Crewmate,
             CustomRoles.Emptiness,
-            //CustomRoles.Phantom,
             CustomRoles.GuardianAngel,
             CustomRoles.SKMadmate,
             CustomRoles.HASFox,

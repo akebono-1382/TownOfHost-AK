@@ -73,7 +73,7 @@ class Twins
     public static OptionItem OptionTwinsAddWin;
     public static void SetUpTwinsOptions()
     {
-        SetupRoleOptions(19200, TabGroup.Combinations, CustomRoles.Twins, new(1, 7, 1));
+        SetupRoleOptions(19200, TabGroup.Combinations, CustomRoles.Twins, new(1, 7, 1), fromtext: UtilsOption.GetFrom(From.TownOfHost_K));
         OptionCanAssingMadmate = BooleanOptionItem.Create(76110, "CanAssingMadmate", false, TabGroup.Combinations, false)
             .SetSubRoleOptionItem(CustomRoles.Twins);
         OptionCanAssingCantKillNeutral = BooleanOptionItem.Create(76111, "CanAssingCantKillNeutral", false, TabGroup.Combinations, false)

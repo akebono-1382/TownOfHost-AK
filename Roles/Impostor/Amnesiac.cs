@@ -299,6 +299,7 @@ public sealed class Amnesiac : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         AddRole != null ? AddRole.GetProgressText(comms, gamelog) : MatchSettingstoSheriff && !Realized ? Utils.ColorString(ShShotLimit - KillCount > 0 ? Color.yellow : Color.gray, $"({ShShotLimit - KillCount})") : "";
 
     #region addrole
+    public override void OnExitVent(PlayerPhysics physics, int ventId) => AddRole?.OnExitVent(physics, ventId);
     public override void OnSpawn(bool initialState = false) => AddRole?.OnSpawn(initialState);
     public override void OnStartMeeting() => AddRole?.OnStartMeeting();
     public override bool VotingResults(ref NetworkedPlayerInfo Exiled, ref bool IsTie, Dictionary<byte, int> vote, byte[] mostVotedPlayers, bool ClearAndExile)

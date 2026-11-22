@@ -14,7 +14,7 @@ namespace TownOfHost.Roles.AddOns.Common
 
         public static void SetupCustomOption()
         {
-            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Watching, fromtext: "<color=#000000>From:</color><color=#ff0000>TOR GM Edition</color></size>");
+            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Watching, fromtext: UtilsOption.GetFrom(From.TOR_GM_Edition));
             AddOnsAssignData.Create(Id + 10, CustomRoles.Watching, true, true, true, true);
         }
         public static void Init()

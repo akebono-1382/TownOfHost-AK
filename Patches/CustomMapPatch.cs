@@ -294,7 +294,7 @@ class SubmergedPatch
     {
         if (!IsSubmergedId) return;
         //バニラandMODに翻訳が存在しない時のみ処理
-        if (__result != $"<INVALID:{str}>") return;
+        if (__result != str) return;
 
         if (StringMap.TryGetValue(str, out string result))
         {

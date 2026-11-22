@@ -108,7 +108,6 @@ namespace TownOfHost
                 roleInfo.CountType :
                 role switch
                 {
-                    CustomRoles.GM => CountTypes.OutOfGame,
                     CustomRoles.HASFox or
                     CustomRoles.HASTroll => CountTypes.None,
                     CustomRoles.TaskPlayerB => CountTypes.TaskPlayer,

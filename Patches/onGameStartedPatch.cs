@@ -240,8 +240,6 @@ namespace TownOfHost
                     {
                         AllPlayers.RemoveAll(x => x.PlayerId == PlayerControl.LocalPlayer.PlayerId);
                         PlayerControl.LocalPlayer.RpcSetCustomRole(CustomRoles.GM);
-                        PlayerControl.LocalPlayer.RpcSetRole(RoleTypes.Crewmate, Main.SetRoleOverride && GameModeManager.IsStandardClass());
-                        PlayerControl.LocalPlayer.Data.IsDead = true;
                     }
                     if (DebugModeManager.EnableTOHADebugMode.GetBool())
                     {

@@ -13,7 +13,7 @@ public static class Trapping
 
     public static void SetupCustomOption()
     {
-        SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Trapping);
+        SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Trapping, fromtext: UtilsOption.GetFrom(From.TownOfHost_K));
         AddOnsAssignData.Create(Id + 10, CustomRoles.Trapping, true, true, true, true);
 
         ObjectOptionitem.Create(Id + 20, "AddonOption", true, "", TabGroup.Addons).SetOptionName(() => "Role Option")

@@ -12,7 +12,7 @@ namespace TownOfHost.Roles.AddOns.Common
         public static string SubRoleMark = Utils.ColorString(RoleColor, "Ｍ");
         public static void SetupCustomOption()
         {
-            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Medicalrecord);
+            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Medicalrecord, fromtext: UtilsOption.GetFrom(From.TownOfHost_Pko));
             AddOnsAssignData.Create(Id + 10, CustomRoles.Medicalrecord, true, true, true, true);
         }
     }

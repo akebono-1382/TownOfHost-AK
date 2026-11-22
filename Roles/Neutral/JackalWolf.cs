@@ -271,5 +271,6 @@ public sealed class JackalWolf : RoleBase,
     {
         return (AddRole as IDoubleTrigger)?.DoubleAction(killer, target) ?? true;
     }
+    public override void OnExitVent(PlayerPhysics physics, int ventId) => AddRole?.OnExitVent(physics, ventId);
     public bool? CheckKillFlash(MurderInfo info) => (AddRole as IKillFlashSeeable)?.CheckKillFlash(info) ?? false;
 }

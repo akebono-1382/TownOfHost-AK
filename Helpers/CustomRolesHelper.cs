@@ -43,9 +43,9 @@ namespace TownOfHost
             var roleInfo = role.GetRoleInfo();
             if (roleInfo != null)
                 return roleInfo.CustomRoleType == CustomRoleTypes.Neutral || role == CustomRoles.Jackaldoll;
-            return role is CustomRoles.HASTroll or CustomRoles.HASFox or CustomRoles.Emptiness;
+            return role is CustomRoles.HASTroll or CustomRoles.HASFox;
         }
-        public static bool IsCrewmate(this CustomRoles role) => role.GetRoleInfo()?.CustomRoleType == CustomRoleTypes.Crewmate || (role is not CustomRoles.Amanojaku and not CustomRoles.GM and not CustomRoles.Twins and not CustomRoles.Faction && !role.IsImpostorTeam() && role > 0 && !role.IsAddOn() && !role.IsGhostRole() && !role.IsLovers() && !role.IsNeutral());
+        public static bool IsCrewmate(this CustomRoles role) => role.GetRoleInfo()?.CustomRoleType == CustomRoleTypes.Crewmate || (role is not CustomRoles.Amanojaku and not CustomRoles.Twins and not CustomRoles.Faction && !role.IsImpostorTeam() && role > 0 && !role.IsAddOn() && !role.IsGhostRole() && !role.IsLovers() && !role.IsNeutral());
         public static bool IsVanilla(this CustomRoles role)
         {
             return
@@ -352,14 +352,7 @@ namespace TownOfHost
             if (Options.CurrentGameMode == CustomGameMode.TaskBattle && TaskBattle.TaskBattleCanVent.GetBool() && role is CustomRoles.TaskPlayerB)
                 return RoleTypes.Engineer;
 
-            return role switch
-            {
-                CustomRoles.GM => RoleTypes.GuardianAngel,
-                CustomRoles.Emptiness => RoleTypes.CrewmateGhost,
-                CustomRoles.SKMadmate => Options.SkMadCanUseVent.GetBool() ? RoleTypes.Engineer : RoleTypes.Crewmate,
-
-                _ => role.IsImpostor() ? RoleTypes.Impostor : RoleTypes.Crewmate,
-            };
+            return role.IsImpostor() ? RoleTypes.Impostor : RoleTypes.Crewmate;
         }
     }
     public enum CountTypes

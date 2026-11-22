@@ -266,8 +266,6 @@ class TaskBattle
             if (Options.EnableGM.GetBool() && pc.PlayerId == PlayerControl.LocalPlayer.PlayerId)
             {
                 PlayerControl.LocalPlayer.RpcSetCustomRole(CustomRoles.GM);
-                PlayerControl.LocalPlayer.RpcSetRole(RoleTypes.Crewmate, false);
-                PlayerControl.LocalPlayer.Data.IsDead = true;
             }
             else
             {

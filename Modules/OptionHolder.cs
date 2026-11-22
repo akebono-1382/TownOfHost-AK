@@ -1234,7 +1234,7 @@ namespace TownOfHost
                     }
                     foreach (var info in RoleList.OrderBy(role => role.OptionSort.SortNumber))
                     {
-                        if (info.RoleName is CustomRoles.AlienHijack or CustomRoles.RaccoonChild) continue;
+                        if (info.RoleName is CustomRoles.AlienHijack or CustomRoles.RaccoonChild or CustomRoles.SKMadmate or CustomRoles.Emptiness) continue;
                         SetupRoleOptions(info);
                         info.OptionCreator?.Invoke();
                     }
@@ -1246,7 +1246,7 @@ namespace TownOfHost
         public static void SetupRoleOptions(SimpleRoleInfo info) => SetupRoleOptions(info.ConfigId, info.Tab, info.RoleName, info.AssignInfo.AssignCountRule, fromtext: UtilsOption.GetFrom(info), combination: info.Combination);
         public static OptionItem SetupRoleOptions(int id, TabGroup tab, CustomRoles role, IntegerValueRule assignCountRule = null, CustomGameMode customGameMode = CustomGameMode.Standard, string fromtext = "", CombinationRoles combination = CombinationRoles.None, int defo = -1)
         {
-            if ((role is CustomRoles.Phantom) || (combination != CombinationRoles.None && Combinations.Contains(combination))) return null;
+            if (combination != CombinationRoles.None && Combinations.Contains(combination)) return null;
             if (role.IsVanilla())
             {
                 switch (role)

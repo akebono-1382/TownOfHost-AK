@@ -114,152 +114,24 @@ namespace TownOfHost
         public static List<string> NotString = new();
         public static string GetString(string str, SupportedLangs langId)
         {
-            //検索できないのが致命的すぎる。
             var res = str;
-            //var res = $"<INVALID:{str}>";
             var ch = res;
-            //InfoLong無効化で説明見れなくなるのは...
-            if ((Event.OptionLoad.Contains(str) || str is "CakeshopInfo" or "Cakeshop") && !Event.Special && !Event.CheckRole(CustomRoles.Cakeshop)) return res;
-            if (str is "VegaInfo" or "Vega" && !Event.CheckRole(CustomRoles.Vega)) return res;
-            if (str is "AltairInfo" or "Altair" && !Event.CheckRole(CustomRoles.Altair)) return res;
+            //役が使えないなら空欄を返す
+            foreach (var re in Event.remove)
+            {
+                var name = nameof(re);
+                if (str.StartsWith(name) && !str.Contains("InfoLong") && (str == name || str.Contains("Info"))) return "";
+            }
+            foreach (var ev in Event.EventRoles.Keys)
+            {
+                if (Event.CheckRole(ev)) continue;
+                var name = nameof(ev);
+                if (str.StartsWith(name) && !str.Contains("InfoLong") && (str == name || str.Contains("Info"))) return "";
+            }
+
             if (translateMaps.TryGetValue(str, out var dic) && (!dic.TryGetValue((int)langId, out res) || res == "")) //strに該当する&無効なlangIdかresが空
             {
-                res = dic.TryGetValue(0, out var en) ? $"*{en}" : $"<INVALID:{str}>";
-            }
-            if (langId == SupportedLangs.Japanese && Main.CustomName.Value)
-            {
-                //このソースコ―ドを見た人へ。口外しないでもらえると嬉しいです...
-                //To anyone who has seen this source code. I would appreciate it if you would keep your mouth shut...
-                if (Event.IsChristmas)
-                {
-                    res = str switch
-                    {
-                        "Bakery" => "ケーキ作りのパン屋",
-                        "BakeryInfo" => "今日はパンじゃなくてケーキだよ！",
-                        "ChefInfo" => "全員にチキンを渡そう",
-                        "Arsonist" => "ライティングタクロース",
-                        "ArsonistInfo" => "全員にプレゼントを渡して逃げろ！",
-                        "ArsonistDouseButtonText" => "渡す",
-                        "EnterVentToWin" => "ベントに入って逃げろ！",
-                        "Message.Bakery1" => "パン屋がケーキを作ったよ！",
-                        "SuddenDeathIntro" => "他を落としていい子になれ",
-                        "KingInfo" => "ほっほっほ...",
-                        "ShyboyInfo" => "雪に埋まりたい",
-                        "UltraStarInfo" => "ｼｬｰﾝｼｬｰﾝｼｬｰﾝ",
-                        "PonkotuTellerInfo" => "あの子がサンタさん!?",
-                        "GrimReaperInfo" => "悪い子にはお仕置きを",
-                        "MadonnaInfo" => "ず...ずっと君の事が...!",
-                        "WhiteLoversInfo" => "クリスマスが記念日",
-                        "JesterInfo" => "あ～した雪ふ～れ",
-                        "MadJesterInfo" => "あ～した霰ふ～れ",
-                        "EfficientInfo" => "速く終わらせてサンタさんを待たないと..!",
-                        "NiceAddoerInfo" => "いっぱいプレゼント貰っちゃったぁ",
-                        "JumperInfo" => "サンタは一瞬で過ぎ去るのさ",
-                        "BomberInfo" => "僕からもプレゼントがあるよ",
-                        "FireWorksInfo" => "聖夜に花火はいかが?",
-                        "MadBetrayerInfo" => "ご主人も、2人組も、全て裏切れ",
-                        "StolenerInfo" => "ぼくのケーキがぁ...",
-                        "AndroidInfo" => "'アイ'が辞書にありません",
-                        "TrapperInfo" => "君をずっと離さない...",
-                        "OneLoveInfo" => "今日を記念日に",
-                        "WorkaholicInfo" => "今日も仕事だよっ!!!",
-                        "GhostNoiseSenderInfo" => "ﾋﾞﾋﾞｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲｲ!!!!!!",
-                        "TwinsInfo" => "くりすますぷれぜんとまだ～？",
-                        "TerroristInfo" => "今日という日を台無しにしてやれ",
-                        "MonochromerInfo" => "綺麗だね...うん...",
-                        "BalloonerInfo" => "風船と一緒に破裂しちゃえ",
-                        "ProBowlerInfo" => "あなたの心に向かって",
-                        "SnowmanInfo" => "ゆ～きやこんこん",
-                        _ => res
-                    };
-                }
-                if (Event.IsHalloween)
-                {
-                    res = str switch
-                    {
-                        "MadmateInfo" => "インポスターが有利になるようイタズラしろ",
-                        "Bakery" => "お菓子作りのパン屋",
-                        "BakeryInfo" => "今日はパンじゃなくてお菓子だよ！",
-                        "ChefInfo" => "パン屋とお菓子作りに苦戦中..",
-                        "TaskPlayerBInfo" => "タスクを誰よりも早く済ませた人にはお菓子が！？",
-                        "Message.Bakery1" => "ハッピーハロウィン！ パン屋がお菓子を作ったよ！",
-                        "SuddenDeathIntro" => "お菓子は全て我が頂くのだ",
-                        "WolfBoyInfo" => "仮装だよ!!仲間だよっ!!",
-                        "ShrineMaidenInfo" => "オバケの声が聞こえる...",
-                        "ShyboyInfo" => "ﾓｸﾞﾓｸﾞﾓｸﾞﾓｸﾞﾓｸﾞ...",
-                        "PonkotuTellerInfo" => "えっそれ仮装なの!?",
-                        "JackalAlienInfo" or "AlienInfo" => "ﾜﾚﾜﾚﾊ..ｳﾁｭｳｼﾞﾝﾀﾞ..",
-                        "GrimReaperInfo" => "悪い子には悪戯を",
-                        "YellowLoversInfo" => "おそろいのカボチャのコーデ",
-                        "EfficientInfo" => "おかしいっぱい食べるぞぉ",
-                        "CamouflagerInfo" => "同じ仮装にしちゃうぞ!",
-                        "MoleInfo" => "今...君の下にいるよ?",
-                        "LimiterInfo" => "せめてお菓子だけは...!",
-                        "TairouInfo" => "仮装よくできてるって?ありがとよっ",
-                        "VampireInfo" => "噛んじゃうぞぉ～",
-                        "ShapeMasterInfo" => "あの子に似てるでしょ!",
-                        _ => res
-                    };
-                }
-                if (Event.White)
-                {
-                    res = str switch
-                    {
-                        "Bakery" => "ホワイトチョコ作りのパン屋",
-                        "BakeryInfo" => "今日はパンじゃなくてホワイトチョコだよ！",
-                        "ChefInfo" => "ホワイトチョコを配ろう！",
-                        "Message.Bakery1" => "パン屋がホワイトチョコを作ったよ！",
-                        "ShyboyInfo" => "ﾁｮ...ﾁｮｺ...!?",
-                        "EfficientInfo" => "チョコいっぱい食べないと!",
-                        "JumperInfo" => "そこどきなさぁい!!!",
-                        "BomberInfo" => "僕からもプレゼントだヨ...",
-                        "ArsonistInfo" => "今日は良く燃えそうだ...",
-                        "MadonnaInfo" => "はいこれっ...",
-                        "MadoonnaMyCollect" => "{0}に本命チョコを渡した...\n{0}とマドンナラバーズになりました!",
-                        "MadoonnaCollect" => "{0}から本命チョコを受け取った!\n{0}とマドンナラバーズになった!",
-                        "FoxAliveMeg3" => "テーブルにあるチョコに油揚げが入っていた。妖狐がいるに違いない",
-                        "SantaClausMeetingMeg1" => "{0}にサンタさんからチョコのプレゼント!!",
-                        "PhantomThiefRole.Lovers" => "チョコを貰い、浮かれている",
-                        "PhantomThiefStolenMessage_1" => "怪盗がチョコを盗んでいった...",
-                        "Message.Bakery" => "パン屋によってチョコクロワッサンが配られました",
-                        "LoversInfo" => "あま～いひと時",
-                        "ManagementInfo" => "みんなチョコ貰いすぎ!!",
-                        "StackInfo" => "チョコの大袋",
-                        "VultureInfo" => "チョコだけじゃ物足りない",
-                        "StrawdollInfo" => "チョコ貰っている奴が妬ましい",
-                        "WhiteLoversInfo" => "初めての手作りチョコ",
-                        "RedLoversInfo" => "お返しはチョコの詰め合わせ",
-                        _ => res
-                    };
-                }
-                if (Event.GoldenWeek)
-                {
-                    res = str switch
-                    {
-                        "Bakery" => "鯉のぼり作りのパン屋",
-                        "BakeryInfo" => "今回はパンではなくこいのぼり制作！",
-                        "Message.Bakery1" => "パン屋がこいのぼりを大量に制作したよ...?",
-                        "ShyboyInfo" => "人だかりが多いよぉ...",
-                        "JesterInfo" => "あ～した天気になぁれ",
-                        "MadJesterInfo" => "あ～した雨になぁれ",
-                        "EfficientInfo" => "あそこも行って..こっちにも...",
-                        "JumperInfo" => "春は過ぎ去った...",
-                        "EraserInfo" => "宿題終わらないよぉ...",
-                        "QuickKillerInfo" => "3分前のバスに...",
-                        "WalkerInfo" => "歩き疲れたよ!",
-                        "OneLoveInfo" => "今度...水族館行かない?",
-                        "FoxAliveMeg3" => "桜餅の中に油揚げが入っていた。妖狐がいるに違いない",
-                        "WorkaholicInfo" => "ゴールデンウイーク?仕事。",
-                        "MassMediaInfo" => "今週はGW特集か...",
-                        "Fortune_Meg" => "クローバーでつつまれた桜餅の中に{0}が!!",
-                        "News_MeetingNews2" => "<size=90%>【船報】</size>\n<size=70%>{0}はゴールデンウイークはどう過ごすのか?調査してみました!",
-                        "spring.Ba" => "桜餅",
-                        "PhantomThiefStolenMessage_2" => "会議室にあった桜餅が食べられてる!!!怪盗の仕業か!!!",
-                        "ModSettingInfo2" => "柏餅は食べた?",
-                        "ModSettingInfo3" => "やねよ～り～た～か～い～",
-                        _ => res
-                    };
-                }
+                res = dic.TryGetValue(0, out var en) ? $"*{en}" : str;
             }
             if (!translateMaps.ContainsKey(str)) //translateMapsにない場合、StringNamesにあれば取得する
             {
@@ -271,7 +143,7 @@ namespace TownOfHost
             {
                 if (NotString.Contains(res)) return res;
                 NotString.Add(res);
-                Logger.Warn($"未翻訳の関数 : {str}", "Translator");
+                Logger.Warn($"未翻訳のキー : {str}", "Translator");
             }
             return res;
         }

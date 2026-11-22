@@ -26,16 +26,28 @@ static class Event
     public static List<string> OptionLoad = new();
 
     /// <summary>
-    /// 期間限定ロールが使用可能かをチェックします<br/>
-    /// 通常ロールはtrueを返します
+    /// 役職が使用可能かチェックします
+    /// (元期間限定用。期間限定役は追加予定なし)
     /// </summary>
-    /// <returns>ロールが使用可能ならtrueを返します</returns>
+    /// <returns>役職が使用可能か</returns>
     public static bool CheckRole(CustomRoles role, bool useApiData = true)
     {
+        if (remove.Contains(role))
+        {
+            if (Options.CustomRoleSpawnChances.ContainsKey(role) && Options.CustomRoleSpawnChances[role].GetValue() > 0)
+            {
+                Options.CustomRoleSpawnChances[role].SetValue(0, true);
+                //Options.CustomRoleSpawnChances[role].SetEnabled(() => false);
+            }
+            return false;
+        }
+
+        //封印役でない場合のみ実行
+        //期間限定役がいないならtrue
+        if (EventRoles.Count < 1) return true;
+
         //イベント役職以外はtrueを返す!!
         if (!EventRoles.TryGetValue(role, out var check)) return true;
-        return false;
-#pragma warning disable CS0162
         //キャッシュ済みならそっちを使う
         if (cachedEventFlags.TryGetValue((role, useApiData), out bool cachedData))
             return cachedData;
@@ -71,24 +83,31 @@ static class Event
         }
         cachedEventFlags[(role, true)] = result;
         return result;
-#pragma warning restore CS0162
     }
     public static Dictionary<CustomRoles, Func<bool>> EventRoles = new()
     {
+        //{CustomRoles.Melonsoda, () => Special || April}
+    };
+    public static HashSet<CustomRoles> remove = new()
+    {
         //封印
-        {CustomRoles.Explosioner, () => false},
-        {CustomRoles.RocketLauncher, () => false},
-        {CustomRoles.Altair,() => false},
-        {CustomRoles.Vega,() => false},
-        {CustomRoles.Cakeshop, () => false},
-        {CustomRoles.Poisoner, () => false},
-        {CustomRoles.Busker, () => false},
-        {CustomRoles.Camouflager, () => false},
+        CustomRoles.Explosioner,
+        CustomRoles.RocketLauncher,
+        CustomRoles.Altair,
+        CustomRoles.Vega,
+        CustomRoles.Cakeshop,
+        CustomRoles.Poisoner,
+        CustomRoles.Busker,
 
         //一旦封印
-        {CustomRoles.Godfather, () => false},
-        {CustomRoles.Janitor, () => false},
-        {CustomRoles.Mafia, () => false},
+        CustomRoles.Godfather,
+        CustomRoles.Janitor,
+        CustomRoles.Mafia,
+        CustomRoles.Raccoon,
+        CustomRoles.RaccoonChild,
+        CustomRoles.Blinker,
+        CustomRoles.EvilChainer,
+        CustomRoles.Melonsoda,
     };
 
     public static Dictionary<(CustomRoles role, bool isApiData), bool> cachedEventFlags = new(EventRoles.Count);

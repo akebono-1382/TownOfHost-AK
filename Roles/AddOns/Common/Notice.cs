@@ -16,7 +16,7 @@ namespace TownOfHost.Roles.AddOns.Common
 
         public static void SetupCustomOption()
         {
-            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Notice);
+            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.Notice, fromtext: UtilsOption.GetFrom(From.TownOfHost_K));
             AddOnsAssignData.Create(Id + 10, CustomRoles.Notice, true, true, true, true);
             ObjectOptionitem.Create(Id + 53, "AddonOption", true, "", TabGroup.Addons)
                 .SetOptionName(() => "Role Option")

@@ -50,17 +50,7 @@ namespace TownOfHost
                                 break;
                         }
                     }
-                    switch (role)
-                    {
-                        case CustomRoles.GM:
-                        case CustomRoles.SKMadmate:
-                        case CustomRoles.Jackaldoll:
-                            hasTasks = false;
-                            break;
-                        default:
-                            if (role.IsImpostor()) hasTasks = false;
-                            break;
-                    }
+                    if (role.IsImpostor()) hasTasks = false;
 
                     foreach (var subRole in States.SubRoles)
                         switch (subRole)

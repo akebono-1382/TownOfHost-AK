@@ -222,6 +222,7 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
             }, 1, "", true);
         }
     }
+    public override void OnExitVent(PlayerPhysics physics, int ventId) => AddRole?.OnExitVent(physics, ventId);
     public override void OnSpawn(bool initialState = false)
     {
         AddRole?.OnSpawn(initialState);

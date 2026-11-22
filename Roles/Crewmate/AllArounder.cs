@@ -314,9 +314,6 @@ public sealed class AllArounder : RoleBase, ISystemTypeUpdateHook, IKillFlashSee
     }
     bool CanBeKilledBy(CustomRoles role)
     {
-        if (role == CustomRoles.SKMadmate) return OptionMeetingSheriffCanKillMadMate.GetBool();
-        if (role == CustomRoles.Jackaldoll) return OptionMeetingSheriffCanKillNeutrals.GetBool();
-
         return role.GetCustomRoleTypes() switch
         {
             CustomRoleTypes.Impostor => role is not CustomRoles.Tairou,

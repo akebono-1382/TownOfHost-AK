@@ -368,12 +368,17 @@ namespace TownOfHost
 
                             if (((IsActive(SystemTypes.Comms) && Options.CommsCamouflage.GetBool())
                             || (role is CustomRoles.Monochromer && seerisAlive)
-                            //|| Camouflager.NowUse
+                            || (Camouflager.NowUse && Melonsoda.Owner == byte.MaxValue)
                             || (SuddenDeathMode.SuddenCannotSeeName && !TemporaryName))
                             && (!((targetrole as Jumper)?.Jumping == true)))
                             {
                                 TargetPlayerName = $"<size=0>{TargetPlayerName}</size> ";
                                 name = $"<size=0>{name}</size>";
+                            }
+                            if (Camouflager.NowUse & Melonsoda.Owner != byte.MaxValue)
+                            {
+                                TargetPlayerName = $"メロンソーダ<size=0>{TargetPlayerName}</size> ";
+                                name = $"メロンソーダ<size=0>{name}</size>";
                             }
                             //全てのテキストを合成します。
                             var lineheight = string.Format("<line-height={0}%>", "85");

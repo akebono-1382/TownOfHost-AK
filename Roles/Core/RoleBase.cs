@@ -71,6 +71,7 @@ public abstract class RoleBase : IDisposable
 #pragma warning restore CA1816
     public bool Is(PlayerControl player)
     {
+        if (player is null) return false;
         return player.PlayerId == Player.PlayerId;
     }
     /// <summary>
@@ -124,7 +125,6 @@ public abstract class RoleBase : IDisposable
     /// RoleRPCSenderで送信されたPlayerIdは削除されて渡されるため意識しなくてもよい。
     /// </summary>
     /// <param name="reader">届いたRPCの情報</param>
-    /// <param name="rpcType">届いたCustomRPC</param>
     public virtual void ReceiveRPC(MessageReader reader)
     { }
     /// <summary>
@@ -190,8 +190,9 @@ public abstract class RoleBase : IDisposable
     /// <param name="shouldAnimate">アニメーションを再生するか</param>
     public virtual bool CheckShapeshift(PlayerControl target, ref bool shouldAnimate) => true;
 
+    //IUsePhantomButtonで事足りる気はする
     /// <summary>
-    /// 透明化 発動前に呼ばれる関数
+    /// ファントムの透明化発動前に呼ばれる関数
     /// falseを返すと透明化をなかったことにできる
     /// 自分自身について呼ばれるため本人確認不要
     /// Host以外も呼ばれるので注意
@@ -231,9 +232,16 @@ public abstract class RoleBase : IDisposable
     /// [ホストのみ]
     /// </summary>
     /// <param name="physics"></param>
-    /// <param name="id"></param>
+    /// <param name="ventId"></param>
     /// <returns>falseを返すとベントから追い出され、他人からアニメーションも見られません</returns>
     public virtual bool OnEnterVent(PlayerPhysics physics, int ventId) => true;
+    /// <summary>
+    /// <para>ベントから出たときに呼ばれる関数</para>
+    /// </summary>
+    /// <param name="physics"></param>
+    /// <param name="ventId"></param>
+    public virtual void OnExitVent(PlayerPhysics physics, int ventId)
+    { }
     /// <summary>
     /// ベント移動を封じるかの関数。<br/>
     /// OnEnterVentの方が速く呼ばれる。<br/>

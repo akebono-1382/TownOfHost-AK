@@ -5,7 +5,7 @@ using System.Linq;
 using HarmonyLib;
 using TownOfHost.Roles;
 using TownOfHost.Roles.Core;
-
+using TownOfHost.Roles.Impostor;
 using static TownOfHost.Options;
 
 namespace TownOfHost;
@@ -40,7 +40,7 @@ class ColorLovers
     {
         LoverRole = role;
         Id = id;
-        SetupRoleOptions(id, TabGroup.Combinations, role, assignCountRule: new(2, 2, 2), fromtext: role is CustomRoles.Lovers ? "<color=#000000>From:</color><color=#ff6be4>Love Couple Mod</color></size>" : "");
+        SetupRoleOptions(id, TabGroup.Combinations, role, assignCountRule: new(2, 2, 2), fromtext: role is CustomRoles.Lovers ? UtilsOption.GetFrom(From.Love_Couple_Mod) : UtilsOption.GetFrom(From.TownOfHost_K));
         AssingImpostor = BooleanOptionItem.Create(id + 11, "AssingroleType", true, TabGroup.Combinations, false).SetSubRoleOptionItem(role).SetEnabled(() => !LoversRole1.GetBool());
         AssingMadmate = BooleanOptionItem.Create(id + 12, "AssingroleType", true, TabGroup.Combinations, false).SetSubRoleOptionItem(role).SetEnabled(() => !LoversRole1.GetBool());
         AssingCrewmate = BooleanOptionItem.Create(id + 13, "AssingroleType", true, TabGroup.Combinations, false).SetSubRoleOptionItem(role).SetEnabled(() => !LoversRole1.GetBool());
@@ -72,7 +72,12 @@ class ColorLovers
         if (!LoverSetRole.GetBool()) return;
         if (!LoverRole.IsPresent()) return;
 
-        var count = Math.Clamp(LoverRole.GetRealCount(), 0, PlayerCatch.AllPlayerControls.Where(pc => !Loverremove.Contains(pc.GetCustomRole()) && !pc.IsLovers()).Count());
+        var count = Math.Clamp(LoverRole.GetRealCount(), 0, PlayerCatch.AllPlayerControls.Where(
+            pc => !Loverremove.Contains(pc.GetCustomRole())
+            && !pc.IsLovers()
+            && !(pc.Is(CustomRoles.Ballooner) && Ballooner.OptionSuicide.GetBool()))
+            .Count());
+
         if (count <= 0) return;
 
         List<PlayerControl> Assingplayer1 = new();
@@ -83,6 +88,7 @@ class ColorLovers
 
             if (pc.IsLovers()) continue;
             if (Loverremove.Contains(role)) continue;
+            if (pc.Is(CustomRoles.Ballooner) && Ballooner.OptionSuicide.GetBool()) continue;
 
             if (LoversRole1.RoleValues[AssignOptionItem.Getpresetid()].Contains(role))
             {
@@ -114,7 +120,10 @@ class ColorLovers
     {
         if (!LoverRole.IsPresent()) return;
         if (2 <= LoverPlayer.Count) return;
-        var count = Math.Clamp(LoverRole.GetRealCount(), 0, PlayerCatch.AllPlayerControls.Where(pc => !Loverremove.Contains(pc.GetCustomRole()) && !pc.IsLovers()).Count());
+        var count = Math.Clamp(LoverRole.GetRealCount(), 0,
+            PlayerCatch.AllPlayerControls.Where(pc => !Loverremove.Contains(pc.GetCustomRole()) && !pc.IsLovers()
+            && !(pc.GetCustomRole() is CustomRoles.Ballooner && Ballooner.OptionSuicide.GetBool())
+            ).Count());
         if (count <= 0) return;
 
         List<PlayerControl> AssingTarget = new();
@@ -122,6 +131,7 @@ class ColorLovers
         {
             if (pc.IsLovers()) continue;
             if (Loverremove.Contains(pc.GetCustomRole())) continue;
+            if (pc.Is(CustomRoles.Ballooner) && Ballooner.OptionSuicide.GetBool()) continue;
 
             if (!AssingImpostor.GetBool() && !AssingMadmate.GetBool() && !AssingCrewmate.GetBool() && !AssingNeutral.GetBool())
             { }

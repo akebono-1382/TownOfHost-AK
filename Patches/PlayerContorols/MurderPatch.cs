@@ -164,7 +164,7 @@ namespace TownOfHost
                 }
                 //ペットけす
                 target.RpcSetPet("");
-                //if (!Camouflager.NowUse) Camouflage.RpcSetSkin(target, ForceRevert: true, RevertToDefault: true);
+                Camouflage.RpcSetSkin(target, ForceRevert: true, RevertToDefault: true);
             }
         }
         public static void Postfix(PlayerControl __instance, [HarmonyArgument(0)] PlayerControl target, bool __state)

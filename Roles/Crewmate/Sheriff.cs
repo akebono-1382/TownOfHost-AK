@@ -232,8 +232,6 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
 
         if (player.IsLovers() && CanKillLovers.GetBool()) return true;
 
-        if (cRole == CustomRoles.Jackaldoll) return CanKillNeutrals.GetValue() == 0 || (!KillTargetOptions.TryGetValue(CustomRoles.Jackal, out var option) && option.GetBool()) || (!KillTargetOptions.TryGetValue(CustomRoles.JackalMafia, out var op) && op.GetBool());
-        if (cRole == CustomRoles.SKMadmate) return KillTargetOptions.TryGetValue(CustomRoles.Madmate, out var option) && option.GetBool();
         if (player.Is(CustomRoles.Amanojaku)) return CanKillNeutrals.GetValue() == 0;
 
         return cRole.GetCustomRoleTypes() switch

@@ -116,8 +116,8 @@ namespace TownOfHost.Roles.Impostor
 
             OptDeadPoint = IntegerOptionItem.Create(RoleInfo, 4, Op.FloristDeadPoint, new(1, 99, 1), 5, false)
                 .SetValueFormat(OptionFormat.Times);
-            OptTurnPoint = IntegerOptionItem.Create(RoleInfo, 5, Op.FloristTurnPoint, new(1, 99, 1), 1, false)
-                .SetValueFormat(OptionFormat.Times);
+            OptTurnPoint = IntegerOptionItem.Create(RoleInfo, 5, Op.FloristTurnPoint, new(0, 99, 1), 1, false)
+                .SetValueFormat(OptionFormat.Times).SetZeroNotation(OptionZeroNotation.Off);
             OptUsePoint = IntegerOptionItem.Create(RoleInfo, 6, Op.FloristUsePoint, new(1, 99, 1), 2, false)
                 .SetValueFormat(OptionFormat.Times);
             OptKnowTarget = BooleanOptionItem.Create(RoleInfo, 8, Op.FloristKnowTarget, true, false);
@@ -141,7 +141,6 @@ namespace TownOfHost.Roles.Impostor
             if (index < 0) index = 0;
             if (index > 7) index = 7;
 
-#pragma warning disable CS8509
             return index switch
             {
                 0 => "\u2581", //  (1/8)
@@ -152,8 +151,8 @@ namespace TownOfHost.Roles.Impostor
                 5 => "\u2586", // ▆ (6/8)
                 6 => "\u2587", // ▇ (7/8)
                 7 => "\u2588", // █ (フル)
+                _ => "\u2581"
             };
-#pragma warning restore CS8509
         }
 
         public override void OnFixedUpdate(PlayerControl player)
@@ -175,7 +174,8 @@ namespace TownOfHost.Roles.Impostor
             }
             else
             {
-                NowText = ButtonText.None;
+                NowText = ButtonText.Ueru;
+                //NowText = ButtonText.None;
             }
 
             if (old != NowText && (Max > 0 || InstanceFlower.Count > 0))

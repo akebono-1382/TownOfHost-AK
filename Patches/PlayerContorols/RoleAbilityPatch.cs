@@ -292,6 +292,18 @@ namespace TownOfHost
     #endregion
     #region  Vent
 
+    [HarmonyPatch(typeof(Vent), nameof(Vent.ExitVent))]
+    class OcCoVentExitPatch
+    {
+        public static float timer;
+        public static bool Prefix(Vent __instance)
+        {
+            var user = PlayerControl.LocalPlayer;
+            user.GetRoleClass().OnExitVent(user.MyPhysics, __instance.Id);
+            return true;
+        }
+    }
+
     [HarmonyPatch(typeof(Vent), nameof(Vent.Use))]
     class OcCoVentUsePatch
     {
@@ -544,6 +556,20 @@ namespace TownOfHost
             CoEnterVentPatch.VentPlayers.Remove(__instance.myPlayer.PlayerId);
 
             var player = __instance.myPlayer;
+            if (VentilationSystemUpdateSystemPatch.NowVentId.TryGetValue(player.PlayerId, out var id))
+            {
+                var vent = ShipStatus.Instance.AllVents.FirstOrDefault(x => x.Id == id);
+                if (vent is null)
+                {
+                    player.RpcSnapToForced(new Vector2(100f, 100f));
+                    Logger.Error($"無効なベントid{id}。", "Vent");
+                }
+                else
+                {
+                    player.GetRoleClass().OnExitVent(__instance, vent.Id);
+                }
+            }
+
 
             if (CoEnterVentPatch.OldOnEnterVent.TryGetValue(player.PlayerId, out var canuse))
             {

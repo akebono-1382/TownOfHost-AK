@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using System.Linq;
 using AmongUs.GameOptions;
-using Hazel;
+using HarmonyLib;
+using UnityEngine;
+
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
-using TownOfHost.Roles.Neutral;
-using UnityEngine;
+using TownOfHost.Attributes;
 
 namespace TownOfHost.Roles.Impostor;
 
@@ -13,189 +13,196 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
 {
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
-        typeof(Camouflager),
-        player => new Camouflager(player),
-        CustomRoles.Camouflager,
-        () => RoleTypes.Phantom,
-        CustomRoleTypes.Impostor,
-        127300,
-        SetupOptionItem,
-        "Mo",
-        OptionSort: (6, 0),
-        from: From.TheOtherRoles
-    );
-
-    private static OptionItem OptionKillCoolDown;
-    private static OptionItem OptionCooldown;
-    private static OptionItem OptionAblitytime;
-    public static bool NowUse { get; set; }
-    bool Use;
-
-    private float _limit;
-    private readonly List<byte> _ventPlayers = new();
-    public static byte id;
-
-    private enum OptionName
+            typeof(Camouflager),
+            player => new Camouflager(player),
+            CustomRoles.Camouflager,
+            () => RoleTypes.Phantom,
+            CustomRoleTypes.Impostor,
+            5600,
+            SetupOptionItem,
+            "Mo",
+            OptionSort: (6, 0),
+            from: From.TheOtherRoles
+        );
+    public Camouflager(PlayerControl player)
+    : base(
+        RoleInfo,
+        player
+    )
     {
-        GhostNoiseSenderTime
+        Limit = -50;
+        VentPlayers.Clear();
     }
-    public override void Add()
-    {
-        Use = false;
-    }
-    public Camouflager(PlayerControl player) : base(RoleInfo, player)
+    [GameModuleInitializer]
+    public static void Init()
     {
         NowUse = false;
-        _limit = -50;
-        _ventPlayers.Clear();
-        Use = false;
+        MyUse = false;
     }
-
-    private static void SetupOptionItem()
+    static OptionItem OptionKillCoolDown;
+    static OptionItem OptionCooldown;
+    static OptionItem OptionAblitytime;
+    public static bool NowUse;
+    public static bool MyUse;
+    float Limit;
+    List<byte> VentPlayers = new();
+    enum OptionName { GhostNoiseSenderTime/* 効果時間って翻訳一緒なので・・・ */}
+    static void SetupOptionItem()
     {
         OptionKillCoolDown = FloatOptionItem.Create(RoleInfo, 10, GeneralOption.KillCooldown, new(0f, 180f, 0.5f), 30f, false)
-            .SetValueFormat(OptionFormat.Seconds);
+                .SetValueFormat(OptionFormat.Seconds);
         OptionCooldown = FloatOptionItem.Create(RoleInfo, 11, GeneralOption.Cooldown, new(0f, 180f, 0.5f), 20f, false)
-            .SetValueFormat(OptionFormat.Seconds);
+                .SetValueFormat(OptionFormat.Seconds);
         OptionAblitytime = FloatOptionItem.Create(RoleInfo, 12, OptionName.GhostNoiseSenderTime, new(0f, 100f, 0.5f), 10f, false)
-            .SetValueFormat(OptionFormat.Seconds);
+                .SetValueFormat(OptionFormat.Seconds);
     }
     public override void ApplyGameOptions(IGameOptions opt)
     {
-        AURoleOptions.PhantomCooldown = NowUse ? (OptionAblitytime.GetFloat()) : OptionCooldown.GetFloat();
+        AURoleOptions.PhantomCooldown = NowUse ? (OptionAblitytime.GetFloat() + 1f) : OptionCooldown.GetFloat();
     }
-
     public override void OnFixedUpdate(PlayerControl player)
     {
-        if (!AmongUsClient.Instance.AmHost || !NowUse || GameStates.CalledMeeting || _limit <= -50) return;
+        if (!AmongUsClient.Instance.AmHost || !NowUse || GameStates.CalledMeeting || Limit <= -50) return;
 
-        _limit -= Time.fixedDeltaTime;
-        if (_limit <= 0)
+        Limit -= Time.fixedDeltaTime;
+
+        if (VentPlayers.Count > 0)
         {
-            SetCamouflage(false);
-        }
-    }
+            var remove = new List<byte>();
+            foreach (var id in VentPlayers)
+            {
+                var target = PlayerCatch.GetPlayerById(id);
+                if (target.inVent) continue;
+                if (Camouflage.IsCamouflage)
+                {
+                    var sender = CustomRpcSender.Create(name: $"Camouflage.RpcSetSkin({target.Data.GetLogPlayerName()})");
+                    byte color = (byte)ModColors.PlayerColor.Gray;
 
+                    target.SetColor(color);
+                    sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetColor)
+                        .Write(target.Data.NetId)
+                        .Write(color)
+                        .EndRpc();
+
+                    target.SetHat("", color);
+                    sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetHatStr)
+                        .Write("")
+                        .Write(target.GetNextRpcSequenceId(RpcCalls.SetHatStr))
+                        .EndRpc();
+
+                    target.SetSkin("", color);
+                    sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetSkinStr)
+                        .Write("")
+                        .Write(target.GetNextRpcSequenceId(RpcCalls.SetSkinStr))
+                        .EndRpc();
+
+                    target.SetVisor("", color);
+                    sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetVisorStr)
+                        .Write("")
+                        .Write(target.GetNextRpcSequenceId(RpcCalls.SetVisorStr))
+                        .EndRpc();
+                    sender.SendMessage();
+                }
+                else if (Melonsoda.Owner == byte.MaxValue) Camouflage.RpcSetSkin(target);
+                remove.Add(id);
+            }
+
+            if (remove.Count != 0)
+            {
+                remove.Do(id => VentPlayers.Remove(id));
+                foreach (var pl in PlayerCatch.AllPlayerControls)
+                {
+                    pl?.GetRoleClass()?.ChangeColor();
+                }
+            }
+        }
+        if (Limit <= 0)
+        {
+            Limit = -100;
+            NowUse = false;
+            MyUse = false;
+            PlayerCatch.AllPlayerControls.Do(pc => Camouflage.RpcSetSkin(pc, force: null));
+            _ = new LateTask(() =>
+            {
+                if (GameStates.CalledMeeting) return;
+                foreach (var pl in PlayerCatch.AllPlayerControls)
+                {
+                    pl?.GetRoleClass()?.ChangeColor();
+                }
+                UtilsNotifyRoles.NotifyRoles(ForceLoop: true);
+                Player.RpcResetAbilityCooldown(log: false, Sync: true);
+            }, 0.4f, "", true);
+        }
+        //使ってるのにfalseに戻されたとき
+        else if (NowUse is false)
+            NowUse = true;
+    }
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
         NowUse = false;
-        _limit = -50;
-        _ventPlayers.Clear();
+        MyUse = false;
+        Limit = -50;
+        VentPlayers.Clear();
     }
-
     public override bool NotifyRolesCheckOtherName => true;
-
     public void OnClick(ref bool AdjustKillCooldown, ref bool? ResetCooldown)
     {
         AdjustKillCooldown = true;
         ResetCooldown = false;
         if (NowUse) return;
-        SetCamouflage(true);
-    }
-    public void SetCamouflage(bool active, PlayerControl nottarget = null, bool totyu = false)
-    {
-        if (active)
+
+        foreach (var target in PlayerCatch.AllAlivePlayerControls)
         {
-            if (NowUse && !totyu) return;
-            if (totyu && !Use) return;
-            Use = true;
-            PlayerControl dummy;
-            if (nottarget != null)
+            if (target.inVent)
             {
-                dummy = PlayerCatch.AllAlivePlayerControls.FirstOrDefault(pc => pc != null && pc != nottarget) ?? PlayerCatch.GetPlayerById(1);
-                Camouflage.RpcSetSkin(nottarget);
+                VentPlayers.Add(target.PlayerId);
+                continue;
             }
-            else
-            {
-                dummy = PlayerCatch.AllAlivePlayerControls.FirstOrDefault(pc => pc != null) ?? PlayerCatch.GetPlayerById(1);
-            }
-            if (dummy == null) return;
-            id = dummy.PlayerId;
-            SendRPC();
-            foreach (var p in PlayerCatch.AllAlivePlayerControls)
-            {
-                dummy.RpcChColor(p, 15, true);
-                dummy.RpcHideSkinAndPet(p);
-            }
-            foreach (var pl in PlayerCatch.AllAlivePlayerControls)
-            {
-                if (pl == dummy) continue;
-                pl.RpcShapeshift(dummy, false);
-                var sender = CustomRpcSender.Create("CamouflagerShape");
-                sender.AutoStartRpc(pl.NetId, RpcCalls.Shapeshift)
-                    .Write(dummy)
-                    .Write(false)
-                    .EndRpc();
-                sender.EndMessage();
-                sender.SendMessage();
+            var sender = CustomRpcSender.Create(name: $"Camouflage.RpcSetSkin({target.Data.GetLogPlayerName()})");
+            byte color = (byte)ModColors.PlayerColor.Gray;
 
-                foreach (var p in PlayerCatch.AllPlayerControls)
-                {
-                    if (p.IsAlive()) continue;
-                    pl.RpcShapeshift(pl, false);
-                    var senderat = CustomRpcSender.Create("CamouflagerShape");
-                    senderat.AutoStartRpc(pl.NetId, RpcCalls.Shapeshift, p.GetClientId())
-                        .Write(pl)
-                        .Write(false)
-                        .EndRpc();
-                    senderat.EndMessage();
-                    senderat.SendMessage();
-                }
-            }
-            if (!totyu)
-            {
-                _limit = OptionAblitytime.GetFloat();
-                NowUse = true;
-                Player.RpcResetAbilityCooldown(log: false, Sync: true);
+            target.SetColor(color);
+            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetColor)
+                .Write(target.Data.NetId)
+                .Write(color)
+                .EndRpc();
 
-                _ = new LateTask(() =>
-                {
-                    UtilsNotifyRoles.NotifyRoles(ForceLoop: true);
-                }, 0.2f, "", true);
-            }
+            target.SetHat("", color);
+            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetHatStr)
+                .Write("")
+                .Write(target.GetNextRpcSequenceId(RpcCalls.SetHatStr))
+                .EndRpc();
+
+            target.SetSkin("", color);
+            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetSkinStr)
+                .Write("")
+                .Write(target.GetNextRpcSequenceId(RpcCalls.SetSkinStr))
+                .EndRpc();
+
+            target.SetVisor("", color);
+            sender.AutoStartRpc(target.NetId, (byte)RpcCalls.SetVisorStr)
+                .Write("")
+                .Write(target.GetNextRpcSequenceId(RpcCalls.SetVisorStr))
+                .EndRpc();
+            sender.SendMessage();
         }
-        else
+
+        Limit = OptionAblitytime.GetFloat();
+        NowUse = true;
+        MyUse = true;
+        _ = new LateTask(() =>
         {
-            Use = false;
-            _limit = -100;
-            NowUse = false;
-            var original = PlayerCatch.GetPlayerById(id);
-
-            _ = new LateTask(() =>
-            {
-                if (GameStates.CalledMeeting) return;
-                if (original != null)
-                {
-                    Camouflage.RpcSetSkin(original, force: null);
-                }
-
-                foreach (var pl in PlayerCatch.AllPlayerControls)
-                {
-                    pl.RpcShapeshift(pl, false);
-                    var sender = CustomRpcSender.Create("CamouflagerShape");
-                    sender.AutoStartRpc(pl.NetId, RpcCalls.Shapeshift)
-                        .Write(pl)
-                        .Write(false)
-                        .EndRpc();
-                    sender.EndMessage();
-                    sender.SendMessage();
-                }
-
-                UtilsNotifyRoles.NotifyRoles(ForceLoop: true);
-            }, 0.2f, "", true);
+            UtilsNotifyRoles.NotifyRoles(ForceLoop: true);
             Player.RpcResetAbilityCooldown(log: false, Sync: true);
-        }
+        }, 0.2f, "", true);
     }
     public float CalculateKillCooldown() => OptionKillCoolDown.GetFloat();
-
     public override bool OverrideAbilityButton(out string text)
     {
         text = "Camouflager_Ability";
         return true;
     }
-
     public override string GetAbilityButtonText() => GetString("CamouflagerText");
-
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
     {
         seen ??= seer;
@@ -204,16 +211,5 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
         if (isForHud) return GetString("PhantomButtonLowertext");
         return $"<size=50%>{GetString("PhantomButtonLowertext")}</size>";
     }
-
     bool IUsePhantomButton.IsresetAfterKill => false;
-    private void SendRPC()
-    {
-        using var sender = CreateSender();
-        sender.Writer.Write(id);
-    }
-
-    public override void ReceiveRPC(MessageReader reader)
-    {
-        id = reader.ReadByte();
-    }
 }

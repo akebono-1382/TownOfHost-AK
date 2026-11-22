@@ -896,6 +896,7 @@ public enum CustomRoles
     Miner,
     Blinker,
     Timeleaper,
+    Melonsoda,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,

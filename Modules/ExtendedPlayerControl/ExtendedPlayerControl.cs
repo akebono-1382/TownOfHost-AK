@@ -330,10 +330,7 @@ namespace TownOfHost
             {
                 role = target.GetCustomRole();
             }
-            if (role is CustomRoles.SKMadmate)
-            {
-                role = Options.MadTellOpt() is CustomRoles.NotAssigned ? role : Options.MadTellOpt();
-            }
+
             return role;
         }
         public static void ResetKillCooldown(this PlayerControl player)
@@ -379,7 +376,7 @@ namespace TownOfHost
             var isSidekickableCustomRole = player.GetRoleClass() is ISidekickable sidekickable && sidekickable.CanMakeSidekick();
 
             return isSidekickableCustomRole ||
-               role.CanMakeMadmate(); // ISideKickable対応前の役職はこちら
+               role.CanMakeMadmate();
         }
         public static bool IsModClient(this PlayerControl player) => Main.playerVersion.ContainsKey(player.PlayerId);
 

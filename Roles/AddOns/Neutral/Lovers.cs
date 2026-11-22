@@ -6,6 +6,7 @@ using Hazel;
 using TownOfHost.Attributes;
 using TownOfHost.Roles;
 using TownOfHost.Roles.Core;
+using TownOfHost.Roles.Impostor;
 using TownOfHost.Roles.Neutral;
 using static TownOfHost.Options;
 
@@ -104,6 +105,8 @@ class Lovers
             if (player.Is(CustomRoles.King)) continue;
             if (player.Is(CustomRoles.Vega)) continue;
             if (player.Is(CustomRoles.Altair)) continue;
+            if (player.Is(CustomRoles.Ballooner) && Ballooner.OptionSuicide.GetBool()) continue;
+
             allPlayers.Add(player);
         }
 
@@ -119,6 +122,7 @@ class Lovers
             {
                 if (pc.IsLovers()) continue;
                 if (remove.Contains(pc.GetCustomRole())) continue;
+                if (pc.Is(CustomRoles.Ballooner) && Ballooner.OptionSuicide.GetBool()) continue;
 
                 if (!AssingImpostor.GetBool() && !AssingMadmate.GetBool() && !AssingCrewmate.GetBool() && !AssingNeutral.GetBool())
                 { }

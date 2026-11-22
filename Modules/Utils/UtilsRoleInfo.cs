@@ -43,7 +43,6 @@ namespace TownOfHost
                 // Madmate役職
                 roleCommands.Add((CustomRoles)(-2), $"【=== {GetString("Madmate")} ===】");  // 区切り用
                 ConcatCommands(CustomRoleTypes.Madmate);
-                roleCommands.Add(CustomRoles.SKMadmate, "sm");
 
                 // Crewmate役職
                 roleCommands.Add((CustomRoles)(-3), $"【=== {GetString("Crewmate")} ===】");  // 区切り用
@@ -132,7 +131,7 @@ namespace TownOfHost
 
             var msg = "";
             var rolemsg = $"{GetString("Command.h_args")}";
-            if (Main.DebugVersion is false)//デバッグバージョンなら役職一覧表示させへん。
+            //if (Main.DebugVersion is false)//デバッグバージョンなら役職一覧表示させへん。
             {
                 switch (role)
                 {

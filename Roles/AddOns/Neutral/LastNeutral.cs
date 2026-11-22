@@ -47,7 +47,7 @@ namespace TownOfHost.Roles.AddOns.Neutral
         public static OptionItem BlockMoveTime; 
         public static void SetupCustomOption()
         {
-            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.LastNeutral, new(1, 1, 1));
+            SetupRoleOptions(Id, TabGroup.Addons, CustomRoles.LastNeutral, new(1, 1, 1), fromtext: UtilsOption.GetFrom(From.TownOfHost_K));
             GiveKillCooldown = StringOptionItem.Create(Id + 6, "Givekillcoondown", Givekillcooldownmode, 3, TabGroup.Addons, false).SetParentRole(CustomRoles.LastNeutral).SetParent(CustomRoleSpawnChances[CustomRoles.LastNeutral]);
             KillCooldown = FloatOptionItem.Create(Id + 8, "KillCooldown", new(0f, 180f, 0.5f), 15f, TabGroup.Addons, false).SetParentRole(CustomRoles.LastNeutral).SetParent(GiveKillCooldown)
                 .SetValueFormat(OptionFormat.Seconds);
