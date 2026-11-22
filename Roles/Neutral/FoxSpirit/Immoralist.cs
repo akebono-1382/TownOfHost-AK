@@ -152,7 +152,9 @@ public sealed class Immoralist : RoleBase, IAdditionalWinner, ISystemTypeUpdateH
         {
             if (immoralist.guardPlayer == target)
             {
-                immoralist.guardPlayer = null; break;
+                immoralist.guardPlayer = null;
+                Utils.NotifyRoles(SpecifySeer: immoralist.Player);
+                break;
             }
         }
         return true;

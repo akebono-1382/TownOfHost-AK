@@ -93,7 +93,9 @@ public sealed class Medic : RoleBase
         {
             if (medic.GuardPlayer == target)
             {
-                medic.GuardPlayer = null; break;
+                medic.GuardPlayer = null;
+                Utils.NotifyRoles(SpecifySeer: medic.Player);
+                break;
             }
         }
         return true;

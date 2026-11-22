@@ -452,6 +452,7 @@ public abstract class PavlovDogBase : RoleBase, IKiller, IAdditionalWinner, ISch
             IsRampage = true;
             RampageTimer = 0f;
             RestartRampageAbilityCooldown();
+            Utils.NotifyRoles(SpecifySeer: Player);
             return;
         }
 

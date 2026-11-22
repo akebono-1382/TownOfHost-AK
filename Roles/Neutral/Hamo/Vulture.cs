@@ -194,6 +194,8 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
 
             turneat++;
 
+            Utils.NotifyRoles(SpecifySeer: Player);
+
             staticEatedPlayers.Add(target.PlayerId);
 
             DiePlayerPos.Where(poss => poss.Key == target.PlayerId).Do(poss => GetArrow.Remove(Player.PlayerId, poss.Value));

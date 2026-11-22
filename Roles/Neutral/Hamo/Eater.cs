@@ -137,6 +137,7 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
         if (!Player.IsAlive()) return;
         if (pendingSwallow != null) return;
         eatMode = !eatMode;
+        Utils.NotifyRoles(SpecifySeer: Player);
     }
 
     public bool UseOneclickButton => true;
@@ -197,6 +198,7 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
                 if (!ar_target.IsAlive())
                 {
                     pendingSwallow = null;
+                    Utils.NotifyRoles(SpecifySeer: Player);
                 }
                 else if (ar_time >= OptionSwallowTime.GetFloat())
                 {
@@ -218,6 +220,7 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
                         Win();
                     }
                     pendingSwallow = null;
+                    Utils.NotifyRoles(SpecifySeer: Player);
                 }
                 else
                 {
