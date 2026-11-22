@@ -77,7 +77,7 @@ public sealed class Driver : RoleBase, IImpostor, IKillFlashSeeable, IDeathReaso
         OptionGiveWatchVotestaskTrigger = IntegerOptionItem.Create(RoleInfo, OptionName.DriverTaskTrigger, new(1, 297, 1), 5, false, OptionGiveWatchVotes);
         OptionGiveGuard = BooleanOptionItem.Create(RoleInfo, OptionName.GiveGuard, false, false);
         OptionGiveGuardtaskTrigger = IntegerOptionItem.Create(RoleInfo, OptionName.DriverTaskTrigger, new(1, 297, 1), 5, false, OptionGiveGuard);
-        ObjectOptionitem.Create(RoleInfo, "BraidSetting", true, null).SetOptionName(() => "Braid Setting");
+        ObjectOptionitem.Create(RoleInfo, "BraidSetting", true, null);
         OptionBraidCanSeeDriver = BooleanOptionItem.Create(RoleInfo, OptionName.BraidCanSeeDriver, false, false);
         OptionBraidCanUseVent = BooleanOptionItem.Create(RoleInfo, OptionName.BraidCanVent, true, false);
         Braid.Tasks = Options.OverrideTasksData.Create(RoleInfo, CustomRoles.Braid);

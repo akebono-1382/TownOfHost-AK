@@ -6566,3 +6566,8 @@ CCYellowCatInfo,You have become the YellowCat,黄陣営に所属した,你成为
 "PikeoAI.Wait","Pikeo AI can answer again in {0}s.","次に答えられるのはあと{0}秒後ぴけ。せっかちなざぁこぴけ","","","","",""
 "PikeoAI.TooFast","Too many questions. Try again in a bit.","聞きすぎ。うるさいから少し黙っててぴけ","","","","",""
 "PikeoAI.Failed","Could not reach the AI. Try again later.","むにゃ…通信エラーだっぴけ…あとでもっかい呼んでぴけ","","","","",""
+"AssassinMerlin","【Merlin Settings】","【マーリンの設定】"
+"BraidSetting","【Braid Settings】","【ブレイドの設定】"
+"FoxAbilitySetting","【Ability Settings】","【能力の設定】"
+"FoxMeterSetting","【Detection Settings】","【正体がばれるまでの設定】"
+"FoxGuardSetting","【Guard Settings】","【ガードの設定】"

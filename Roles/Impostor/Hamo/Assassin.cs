@@ -126,7 +126,7 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         OptionHaveRole = FilterOptionItem.Create(RoleInfo, OptionName.AssassinHaveRole, 0, false, OptionHasOtherRole, true, false, false, false, false, () => InvalidRoles());
         OptionAssassinMeetingTime = IntegerOptionItem.Create(RoleInfo, OptionName.AssassinMeetingTime, new(10, 180, 1), 35, false).SetValueFormat(OptionFormat.Seconds);
 
-        ObjectOptionitem.Create(RoleInfo, "AssassinMerlin", true, null).SetOptionName(() => "Merlin Setting").SetColor(Merlin.RoleInfo.RoleColor);
+        ObjectOptionitem.Create(RoleInfo, "AssassinMerlin", true, null).SetColor(Merlin.RoleInfo.RoleColor);
         OptionMerlinHasTask = BooleanOptionItem.Create(RoleInfo, OptionName.MerlinHasTask, false, false);
         OptionMerlinNomalTask = Options.OverrideTasksData.Create(RoleInfo, rolename: CustomRoles.Merlin, tasks: (true, 2, 0, 0), OptionMerlinHasTask);
         OptionMerlinWorkTask = IntegerOptionItem.Create(RoleInfo, OptionName.WalkerWalkTaskCount, (0, 99, 1), 6, false, OptionMerlinWorkTask);
