@@ -19,7 +19,8 @@ namespace TownOfHostL.Core;
 /// </summary>
 public static class VanillaHideAndSeek
 {
-    // Client: ほかの人の部屋に客として入っている間。ホストの処理 (Standard) を外し、本編の客のまま遊ぶ
+    // Client: ほかの人の部屋に客として入っている間。ホストの処理 (Standard) を外し、本編の客のまま遊ぶ。
+    // ホストが同じ版の TOHL なら、届いた役職と設定で TOHL の画面を出す (Modules/Net/ModClientSync・ModClientView)
     private enum State { Live, Suspended, Client, Unloaded }
 
     private static State state = State.Live;
@@ -350,6 +351,7 @@ public static class VanillaHideAndSeek
         LateTask.Tasks.Clear();
         // 部屋に入った時の TOHL の処理 (OnGameJoined) より先に切り替わるので、前の部屋の版の記録はここで捨てる
         Main.playerVersion = new();
+        Modules.Net.ModClientSync.Reset();
         GameStates.InGame = false;
         Modes.PatchBundleSet.Apply(ClientBundles);
         state = State.Client;
@@ -358,6 +360,7 @@ public static class VanillaHideAndSeek
 
     private static void LeaveClient()
     {
+        Modules.Net.ModClientSync.Reset();
         state = State.Live;
         Modes.PatchBundleSet.Apply(Modes.ModeCatalog.Standard.LiveBundles);
         Logger.Info("客の間に外していた TOHL の処理を戻しました", "ClientMode");

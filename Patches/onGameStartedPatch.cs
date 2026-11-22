@@ -578,6 +578,8 @@ class SelectRolesPatch
         Utils.SyncAllSettings();
         SetColorPatch.IsAntiGlitchDisabled = false;
 
+        // 同じ版の TOHL を入れた客へ、イントロより先に全員の役職を送る
+        Modules.Net.ModClientSync.SendRoles();
 
         if (ModeCatalog.Current.UsesStandardRoles)
             StandardIntroHelper.ShowIntroForVanilla();

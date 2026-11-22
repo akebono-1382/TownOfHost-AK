@@ -12,13 +12,16 @@ using TownOfHostL.Core;
 namespace TownOfHostL
 {
     /// <summary>
-    /// TOHL の独自の電文。客の TOHL は客の間は本編の客のまま動くので、送るのは版の知らせだけ。
-    /// 番号はほかの TOHL 系の Mod と同じ (版の違う TOHL と知らせ合えるように)
+    /// TOHL の独自の電文。版の知らせの番号はほかの TOHL 系の Mod と同じ (版の違う TOHL と知らせ合えるように)。
+    /// 90 から先は、ホストと同じ版の TOHL を入れた客 (<see cref="Modules.Net.ModClientSync"/>) にだけ宛てて送る。本編の客には届かない
     /// </summary>
     public enum CustomRPC
     {
         VersionCheck = 80,
         RequestRetryVersionCheck = 81,
+        ModClientOptions = 90,
+        ModClientRoles = 91,
+        ModClientEnd = 92,
     }
     public enum Sounds
     {
@@ -146,7 +149,9 @@ namespace TownOfHostL
                         Version version = Version.Parse(reader.ReadString());
                         string tag = reader.ReadString();
                         string forkId = 3 <= version.Major ? reader.ReadString() : Main.OriginalForkId;
-                        Main.playerVersion[__instance.PlayerId] = new PlayerVersion(version, tag, forkId);
+                        var pv = new PlayerVersion(version, tag, forkId);
+                        Main.playerVersion[__instance.PlayerId] = pv;
+                        Modules.Net.ModClientSync.OnVersionFromClient(__instance, pv);
                     }
                     catch
                     {

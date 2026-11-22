@@ -82,6 +82,7 @@ public partial class PlayerState
             MainRoleList.Clear();
         }
         MainRoleList.Add(role);
+        Modules.Net.ModClientSync.MarkRolesDirty();
         // 前の役職での見え方は使わない (替えた側が送り直せば、また覚える)
         if (AmongUsClient.Instance && AmongUsClient.Instance.AmHost) Modules.RoleView.Forget(PlayerId);
 
@@ -100,12 +101,12 @@ public partial class PlayerState
         {
             SubRoles.Add(role);
             CustomRoleManager.SubRoleAdd(PlayerId, role);
+            Modules.Net.ModClientSync.MarkRolesDirty();
         }
     }
     public void RemoveSubRole(CustomRoles role)
     {
-        if (SubRoles.Contains(role))
-            SubRoles.Remove(role);
+        if (SubRoles.Remove(role)) Modules.Net.ModClientSync.MarkRolesDirty();
     }
 
     /// <summary>

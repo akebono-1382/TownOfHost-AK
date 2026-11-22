@@ -379,6 +379,8 @@ public static partial class Utils
 
         return text;
     }
+    /// <summary>結果の一覧に出す進み具合 (タスクと役職ごとの数)</summary>
+    public static string GetProgressTextFor(byte playerId) => GetProgressText(playerId);
     private static string GetProgressText(byte playerId, bool comms = false)
     {
         var ProgressText = new StringBuilder();
@@ -1745,7 +1747,9 @@ public static partial class Utils
     {
         Process.Start("Explorer.exe", $"/select,{path}");
     }
-    public static string SummaryTexts(byte id, bool isForChat)
+    public static string SummaryTexts(byte id, bool isForChat) => SummaryTexts(id, isForChat, null);
+    /// <summary>結果の一覧の 1 行。<paramref name="progressText"/> を渡すと、手元で数えずにそれを進み具合として出す (客がホストから受けた物)</summary>
+    public static string SummaryTexts(byte id, bool isForChat, string progressText)
     {
         // 全プレイヤー中最長の名前の長さからプレイヤー名の後の水平位置を計算する
         // 1em ≒ 半角2文字
@@ -1757,7 +1761,7 @@ public static partial class Utils
 
         var builder = new StringBuilder();
         builder.Append(ColorString(Main.PlayerColors[id], Main.AllPlayerNames[id]));
-        builder.AppendFormat("<pos={0}em>", pos).Append(isForChat ? GetProgressText(id).RemoveColorTags() : GetProgressText(id)).Append("</pos>");
+        builder.AppendFormat("<pos={0}em>", pos).Append(isForChat ? (progressText ?? GetProgressText(id)).RemoveColorTags() : progressText ?? GetProgressText(id)).Append("</pos>");
         // "(00/00) " = 4em
         pos += 4f;
         builder.AppendFormat("<pos={0}em>", pos).Append(GetVitalText(id)).Append("</pos>");

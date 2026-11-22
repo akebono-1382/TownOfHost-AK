@@ -91,6 +91,16 @@ class HudManagerPatch
                 player.Collider.offset = new Vector2(0f, -0.3636f);
             }
         }
+        UpdateOptionShower();
+        //ゲーム中でなければ以下は実行されない
+        if (!AmongUsClient.Instance.IsGameStarted) return;
+        UpdateInGame(__instance, player, TaskTextPrefix);
+    }
+
+    /// <summary>ロビーの左上の設定の一覧 (ホストと、同じ版の TOHL のホストの部屋にいる客)</summary>
+    public static void UpdateOptionShower()
+    {
+        if (optionShowerText == null) return;
         if (GameStates.IsLobby && !GameStates.IsFreePlay && !GameSettingMenu.Instance)
         {
             optionShowerText.gameObject.SetActive(true);
@@ -120,9 +130,16 @@ class HudManagerPatch
         }
         else
         { optionShowerText.gameObject.SetActive(false); }
-        //ゲーム中でなければ以下は実行されない
-        if (!AmongUsClient.Instance.IsGameStarted) return;
+    }
 
+    public static void HideOptionShower()
+    {
+        if (optionShowerText != null) optionShowerText.gameObject.SetActive(false);
+        lastOptionText = null;
+    }
+
+    private static void UpdateInGame(HudManager __instance, PlayerControl player, string TaskTextPrefix)
+    {
         // 死亡・追放・開始の時は呼ぶ側が数え直すので、ここは取りこぼし (役職の入れ替わりなど) を拾うだけ。毎フレームは要らない
         if (Time.time >= nextAliveCountAt)
         {
@@ -306,9 +323,22 @@ class TaskPanelBehaviourPatch
     // タスク表示の文章が更新・適用された後に実行される
     public static void Postfix(TaskPanelBehaviour __instance)
     {
-        if (GameStates.IsLobby) return; 
+        if (GameStates.IsLobby) return;
         if (!GameStates.IsModHost) return;
+        PrependRoleInfo(__instance);
+
+        // RepairSenderの表示
+        if (RepairSender.enabled && AmongUsClient.Instance.NetworkMode != NetworkModes.OnlineGame)
+        {
+            __instance.taskText.text = RepairSender.GetText();
+        }
+    }
+
+    /// <summary>タスクの欄の頭に、自分の役職の名前と説明を足す</summary>
+    public static void PrependRoleInfo(TaskPanelBehaviour __instance)
+    {
         PlayerControl player = PlayerControl.LocalPlayer;
+        if (player == null || PlayerState.GetByPlayerId(player.PlayerId) == null) return;
 
         // 役職説明表示
         if (!player.GetCustomRole().IsVanilla())
@@ -316,12 +346,6 @@ class TaskPanelBehaviourPatch
             var RoleWithInfo = $"{RoleText.GetRoleNameText(player.PlayerId, showSubRole: false)}:\r\n";
             RoleWithInfo += player.GetRoleInfo();
             __instance.taskText.text = Utils.ColorString(player.GetRoleColor(true), RoleWithInfo) + "\n" + __instance.taskText.text;
-        }
-
-        // RepairSenderの表示
-        if (RepairSender.enabled && AmongUsClient.Instance.NetworkMode != NetworkModes.OnlineGame)
-        {
-            __instance.taskText.text = RepairSender.GetText();
         }
     }
 }

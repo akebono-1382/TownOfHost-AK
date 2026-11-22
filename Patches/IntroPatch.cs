@@ -27,7 +27,7 @@ class SetUpRoleTextPatch
 {
     public static void Apply(IntroCutscene __instance)
     {
-        if (!GameStates.IsModHost) return;
+        if (!GameStates.IsModHost && !Modules.Net.ModClientSync.ViewReady) return;
         _ = new LateTask(() =>
         {
             // 他の役職として見せる役職は、その役職のイントロにする

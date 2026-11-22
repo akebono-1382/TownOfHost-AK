@@ -55,28 +55,9 @@ class EndGamePatch
                 Main.NormalOptions.KillCooldown = Options.DefaultKillCooldown;
             //winnerListリセット
             EndGameResult.CachedWinners = new Il2CppSystem.Collections.Generic.List<CachedPlayerData>();
-            var winner = new List<PlayerControl>();
-            foreach (var pc in Main.AllPlayerControls)
-            {
-                if (CustomWinnerHolder.WinnerIds.Contains(pc.PlayerId)) winner.Add(pc);
-            }
-            foreach (var team in CustomWinnerHolder.WinnerRoles)
-            {
-                winner.AddRange(Main.AllPlayerControls.Where(p => p.Is(team) && !winner.Any(x => x.PlayerId == p.PlayerId)));
-            }
-            foreach (var pc in Main.AllPlayerControls)
-            {
-                if (CustomWinnerHolder.CantWinPlayerIds.Contains(pc.PlayerId)) winner.RemoveAll(x => x.PlayerId == pc.PlayerId);
-            }
-
-            if (CustomWinnerHolder.WinnerTeam != CustomWinner.Draw && CustomWinnerHolder.WinnerTeam != CustomWinner.None)
-                winner = ModeCatalog.Current.ResolveOutroWinners(winner);
-
             Main.winnerList = new();
-            foreach (var pc in winner)
+            foreach (var pc in ResolveWinners())
             {
-                if (CustomWinnerHolder.WinnerTeam is not CustomWinner.Draw && pc.GetCustomRole().IsSpectator()) continue;
-
                 EndGameResult.CachedWinners.Add(new CachedPlayerData(pc.Data));
                 Main.winnerList.Add(pc.PlayerId);
             }
@@ -136,7 +117,32 @@ class EndGamePatch
             catch (Exception e) { Logger.Exception(e, "EndGamePatch.Dispose"); }
         }
     }
+    /// <summary>結果画面に★を付ける勝者 (勝者の記録から、勝てない人と観戦者を除いた物)</summary>
+    public static List<PlayerControl> ResolveWinners()
+    {
+        var winner = new List<PlayerControl>();
+        foreach (var pc in Main.AllPlayerControls)
+        {
+            if (CustomWinnerHolder.WinnerIds.Contains(pc.PlayerId)) winner.Add(pc);
+        }
+        foreach (var team in CustomWinnerHolder.WinnerRoles)
+        {
+            winner.AddRange(Main.AllPlayerControls.Where(p => p.Is(team) && !winner.Any(x => x.PlayerId == p.PlayerId)));
+        }
+        foreach (var pc in Main.AllPlayerControls)
+        {
+            if (CustomWinnerHolder.CantWinPlayerIds.Contains(pc.PlayerId)) winner.RemoveAll(x => x.PlayerId == pc.PlayerId);
+        }
+
+        if (CustomWinnerHolder.WinnerTeam != CustomWinner.Draw && CustomWinnerHolder.WinnerTeam != CustomWinner.None)
+            winner = ModeCatalog.Current.ResolveOutroWinners(winner);
+
+        if (CustomWinnerHolder.WinnerTeam is not CustomWinner.Draw)
+            winner.RemoveAll(pc => pc.GetCustomRole().IsSpectator());
+        return winner;
+    }
 }
+
 [HarmonyPatch(typeof(EndGameManager), nameof(EndGameManager.SetEverythingUp))]
 class SetEverythingUpPatch
 {
@@ -147,7 +153,7 @@ class SetEverythingUpPatch
         try
         {
             if (__instance == null) return;
-            if (!Main.playerVersion.ContainsKey(0)) return;
+            if (!Main.playerVersion.ContainsKey(0) && !Modules.Net.ModClientSync.EndReady) return;
             //#######################################
             //          ==勝利陣営表示==
             //#######################################

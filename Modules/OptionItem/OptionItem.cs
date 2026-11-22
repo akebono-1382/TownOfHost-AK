@@ -93,6 +93,7 @@ namespace TownOfHostL
             IsFixValue = false;
             IsText = false;
             IsFeatureOption = CreatingFeatures;
+            Index = _allOptions.Count;
             // オブジェクト初期化
             Children = new();
 
@@ -176,7 +177,26 @@ namespace TownOfHostL
         public virtual int GetInt() => CurrentValue;
         public virtual float GetFloat() => CurrentValue;
         public virtual string GetString() => ApplyFormat(CurrentValue.ToString());
-        public virtual int GetValue() => IsSingleValue ? SingleValue : AllValues[CurrentPreset];
+        public virtual int GetValue() => remoteValues != null && this is not PresetOptionItem ? remoteValues[Index] : StoredValue;
+        /// <summary>手元に持っている値 (保存する値)。客の間にホストの値を見ている時も、こちらは変えない</summary>
+        public int StoredValue => IsSingleValue ? SingleValue : AllValues[CurrentPreset];
+        /// <summary><see cref="AllOptions"/> の中の位置。同じ版の TOHL どうしで同じになるので、ホストの値を客へ写す時の番号に使う</summary>
+        public int Index { get; }
+
+        // ホストの部屋に同じ版の TOHL の客として入っている間だけ、ホストから届いた値を読む (保存はしない・部屋を出たら捨てる)
+        private static int[] remoteValues;
+        public static bool HasRemoteValues => remoteValues != null;
+        /// <summary>ホストの値を読む層を作る (全部を初期値にしておき、届いた値で上書きする)</summary>
+        public static void BeginRemoteValues()
+        {
+            remoteValues = new int[_allOptions.Count];
+            for (int i = 0; i < _allOptions.Count; i++) remoteValues[i] = _allOptions[i].DefaultValue;
+        }
+        public static void SetRemoteValue(int index, int value)
+        {
+            if (remoteValues != null && (uint)index < (uint)remoteValues.Length) remoteValues[index] = value;
+        }
+        public static void EndRemoteValues() => remoteValues = null;
         /// <summary>機能の設定 (設定一覧の「機能」の欄に出す物)。作った時に <see cref="CreatingFeatures"/> が立っていたか</summary>
         public bool IsFeatureOption { get; }
         /// <summary>立てている間に作った設定を機能の設定にする (Options.Load が機能の節の間だけ立てる)</summary>
@@ -208,6 +228,7 @@ namespace TownOfHostL
                 AllValues[CurrentPreset] = afterValue;
 
             CallUpdateValueEvent(beforeValue, afterValue);
+            if (beforeValue != afterValue) Modules.Net.ModClientSync.OnOptionChanged(this);
             if (doSync)
                 SyncAllOptions();
             if (doSave)
@@ -218,7 +239,11 @@ namespace TownOfHostL
         }
         public virtual void SetValue(int afterValue, bool doSync = true) => SetValue(afterValue, true, doSync);
 
-        public void SetAllValues(int[] values) => AllValues = values; // プリセット読み込み専用
+        public void SetAllValues(int[] values) // プリセット読み込み専用
+        {
+            AllValues = values;
+            Modules.Net.ModClientSync.OnOptionsReloaded();
+        }
 
         // 演算子オーバーロード
         public static OptionItem operator ++(OptionItem item)
@@ -313,6 +338,7 @@ namespace TownOfHostL
         public static void SwitchPreset(int newPreset)
         {
             CurrentPreset = Math.Clamp(newPreset, 0, NumPresets - 1);
+            Modules.Net.ModClientSync.OnOptionsReloaded();
             SyncAllOptions();
             SettingsUI.SettingsPages.RefreshAllSafe();
         }
