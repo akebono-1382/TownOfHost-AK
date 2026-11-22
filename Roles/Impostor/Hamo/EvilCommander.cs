@@ -46,6 +46,12 @@ public sealed class EvilCommander : RoleBase, IImpostor, IUsePhantomButton
     static float AbilityCooldown;
     int remainingUses;
 
+    /// <summary>上書きしたキルクール (人ごと)。キルのたびに役職の既定へ計算し直す処理 (ResetKillCooldown) で上書きが消えないよう、ここに持つ</summary>
+    static readonly Dictionary<byte, float> KillCooldownOverrides = new();
+    [TownOfHostL.Attributes.GameModuleInitializer]
+    public static void Init() => KillCooldownOverrides.Clear();
+    public static bool TryGetKillCooldownOverride(byte playerId, out float seconds) => KillCooldownOverrides.TryGetValue(playerId, out seconds);
+
     enum OptionName
     {
         EvilCommanderAbilityCooldown,
@@ -79,6 +85,7 @@ public sealed class EvilCommander : RoleBase, IImpostor, IUsePhantomButton
     public bool CanUseSabotageButton() => true;
     public bool CanUseImpostorVentButton() => true;
 
+    public override string GetAbilityButtonText() => Translator.GetString("EvilCommanderAbilityText");
     bool IUsePhantomButton.IsPhantomRole => true;
     bool IUsePhantomButton.IsresetAfterKill => false;
     bool IUsePhantomButton.UseOneclickButton => true;
@@ -103,10 +110,8 @@ public sealed class EvilCommander : RoleBase, IImpostor, IUsePhantomButton
             // 変更したい今回の用途には使わない。
             // 代わりに Main.AllPlayerKillCooldown を直接書き換えて SyncSettings で同期する。
             // (キルクールが0秒のクイックキラーに対しても同じ経路でそのまま上書きできる)
-            if (!Main.AllPlayerKillCooldown.ContainsKey(pc.PlayerId))
-                Main.AllPlayerKillCooldown.Add(pc.PlayerId, overrideSeconds);
-            else
-                Main.AllPlayerKillCooldown[pc.PlayerId] = overrideSeconds;
+            KillCooldownOverrides[pc.PlayerId] = overrideSeconds;
+            Main.AllPlayerKillCooldown[pc.PlayerId] = overrideSeconds;
             pc.SyncSettings();
         }
 

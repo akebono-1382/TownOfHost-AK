@@ -550,6 +550,8 @@ static partial class ExtendedPlayerControl
             Main.AllPlayerKillCooldown[player.PlayerId] = CatchCat.LeaderPlayer.CalculateKillCooldown(player);
         if (player.PlayerId == LastImpostor.currentId)
             LastImpostor.SetKillCooldown(player);
+        if (TownOfHostL.Roles.Impostor.EvilCommander.TryGetKillCooldownOverride(player.PlayerId, out var overridden))
+            Main.AllPlayerKillCooldown[player.PlayerId] = overridden;
     }
     public static bool CanMakeMadmate(this PlayerControl player)
     {

@@ -5416,6 +5416,7 @@ CCYellowCatInfo,You have become the YellowCat,黄陣営に所属した,你成为
 "EvilCommanderAbilityUseLimit","Ability Use Limit","能力の使用回数"
 "EvilCommanderOverrideKillCooldown","Kill Cooldown After Override","上書き後のキルクール"
 "EvilCommanderApplyToMadmate","Also Apply To Madmates","マッドメイトのキルクールを上書きする"
+"EvilCommanderAbilityText","Command","号令"
 "nul","Null","ヌル"
 "slp","Sleeper","スリーパー"
 "Typewriter","Typewriter","タイプライター"
