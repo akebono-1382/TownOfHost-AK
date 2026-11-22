@@ -61,7 +61,8 @@ namespace TownOfHostL
             // 声が無くても設定は必ず作る。設定の数がホストと TOHL の客で違うと、客は TOHL の画面をやめてしまう
             RegisterVoiceNames();
             // 一覧がまだ無い時は仮の選択肢で作って隠し、VOICEVOX から一覧が届いたら差し替えて出す
-            var names = VoiceType.Count > 0 ? VoiceName.Values.ToArray() : new[] { PlaceholderName };
+            // 仮の選択肢は数を多めに取る。保存した声の番号は読み込みの時に選択肢の数で折り返されるので、1 個だと全員 0 番に潰れる
+            var names = VoiceType.Count > 0 ? VoiceName.Values.ToArray() : Enumerable.Repeat(PlaceholderName, PlaceholderCount).ToArray();
             bool hidden = VoiceType.Count == 0;
             VoiceReaderMode = BooleanOptionItem.Create("VoiceReaderMode", false, TabGroup.ModMainSettings, true)
                 .SetColor(Palette.CrewmateBlue)
@@ -77,6 +78,7 @@ namespace TownOfHostL
                     .SetHidden(hidden);
         }
         private const string PlaceholderName = "VOICEVOX";
+        private const int PlaceholderCount = 256;
         // 声の名前は訳さずそのまま出す
         private static void RegisterVoiceNames()
         {
@@ -218,6 +220,7 @@ namespace TownOfHostL
                 opt.Rule = (0, names.Length - 1, 1);
                 opt.SetHidden(false);
             }
+            SettingsUI.SettingsPages.RefreshAllSafe();
         }
         [PatchBundle(PatchBundles.Core)]
         [HarmonyPatch(typeof(ModManager), nameof(ModManager.LateUpdate))]
@@ -280,7 +283,7 @@ namespace TownOfHostL
                         }
                     }
                 }
-                InitFinished = true;
+                InitFinished = VoiceType.Count > 0;
             }
             catch (Exception ex)
             {
