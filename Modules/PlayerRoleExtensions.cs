@@ -122,8 +122,8 @@ public static class PlayerRoleExtensions
     static void ApplyVanillaRole(PlayerControl player, CustomRoles role)
     {
         if (player == null || !player.IsAlive()) return;
-        // デシンクの役職は、本人の画面ではインポスターにする (基底が変身・消失でも)
-        Modules.RoleView.ApplyBasisChange(player, role.GetRoleInfo()?.IsDesyncImpostor == true ? RoleTypes.Impostor : null);
+        // 本人の画面は試合開始の配役と同じく基底の役職にする (デシンクで基底がファントム・シェイプシフターの役職は、そのボタンで能力を使う)
+        Modules.RoleView.ApplyBasisChange(player);
     }
 
     // ===== 占い =====
