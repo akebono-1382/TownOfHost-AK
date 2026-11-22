@@ -171,7 +171,8 @@ public sealed class SillySheriff : RoleBase, IKiller, ISchrodingerCatOwner
         ShotLimit--;
         Logger.Info($"{killer.GetNameWithRole()} : 残り{ShotLimit}発", "SillySheriff");
         int chance = IRandom.Instance.Next(1, 101);
-        if ((CanBeKilledBy(target) && chance <= probability) || (!CanBeKilledBy(target) && chance >= probability))
+        // chance は 1〜100。キルできる相手は probability% で、キルできない相手は (100 - probability)% で誤爆する
+        if ((CanBeKilledBy(target) && chance <= probability) || (!CanBeKilledBy(target) && chance > probability))
         {
             //自殺処理
             PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;
