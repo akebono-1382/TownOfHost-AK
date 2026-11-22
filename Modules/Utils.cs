@@ -1583,6 +1583,8 @@ public static partial class Utils
     public static void AfterMeetingTasks()
     {
         // 天秤が 2 人を選んで会議を閉じた時は、日を進めず役職の会議明けの処理もせずに天秤会議を開く
+        // 会議明けの処理は 1 回の会議で 2 回来るので、天秤会議を開くまでの間に来た 2 回目も素通りさせる (天秤の状態を消さない)
+        if (Balancer.Scheduled) return;
         if (AmongUsClient.Instance.AmHost && Balancer.Id == byte.MaxValue && Balancer.target1 != byte.MaxValue && Balancer.target2 != byte.MaxValue)
         {
             foreach (var roleClass in CustomRoleManager.AllActiveRoles.Values)
@@ -1603,6 +1605,8 @@ public static partial class Utils
             state.IsBlackOut = false; //ブラックアウト解除
         }
         RoleHooks.ForEachRole(roleClass => roleClass.AfterMeetingTasks(), "AfterMeetingTasks");
+        // 天秤会議の途中で天秤が役職を失ったり抜けたりしても、次の天秤会議が開けるように戻す
+        Balancer.AfterMeetingReset();
 
         Counselor.AfterMeetingTask();
         ChainShifterAddon.AfterMeetingTasks();

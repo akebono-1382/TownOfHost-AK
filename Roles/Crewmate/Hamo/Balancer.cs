@@ -642,6 +642,7 @@ public sealed class Balancer : RoleBase, ISelfVoter
             //天秤会議にする
 
             Id = Player.PlayerId;
+            Scheduled = true;
 
             var ran = IRandom.Instance.Next(0, 2);
 
@@ -773,6 +774,25 @@ public sealed class Balancer : RoleBase, ISelfVoter
 
     }
 
+    // 天秤会議の間に掛けた 2 人のどちらかが死ぬか抜けたら、その場で会議を閉じる (会議の毎フレームの処理から呼ぶ)
+    static bool closedByTargetLoss;
+    public static void CheckTargetLoss(MeetingHud meetingHud)
+    {
+        if (Id == byte.MaxValue) { closedByTargetLoss = false; return; }
+        if (closedByTargetLoss || TownOfHostL.Modules.MeetingVoteManager.Instance == null) return;
+        if (meetingHud.state is not (MeetingHud.MeetingStates.NotVoted or MeetingHud.MeetingStates.Voted)) return;
+        if (Utils.GetPlayerById(target1).IsAlive() && Utils.GetPlayerById(target2).IsAlive()) return;
+        closedByTargetLoss = true;
+        TownOfHostL.Modules.MeetingVoteManager.Instance.EndMeeting(false);
+    }
+    /// <summary>天秤会議を開く予約をしてから、実際に開くまでの間</summary>
+    public static bool Scheduled;
+    [TownOfHostL.Attributes.GameModuleInitializer]
+    public static void InitStatic()
+    {
+        Scheduled = false;
+        AfterMeetingReset();
+    }
     public static void AfterMeetingReset()
 
     {

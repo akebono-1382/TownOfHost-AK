@@ -367,6 +367,7 @@ public static partial class MeetingHudPatch
         public static void Postfix(MeetingHud __instance)
         {
             if (!AmongUsClient.Instance.AmHost) return;
+            Roles.Crewmate.Balancer.CheckTargetLoss(__instance);
             // 出だしの演出や話し合いの間に見送った締めの判定を、投票の段階に入ったらやり直す
             if (MeetingVoteManager.Instance is { } pending
                 && (pending.PendingCheck || pending.PendingEnd != null)

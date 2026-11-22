@@ -44,6 +44,22 @@ namespace TownOfHostL.Modules
         }
         public static void OnReportDeadBody()
         {
+            // 天秤会議とアサシン会議は、それぞれの役職の設定の投票時間だけにする
+            if (Roles.Crewmate.Balancer.Id != byte.MaxValue
+                && Roles.Crewmate.Balancer.target1 != byte.MaxValue
+                && Roles.Crewmate.Balancer.target2 != byte.MaxValue)
+            {
+                // 天秤会議が開いたので、会議明けの処理を止めておく予約を外す
+                Roles.Crewmate.Balancer.Scheduled = false;
+                VotingOnly(Roles.Crewmate.Balancer.meetingtime);
+                return;
+            }
+            if (Roles.Impostor.Assassin.assassin?.NowState is Roles.Impostor.Assassin.AssassinMeeting.Guessing
+                or Roles.Impostor.Assassin.AssassinMeeting.CallMetting)
+            {
+                VotingOnly(Roles.Impostor.Assassin.OptionAssassinMeetingTime.GetInt());
+                return;
+            }
             if (Options.AllAliveMeeting.GetBool() && Utils.IsAllAlive)
             {
                 DiscussionTime = 0;

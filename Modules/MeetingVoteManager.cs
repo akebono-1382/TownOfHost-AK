@@ -172,7 +172,8 @@ public class MeetingVoteManager
         bool allVoted = AllVotes.Values.All(vote => vote.HasVoted);
         if (timeExpired || allVoted)
         {
-            EndMeeting();
+            // 天秤会議では、スキップや同数の扱いの設定を使わない (天秤が自分で決める)
+            EndMeeting(Roles.Crewmate.Balancer.Id == byte.MaxValue);
         }
     }
     /// <summary>出だしの演出や話し合いの間に締めの判定を見送った</summary>
