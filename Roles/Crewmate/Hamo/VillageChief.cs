@@ -552,6 +552,7 @@ public sealed class VillageChief : RoleBase, IKiller, ISelfVoter, IUsePetButton
 
 
         var previousRole = target.GetCustomRole();
+        Sheriff.AppointedPlayerIds.Add(target.PlayerId);
 
         target.RpcChangeRole(CustomRoles.Sheriff);
 

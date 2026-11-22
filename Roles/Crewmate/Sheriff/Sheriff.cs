@@ -113,17 +113,22 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
         SchrodingerCatKillTargetOptions[catType] = BooleanOptionItem.Create(OptionName.SheriffCanKill + "%role%", defaultValue, RoleInfo.Tab, false).SetParent(parent).SetKeyName($"{OptionName.SheriffCanKill}.SchrodingerCat.{catType}");
         SchrodingerCatKillTargetOptions[catType].ReplacementDictionary = replacementDic;
     }
+    /// <summary>村長に任命された人。弾数・キルクール・全員生存でのキル・誤射の扱いは村長の設定に従う</summary>
+    public static readonly HashSet<byte> AppointedPlayerIds = new();
+    [TownOfHostL.Attributes.GameModuleInitializer]
+    public static void InitAppointed() => AppointedPlayerIds.Clear();
+    private bool IsAppointed => AppointedPlayerIds.Contains(Player.PlayerId);
     public override void Add()
     {
         var playerId = Player.PlayerId;
-        CurrentKillCooldown = KillCooldown.GetFloat();
-        ShotLimit = ShotLimitOpt.GetInt();
+        CurrentKillCooldown = IsAppointed ? VillageChief.SheriffKillCooldown.GetFloat() : KillCooldown.GetFloat();
+        ShotLimit = IsAppointed ? VillageChief.SheriffShotLimit.GetInt() : ShotLimitOpt.GetInt();
         Logger.Info($"{Utils.GetPlayerById(playerId)?.GetNameWithRole()} : 残り{ShotLimit}発", "Sheriff");
     }
     public float CalculateKillCooldown() => CanUseKillButton() ? CurrentKillCooldown : 0f;
     public bool CanUseKillButton()
         => Player.IsAlive()
-        && (CanKillAllAlive.GetBool() || GameStates.AlreadyDied)
+        && ((IsAppointed ? VillageChief.SheriffCanKillAllAlive.GetBool() : CanKillAllAlive.GetBool()) || GameStates.AlreadyDied)
         && ShotLimit > 0;
     public bool CanUseImpostorVentButton() => false;
     public override void ApplyGameOptions(IGameOptions opt)
@@ -146,7 +151,8 @@ public sealed class Sheriff : RoleBase, IKiller, ISchrodingerCatOwner
         {
             PlayerState.GetByPlayerId(killer.PlayerId).DeathReason = CustomDeathReason.Misfire;
             killer.RpcMurderPlayer(killer);
-
+            // 村長の設定で、任命されたシェリフの誤射は相手も道連れにする
+            if (IsAppointed && VillageChief.SheriffMisfireKillsTarget.GetBool()) return;
             info.DoKill = false;
             return;
         }
