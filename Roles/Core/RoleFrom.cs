@@ -30,7 +30,6 @@ public enum From
     Love_Couple_Mod,
     TownOfHost_hamo,
     TownOfHost_Temp,
-    UchuAddon,
     EndlessHostRoles,
 }
 
@@ -183,7 +182,6 @@ public static class RoleFrom
         [CustomRoles.NormalTracker] = From.AmongUs,
         [CustomRoles.NormalViper] = From.AmongUs,
         [CustomRoles.Nova] = From.SuperNewRoles,
-        [CustomRoles.Obolus] = From.UchuAddon,
         [CustomRoles.Ogre] = From.TownOfHost_Y,
         [CustomRoles.Onmyoji] = From.SuperNewRoles,
         [CustomRoles.Opportunist] = From.TOR_GM_Edition,
@@ -287,7 +285,6 @@ public static class RoleFrom
             From.Love_Couple_Mod => "<#ff6be4>Love Couple Mod</color>",
             From.TownOfHost_hamo => "<#fb85ff>TownOfHost-hamo</color>",
             From.TownOfHost_Temp => "<#b4b4b4>TownOfHost_Temp</color>",
-            From.UchuAddon => "<#7b68ee>UchuAddon</color>",
             From.EndlessHostRoles => "<#ff8c8c>EndlessHostRoles</color>",
             _ => "",
         };
