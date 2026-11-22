@@ -305,7 +305,8 @@ public static partial class CustomRoleManager
         return !cancel;
     }
     // ==初期化関連処理 ==
-    [GameModuleInitializer]
+    // *Others を空にするので一番先に動かす (役職や属性が初期化で登録した物を後から消さない)
+    [GameModuleInitializer(InitializePriority.VeryHigh)]
     public static void Initialize()
     {
         AllRolesInfo.Do(kvp => kvp.Value.IsEnable = kvp.Key.IsEnable());
