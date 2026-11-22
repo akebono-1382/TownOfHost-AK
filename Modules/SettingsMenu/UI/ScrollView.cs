@@ -22,6 +22,12 @@ internal sealed class ScrollView : Widget
     private const float WheelSpeed = 0.3f;
 
     private bool _filled;
+    private Transform _view;
+    private Renderer[] _renderers;
+    private int _seenVersion = -1;
+    private float _lastY = float.NaN;
+    private float _nextFull;
+    private static readonly List<ScrollView> Live = new();
 
     public UiScreen Inner { get; private set; }
     public Scroller Scroller { get; private set; }
@@ -37,6 +43,11 @@ internal sealed class ScrollView : Widget
     public override GameObject Build(Transform parent, BuildCtx ctx, float maxWidth, out Vector2 size)
     {
         var view = Node("ScrollView", parent, ctx.Layer);
+        _view = view.transform;
+        _renderers = null;
+        _seenVersion = -1;
+        _lastY = float.NaN;
+        if (!Live.Contains(this)) Live.Add(this);
         view.AddComponent<SortingGroup>();
         float innerW = Size.x - BarW - BarGap;
 
@@ -132,6 +143,49 @@ internal sealed class ScrollView : Widget
         s.Inner.localPosition = new Vector3(ip.x, Math.Clamp(y, 0f, Math.Max(0f, h - Size.y)), ip.z);
         s.UpdateScrollBars();
         if (s.ScrollbarY) s.ScrollbarY.gameObject.SetActive(h > Size.y);
+    }
+
+    public static void TickAll()
+    {
+        for (int i = Live.Count - 1; i >= 0; i--)
+        {
+            var v = Live[i];
+            if (!v._view) { Live.RemoveAt(i); continue; }
+            if (!v._view.gameObject.activeInHierarchy) continue;
+            try { v.Cull(); }
+            catch (Exception e) { Logger.Exception(e, nameof(ScrollView)); Live.RemoveAt(i); }
+        }
+    }
+
+    private void Cull()
+    {
+        var s = Scroller;
+        if (!s || Inner == null || !Inner.Alive) return;
+        float now = Time.unscaledTime;
+        bool rebuilt = UiScreen.Version != _seenVersion || _renderers == null;
+        float y = s.Inner.localPosition.y;
+        if (!rebuilt && y == _lastY && now < _nextFull) return;
+        if (rebuilt)
+        {
+            _renderers = Inner.Root.GetComponentsInChildren<Renderer>(true);
+            _seenVersion = UiScreen.Version;
+        }
+        _lastY = y;
+        _nextFull = now + 0.25f;
+        var c = _view.position;
+        float half = Size.y / 2f * _view.lossyScale.y;
+        float top = c.y + half, bottom = c.y - half;
+        foreach (var r in _renderers)
+        {
+            if (!r) continue;
+            bool hide = false;
+            if (r.gameObject.activeInHierarchy)
+            {
+                var b = r.bounds;
+                hide = b.min.y > top || b.max.y < bottom;
+            }
+            if (r.forceRenderingOff != hide) r.forceRenderingOff = hide;
+        }
     }
 
     // 中身の上端からの位置 y を欄の上端に (端で止める)

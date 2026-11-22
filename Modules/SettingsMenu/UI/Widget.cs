@@ -691,9 +691,12 @@ internal sealed class UiScreen
 
     public bool Alive => Root;
 
+    public static int Version;
+
     public GameObject Set(Widget w)
     {
         Clear();
+        Version++;
         if (!Root || w == null) return null;
         var ctx = new BuildCtx(_slots, Root.gameObject.layer) { ClickMask = ClickMask };
         var go = w.Build(Root, ctx, MaxWidth, out var size);
@@ -701,6 +704,7 @@ internal sealed class UiScreen
         LastSize = size;
         go.transform.localPosition = Anchor == Align.Start ? new Vector3(size.x / 2f, -size.y / 2f, 0f) : Vector3.zero;
         Order(go.transform, BaseOrder);
+        if (ClickMask) ScrollView.Masked(go.transform);
         return go;
     }
 

@@ -263,7 +263,9 @@ internal static class SettingsPagesTick
         if (!SettingsPages.AnyBuilt) return;
         TextField.Tick();
         UiFx.Tick();
+        ScrollView.TickAll();
         SettingsPages.Game.Tick();
+        SettingsPages.General.Tick();
         RolePage.Tick();
         SettingsCover.Tick();
         JumpMenu.Tick();
