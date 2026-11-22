@@ -1582,6 +1582,13 @@ public static partial class Utils
     }
     public static void AfterMeetingTasks()
     {
+        // 天秤が 2 人を選んで会議を閉じた時は、日を進めず役職の会議明けの処理もせずに天秤会議を開く
+        if (AmongUsClient.Instance.AmHost && Balancer.Id == byte.MaxValue && Balancer.target1 != byte.MaxValue && Balancer.target2 != byte.MaxValue)
+        {
+            foreach (var roleClass in CustomRoleManager.AllActiveRoles.Values)
+                if (roleClass is Balancer balancer) balancer.BalancerAfterMeetingTasks();
+            return;
+        }
         // マッドマジックの変身の期限は、その日の会議が終わる時に見る (日を進める前)
         var endOfDay = MeetingStates.Day;
         if (MeetingStates.TryEndDay() && AmongUsClient.Instance.AmHost)
