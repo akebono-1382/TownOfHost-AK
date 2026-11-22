@@ -1,4 +1,6 @@
 
+using System.Collections.Generic;
+using System.Linq;
 using AmongUs.GameOptions;
 using TownOfHostL.Roles.Core;
 using TownOfHostL.Roles.Core.Interfaces;
@@ -134,6 +136,15 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
         NowWalkCount = 0;
     }
 
+    /// <summary>キルの判定を通さずに爆死させる (インポスター同士のキル無効に当たる味方と自分)</summary>
+    void BombedDeath(PlayerControl target)
+    {
+        if (!target.IsAlive()) return;
+        PlayerState.GetByPlayerId(target.PlayerId).DeathReason = CustomDeathReason.Bombed;
+        target.SetRealKiller(Player);
+        target.RpcMurderPlayerV2(target);
+    }
+
     internal static bool IsInExplosionRange(PlayerControl source, PlayerControl target, float radius)
         => source != null && target != null
             && Vector2.Distance(target.GetTruePosition(), source.GetTruePosition()) <= radius;
@@ -150,17 +161,23 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
         ResetCooldown = true;
 
         var count = 0;
-        foreach (var target in Main.AllAlivePlayerControls)
+        var teammates = new List<PlayerControl>();
+        foreach (var target in Main.AllAlivePlayerControls.ToArray())
         {
-            if (target.PlayerId == Player.PlayerId && !OptionSuicide.GetBool()) continue;//自殺が無効なら除外
-            if (target.PlayerId != Player.PlayerId && target.IsTeammate(Player) && !OptionTargetImpostor.GetBool()) continue;
+            if (target.PlayerId == Player.PlayerId) continue;
+            if (target.IsTeammate(Player) && !OptionTargetImpostor.GetBool()) continue;
 
             if (IsInExplosionRange(Player, target, NowBoomDis))
             {
                 count++;
-                CustomRoleManager.OnCheckMurder(Player, target, target, target, true, false, 2, CustomDeathReason.Bombed);
+                // インポスター同士のキルはキルの判定で無効になるので、巻き込む味方は後でまとめて死なせる
+                if (target.GetCustomRole().IsImpostor()) teammates.Add(target);
+                else CustomRoleManager.OnCheckMurder(Player, target, target, target, true, false, 2, CustomDeathReason.Bombed);
             }
         }
+        foreach (var mate in teammates) BombedDeath(mate);
+        // 自分が先に死ぬと、殺し手が死んでいるとして他の人へのキルが取り消されるので、最後に死ぬ
+        if (OptionSuicide.GetBool()) BombedDeath(Player);
         if (OptionSuicide.GetBool() is false)
         {
             ResetBalloon();
