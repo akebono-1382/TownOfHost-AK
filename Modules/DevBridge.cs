@@ -84,9 +84,9 @@ static class DevBridge
                 TownOfHostL.Modules.SpawnEditor.SpawnRoomOptions.Reset(int.Parse(a[1]));
                 sb.AppendLine("UNCHOOSE " + a[1]);
                 break;
-            case "pko":
-                PikeoAI.Command(new ChatCommandContext(("/pko " + a[1]).Split(' '), PlayerControl.LocalPlayer, null));
-                sb.AppendLine("PKO");
+            case "panel":
+                HostPanel.IsOpen = !HostPanel.IsOpen;
+                sb.AppendLine("PANEL " + HostPanel.IsOpen);
                 break;
             case "dict":
                 RoleDictionary.Toggle();

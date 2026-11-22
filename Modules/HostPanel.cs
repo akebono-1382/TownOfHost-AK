@@ -22,6 +22,7 @@ public class HostPanel : MonoBehaviour
 
     public static HostPanel Instance;
     public static bool IsOpen;
+    public static bool Warming { get; private set; } = true;
 
     // 窓の位置と大きさ (Rect の値の読み出しは本編を呼ぶので、手元の数で持つ)
     float wx, wy, ww, wh;
@@ -56,7 +57,7 @@ public class HostPanel : MonoBehaviour
         // GUILayout を使わないので、Layout の回を止める (OnGUI が 1 フレーム 1 回分減る)
         useGUILayout = false;
         // 開くまでは OnGUI を回さない (HostPanelButton が開け閉めに合わせて切り替える)
-        enabled = false;
+        enabled = Warming;
     }
 
     /// <summary>閉じたら組んだ中身を放す (前の試合のプレイヤーなどを掴み続けず、開き直したら組み直してから押しを受ける)</summary>
@@ -71,6 +72,20 @@ public class HostPanel : MonoBehaviour
     {
         sw = Screen.width;
         sh = Screen.height;
+        if (Warming)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            Warming = false;
+            try
+            {
+                BuildStyles();
+                var sample = new GUIContent("TOHL 操作盤 ロビー あいうえお 漢字 ABC abc 0123");
+                foreach (var s in new[] { sTitle, sSection, sLabel, sAction }) s.CalcHeight(sample, 400f);
+            }
+            catch (Exception ex) { Logger.Exception(ex, nameof(HostPanel)); }
+            enabled = false;
+            return;
+        }
         if (AmongUsClient.Instance == null) return;
         if (!Mathf.Approximately(scale, Scale)) BuildStyles();
         if (!HostPanelButton.InRoom)
