@@ -143,9 +143,9 @@ namespace TownOfHostL
                                 dic[langId] = voiceName;
                             Translator.translateMaps.TryAdd(voiceName, dic);
 
-                            if (lines.Length >= 3 && int.TryParse(lines[0], out int volume))
+                            if (lines.Length >= 3 && int.TryParse(lines[2], out int volume))
                                 VoiceVolume.TryAdd(voiceNo, volume);
-                            if (lines.Length >= 4 && int.TryParse(lines[0], out int speed))
+                            if (lines.Length >= 4 && int.TryParse(lines[3], out int speed))
                                 VoiceSpeed.TryAdd(voiceNo, speed);
                             Logger.Info($"setVoiceNo", "LoadVoiceList");
                         }
@@ -326,18 +326,20 @@ namespace TownOfHostL
         }
         private static void ReadChatHost(string chat)
         {
-            ReadChat(chat, GetVoiceNo(VoiceReaderHost.GetInt()));
+            ReadChat(chat, VoiceReaderHost.GetInt());
         }
         private static void ReadChatClient(string chat, string colorName)
         {
-            ReadChat(chat, GetVoiceNo(GetVoiceIdx(colorName)));
+            ReadChat(chat, GetVoiceIdx(colorName));
         }
-        public static void ReadChat(string chat, int voiceType)
+        private static void ReadChat(string chat, int voiceNo)
         {
             if (!InitFinished) return;
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return;
-            if (!VoiceVolume.TryGetValue(voiceType, out var volume)) volume = -1;
-            if (!VoiceSpeed.TryGetValue(voiceType, out var speed)) speed = -1;
+            var voiceType = GetVoiceNo(voiceNo);
+            if (!VoiceVolume.TryGetValue(voiceNo, out var volume)) volume = -1;
+            if (!VoiceSpeed.TryGetValue(voiceNo, out var speed)) speed = -1;
+            chat = Uri.EscapeDataString(chat);
 
             switch (ReadMode)
             {
