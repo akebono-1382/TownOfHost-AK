@@ -116,7 +116,8 @@ public sealed class Evilgambler : RoleBase, IImpostor
 
             int chance = IRandom.Instance.Next(1, 101);
 
-            if (chance < gamblecollect)
+            // chance は 1〜100。設定の gamblecollect% で成功させる
+            if (chance <= gamblecollect)
 
             {//gamble成功
 
