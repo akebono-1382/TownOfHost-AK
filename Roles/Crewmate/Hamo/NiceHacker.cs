@@ -143,7 +143,7 @@ public sealed class NiceHacker : RoleBase, IUsePetButton
         if (Time.time < nextRecordAt) return;
         nextRecordAt = Time.time + RecordInterval;
 
-        var text = BuildAdmin(out var perPlayer);
+        var text = BuildAdmin(Player.PlayerId, out var perPlayer);
         history.Enqueue((Time.time, text));
         while (history.Count > 0 && Time.time - history.Peek().time > 31f) history.Dequeue();
 
@@ -158,14 +158,15 @@ public sealed class NiceHacker : RoleBase, IUsePetButton
     }
 
     // 今のアドミンを文にする。perPlayer には、シェイプシフト画面で名前の下に出す行を入れる
-    private static string BuildAdmin(out List<(byte, string)> perPlayer)
+    private static string BuildAdmin(byte selfId, out List<(byte, string)> perPlayer)
     {
         perPlayer = new();
         var admins = AdminProvider.CalculateAdmin();
         var builder = new StringBuilder(256);
         var message = new StringBuilder(512);
-        var list = Main.AllAlivePlayerControls.OrderBy(x => x.PlayerId)
-            .Concat(Main.AllPlayerControls.Where(x => !x.IsAlive()).OrderBy(x => x.PlayerId)).ToArray();
+        // 本人の欄はシェイプシフト画面に出ないので、行を割り当てる相手から外す
+        var list = Main.AllAlivePlayerControls.Where(x => x.PlayerId != selfId).OrderBy(x => x.PlayerId)
+            .Concat(Main.AllPlayerControls.Where(x => !x.IsAlive() && x.PlayerId != selfId).OrderBy(x => x.PlayerId)).ToArray();
         var index = 0;
         foreach (var entry in admins.Values)
         {
@@ -195,7 +196,7 @@ public sealed class NiceHacker : RoleBase, IUsePetButton
             if (time > want) break;
             text = t;
         }
-        text ??= history.Count > 0 ? history.Peek().text : BuildAdmin(out _);
+        text ??= history.Count > 0 ? history.Peek().text : BuildAdmin(Player.PlayerId, out _);
         if (string.IsNullOrEmpty(text)) text = Translator.GetString("NiceHackerNoOne");
         var title = Utils.ColorString(RoleInfo.RoleColor, string.Format(Translator.GetString("NiceHackerAdminTitle"), secondsBefore));
         var playerId = Player.PlayerId;
