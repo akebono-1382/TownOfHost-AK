@@ -173,7 +173,7 @@ public sealed class SchrodingerCatKiller : RoleBase, IKiller, IAdditionalWinner,
 
         var ownerRole = owner.GetCustomRole();
         var countType = owner.GetCountTypes();
-        planedCats.Add(cat.PlayerId, (cat, owner, ownerRole, team, countType));
+        planedCats[cat.PlayerId] = (cat, owner, ownerRole, team, countType);
 
         logger.Info($"SetCatKiller owner: {owner?.name}({ownerRole}), cat:{cat?.name} =>SchrodingerCatKiller({team})");
 

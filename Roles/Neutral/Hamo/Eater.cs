@@ -169,6 +169,8 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
     public bool? CheckKillFlash(MurderInfo info)
     {
         var pos = info.AppearanceTarget.GetTruePosition();
+        // 生き返った人がまた死んだ時は、前の死体の矢印を消してから足す
+        if (deadBodyPositions.TryGetValue(info.AppearanceTarget.PlayerId, out var oldPos)) GetArrow.Remove(Player.PlayerId, oldPos);
         deadBodyPositions[info.AppearanceTarget.PlayerId] = pos;
         GetArrow.Add(Player.PlayerId, pos);
         if (info.AppearanceKiller.GetCustomRole() is CustomRoles.Viper) Viperkilledplayers[info.AppearanceTarget.PlayerId] = Utils.ViperDissolveTime;
