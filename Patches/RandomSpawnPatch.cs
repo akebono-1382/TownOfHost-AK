@@ -50,18 +50,7 @@ namespace TownOfHostL
         public static void TP(CustomNetworkTransform nt, Vector2 location)
         {
             if (!Modules.Net.SnapToBudget.CanSend()) return;
-
-            //nt.SnapTo(location);
-
-            //Modded
-            var playerLastSequenceId = nt.lastSequenceId + 8;
-            nt.SnapTo(location, (ushort)playerLastSequenceId);
-
-            //Vanilla
-            MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(nt.NetId, (byte)RpcCalls.SnapTo, SendOption.Reliable);
-            NetHelpers.WriteVector2(location, writer);
-            writer.Write((ushort)(nt.lastSequenceId + 10)); // 本編は ushort で読む
-            AmongUsClient.Instance.FinishRpcImmediately(writer);
+            ExtendedPlayerControl.SendSnapTo(nt, location);
         }
 
         public abstract class SpawnMap

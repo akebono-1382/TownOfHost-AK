@@ -78,7 +78,7 @@ public static class VanillaHnsPortalMaker
 
             // TOHL の通常の送信の数え口 (Standard の束) は休んでいるので、ここで払う
             if (!SnapToBudget.CanSend()) return;
-            pc.NetTransform.RpcSnapTo(portals[1 - near].Position);
+            ExtendedPlayerControl.SendSnapTo(pc.NetTransform, portals[1 - near].Position);
             SnapToBudget.Record();
             lastTeleportAt[pc.PlayerId] = now;
             mustStepOff.Add(pc.PlayerId);

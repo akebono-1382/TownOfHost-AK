@@ -766,23 +766,25 @@ static partial class ExtendedPlayerControl
     public static bool RpcSnapTo(this PlayerControl pc, Vector2 position, bool force = false)
     {
         if (!force && !Modules.Net.SnapToBudget.CanSend()) return false;
-        pc.NetTransform.RpcSnapTo(position);
+        SendSnapTo(pc.NetTransform, position);
         return true;
     }
     public static bool SnapToTeleport(this PlayerControl pc, Vector2 position, bool force = false)
+        => pc.RpcSnapTo(position, force);
+
+    // 本編の客は、受けた SnapTo の番号が自分の持つ番号より大きい時だけ動く。
+    // 本編の RpcSnapTo は番号を 1 しか進めないので、客の歩きの電文がまだホストに届いていないと負けて捨てられる。
+    // 番号を大きめに進め、ホストの手元と送る番号を同じにする (手元より大きく送ると、客の番号だけが先へ進み、
+    // 客が歩き出すまで以後の SnapTo がすべて捨てられる)。
+    private const ushort SnapToSidStep = 32;
+    public static void SendSnapTo(CustomNetworkTransform netTransform, Vector2 position)
     {
-        if (!force && !Modules.Net.SnapToBudget.CanSend()) return false;
-        var netTransform = pc.NetTransform;
-        if (AmongUsClient.Instance.AmClient)
-        {
-            netTransform.SnapTo(position, (ushort)(netTransform.lastSequenceId + 128));
-        }
-        ushort newSid = (ushort)(netTransform.lastSequenceId + 2);
-        MessageWriter messageWriter = AmongUsClient.Instance.StartRpcImmediately(netTransform.NetId, (byte)RpcCalls.SnapTo, SendOption.Reliable);
-        NetHelpers.WriteVector2(position, messageWriter);
-        messageWriter.Write(newSid);
-        AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
-        return true;
+        ushort sid = (ushort)(netTransform.lastSequenceId + SnapToSidStep);
+        netTransform.SnapTo(position, sid);
+        MessageWriter writer = AmongUsClient.Instance.StartRpcImmediately(netTransform.NetId, (byte)RpcCalls.SnapTo, SendOption.Reliable);
+        NetHelpers.WriteVector2(position, writer);
+        writer.Write(sid);
+        AmongUsClient.Instance.FinishRpcImmediately(writer);
     }
     public static bool RpcSnapToDesync(this PlayerControl pc, PlayerControl target, Vector2 position, bool force = false)
     {
