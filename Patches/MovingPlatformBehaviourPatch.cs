@@ -38,6 +38,11 @@ public static class MovingPlatformBehaviourPatch
         }
         return !isDisabled;
     }
+    [HarmonyPatch(nameof(MovingPlatformBehaviour.Use), typeof(PlayerControl)), HarmonyPostfix]
+    public static void UsePostfix([HarmonyArgument(0)] PlayerControl player, bool __runOriginal)
+    {
+        if (__runOriginal) Roles.Neutral.Spelunker.OnMovingPlatformUsed(player);
+    }
     [HarmonyPatch(nameof(MovingPlatformBehaviour.SetSide)), HarmonyPrefix]
     public static bool SetSidePrefix() => !isDisabled;
 }

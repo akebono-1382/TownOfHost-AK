@@ -71,6 +71,7 @@ namespace TownOfHostL
         public static void Postfix(PlayerPhysics __instance, Ladder source, byte climbLadderSid)
         {
             FallFromLadder.OnClimbLadder(__instance, source);
+            Roles.Neutral.Spelunker.OnLadderClimbed(__instance.myPlayer);
         }
     }
 }
