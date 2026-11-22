@@ -202,7 +202,7 @@ public static class GameEndRules
     {
         reason = GameOverReason.ImpostorsByKill;
         if (Options.NoGameEndByTask.GetBool() || TaskState.InitialTotalTasks == 0) return false;
-        // 妖狐の「クルーのタスク完了で終わらない」など
+        // 化け狐の「クルーのタスク完了で終わらない」など
         foreach (var block in CustomRoleManager.TaskWinBlockersOthers)
             if (SafeHook(block, "TaskWinBlocker")) return false;
         // タスク勝利の無効化: 1 = 常に、2 = 生きているクルーがいない時だけ (幽霊のタスクだけで勝たせない)

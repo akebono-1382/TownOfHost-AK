@@ -476,7 +476,7 @@ public static partial class CustomRoleManager
     public static HashSet<Action<TownOfHostL.Core.Win.GameEndCounts>> GameEndCountAdjustersOthers = new();
     /// <summary>true の間は人数による終了判定をしない (アサシンがマーリンを当てている間など)。捕まえる物の無いラムダか static メソッドで登録する</summary>
     public static HashSet<Func<bool>> GameEndByCountHoldersOthers = new();
-    /// <summary>true の間はタスクでの勝利をしない (妖狐の設定など)。捕まえる物の無いラムダか static メソッドで登録する</summary>
+    /// <summary>true の間はタスクでの勝利をしない (化け狐の設定など)。捕まえる物の無いラムダか static メソッドで登録する</summary>
     public static HashSet<Func<bool>> TaskWinBlockersOthers = new();
     /// <summary>
     /// 投票で追放された人の後処理 (OnExileWrapUp の後の SetDead) の間だけ、その人の PlayerId。それ以外は byte.MaxValue。

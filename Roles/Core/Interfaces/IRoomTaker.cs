@@ -41,7 +41,7 @@ public interface IRoomTasker
 
     /// <summary>
     /// Maxのタスク数を設定する。<br/>
-    /// nullの場合、設定しない(妖狐的な。)<br/>
+    /// nullの場合、設定しない(化け狐的な。)<br/>
     /// </summary>
     /// <returns></returns>
     public int? GetMaxTaskCount() => null;

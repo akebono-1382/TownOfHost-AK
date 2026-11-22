@@ -368,7 +368,7 @@ public sealed class Fox : RoleBase, ISystemTypeUpdateHook, IRoomTasker
         }
         return CustomRoles.NotAssigned;
     }
-    /* 自身が妖狐であると暴露されるまでのカウント */
+    /* 自身が化け狐であると暴露されるまでのカウント */
     static OptionItem OptionMeterCount; static float Maxmeter;
     static OptionItem OptionDistance; static float MeterDistance;
     static OptionItem OptionOnlySeeKiller; static bool OnlySeekiller;
