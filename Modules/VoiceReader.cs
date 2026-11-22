@@ -32,6 +32,8 @@ namespace TownOfHostL
 
         public static OptionItem VoiceReaderMode;
         public static OptionItem VoiceReaderHost;
+        /// <summary>読み上げを使える (声の一覧があり、設定で ON)</summary>
+        public static bool Enabled => InitFinished && VoiceReaderMode != null && VoiceReaderMode.GetBool();
         // 本編の ColorId の順。設定の鍵は "VoiceReader" + この名前
         private static readonly string[] ColorKeys =
         {
@@ -56,8 +58,7 @@ namespace TownOfHostL
         }
         public static void SetupCustomOption()
         {
-            if (VoiceType.Count == 0 && !AutoVoices) return;
-
+            // 声が無くても設定は必ず作る。設定の数がホストと TOHL の客で違うと、客は TOHL の画面をやめてしまう
             RegisterVoiceNames();
             // 一覧がまだ無い時は仮の選択肢で作って隠し、VOICEVOX から一覧が届いたら差し替えて出す
             var names = VoiceType.Count > 0 ? VoiceName.Values.ToArray() : new[] { PlaceholderName };

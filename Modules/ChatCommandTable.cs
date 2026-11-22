@@ -550,7 +550,7 @@ public static class ChatCommandTable
         var to = c.Player.PlayerId;
         var colorId = VoiceReader.OwnColor(c.Player);
         var color = Palette.GetColorName(colorId);
-        if (VoiceReader.VoiceReaderMode == null || !VoiceReader.VoiceReaderMode.GetBool())
+        if (!VoiceReader.Enabled)
             Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceNotAvailable")), true, sendTo: to);
         else if (c.Arg(1) == "n")
             Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceNow"), color, VoiceReader.GetVoiceName(colorId)), true, sendTo: to);
