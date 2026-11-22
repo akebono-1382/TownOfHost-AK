@@ -20,7 +20,7 @@ namespace TownOfHostL
         private static bool InitFinished = false;
 
         private static string UrlBoyomi = "http://localhost:50080";
-        // VOICEVOX は 127.0.0.1 でだけ待つ。localhost だと先に ::1 へ繋ぎに行って断られる分だけ遅れる
+        // VOICEVOX のエンジンは既定で 127.0.0.1 で待つ
         private static string UrlVoiceVox = "http://127.0.0.1:50021";
         // VoiceList.txt に声の行が無い時は、VOICEVOX の声の一覧を取って使う
         private static bool AutoVoices;
@@ -359,16 +359,21 @@ namespace TownOfHostL
             if (exclusive) list.RemoveAt(rIdx);
             return voiceNo;
         }
-        public static string GetVoiceIdxMsg()
+        // VOICEVOX の一覧は 100 を超えるので、一度に送るとチャットが長く埋まる。ページに分けて送る
+        private const int VoicesPerPage = 30;
+        public static string GetVoiceIdxMsg(int page = 1)
         {
-            if (!InitFinished) return "";
-            if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return "";
+            if (!Enabled) return "";
+            int pages = (VoiceName.Count + VoicesPerPage - 1) / VoicesPerPage;
+            page = Math.Clamp(page, 1, Math.Max(pages, 1));
             StringBuilder sb = new();
-            sb.Append($"声の設定（書式 /vo [No])\n[No一覧]\n");
-            foreach (var voiceNo in VoiceName.Keys.ToArray())
-            {
+            sb.Append("声の設定（書式 /vo [No])\n[No一覧]");
+            if (pages > 1) sb.Append($" {page}/{pages}");
+            sb.Append('\n');
+            int end = Math.Min(page * VoicesPerPage, VoiceName.Count);
+            for (int voiceNo = (page - 1) * VoicesPerPage; voiceNo < end; voiceNo++)
                 sb.Append($"{voiceNo}: {VoiceName[voiceNo]}\n");
-            }
+            if (page < pages) sb.Append($"続きは /vo l {page + 1}\n");
             return sb.ToString();
         }
         private static OptionItem GetOptionItem(int colorId)

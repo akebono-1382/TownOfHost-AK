@@ -542,7 +542,7 @@ public static class ChatCommandTable
                 Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceChangeHost"), name), true, sendTo: 0);
         }
         else
-            Utils.SendMessageAutoSplit(VoiceReader.GetVoiceIdxMsg(), true, sendTo: 0);
+            Utils.SendMessageAutoSplit(VoiceReader.GetVoiceIdxMsg(VoiceListPage(c)), true, sendTo: 0);
     }
 
     private static void RemoteVoice(ChatCommandContext c)
@@ -563,6 +563,9 @@ public static class ChatCommandTable
                 Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceChangeFailed"), color), true, sendTo: to);
         }
         else
-            Utils.SendMessageAutoSplit(VoiceReader.GetVoiceIdxMsg(), true, sendTo: to);
+            Utils.SendMessageAutoSplit(VoiceReader.GetVoiceIdxMsg(VoiceListPage(c)), true, sendTo: to);
     }
+    // /vo l <ページ> で一覧の続きを出す
+    private static int VoiceListPage(ChatCommandContext c)
+        => c.Arg(1) is "l" or "list" && int.TryParse(c.Arg(2), out int page) ? page : 1;
 }
