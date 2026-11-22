@@ -183,7 +183,7 @@ public static class RoleFrom
         [CustomRoles.NormalTracker] = From.AmongUs,
         [CustomRoles.NormalViper] = From.AmongUs,
         [CustomRoles.Nova] = From.UchuAddon,
-        [CustomRoles.Obolus] = From.NebulaontheShip,
+        [CustomRoles.Obolus] = From.UchuAddon,
         [CustomRoles.Ogre] = From.TownOfHost_Y,
         [CustomRoles.Onmyoji] = From.SuperNewRoles,
         [CustomRoles.Opportunist] = From.TOR_GM_Edition,
