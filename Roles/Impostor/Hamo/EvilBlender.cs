@@ -435,7 +435,15 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
 
                 if (pc.inVent) pc.MyPhysics.RpcBootFromVent(RoleHooks.NowVentId.TryGetValue(pc.PlayerId, out var ventid) ? ventid : 0);
 
-                CustomRoleManager.OnCheckMurder(Player, pc, pc, pc, true, true, 10, CustomDeathReason.Suffocation);
+                if (Player.IsAlive())
+                    CustomRoleManager.OnCheckMurder(Player, pc, pc, pc, true, true, 10, CustomDeathReason.Suffocation);
+                else
+                {
+                    // 使用者が死んだ・抜けた後も毒ガスは続く。殺し手が死んでいるキルの判定は取り消されるので、本人の死として起こす
+                    PlayerState.GetByPlayerId(pc.PlayerId).DeathReason = CustomDeathReason.Suffocation;
+                    pc.SetRealKiller(TownOfHostL.Core.NativeObject.IsAlive(Player) ? Player : null);
+                    pc.RpcMurderPlayerV2(pc);
+                }
 
                 i++;
 

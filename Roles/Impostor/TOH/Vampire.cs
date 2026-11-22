@@ -108,13 +108,13 @@ namespace TownOfHostL.Roles.Impostor
             if (target.IsAlive())
             {
 
-                if (target.MyPhysics.Animations.IsPlayingAnyLadderAnimation())
+                // 梯子の上の人と、ヴァンパイアがもう死んでいる時 (殺し手が死んでいるキルの判定は取り消される) は、噛まれた本人の死として起こす
+                if (target.MyPhysics.Animations.IsPlayingAnyLadderAnimation() || !vampire.IsAlive())
                 {
-                    // プレイヤーが梯子を使用している場合の特別なキル処理
                     PlayerState.GetByPlayerId(target.PlayerId).DeathReason = CustomDeathReason.Bite;
                     target.SetRealKiller(vampire);
                     target.RpcMurderPlayer(target);
-                    Logger.Info($"Vampireに噛まれている{target.name}は梯子を使用中にキルされました。", "Vampire.KillBitten");
+                    Logger.Info($"Vampireに噛まれている{target.name}を梯子の上かヴァンパイアの死後にキルしました。", "Vampire.KillBitten");
                 }
                 else
                 {
