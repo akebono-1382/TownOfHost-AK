@@ -171,7 +171,7 @@ public sealed class Ballooner : RoleBase, IImpostor, IUsePhantomButton
             {
                 count++;
                 // インポスター同士のキルはキルの判定で無効になるので、巻き込む味方は後でまとめて死なせる
-                if (target.GetCustomRole().IsImpostor()) teammates.Add(target);
+                if (target.GetCustomRole().IsImpostor() && !target.GetCustomRole().IsLoneImpostor()) teammates.Add(target);
                 else CustomRoleManager.OnCheckMurder(Player, target, target, target, true, false, 2, CustomDeathReason.Bombed);
             }
         }

@@ -355,7 +355,7 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
             if (crews.Count == 0) break;
             var target = TakeRandomCrew(crews, rand);
             if (target == null) break;
-            KillFollowingCrewmate(target);
+            KillFollowingCrewmate(target, i);
         }
 
         for (var i = 0; i < OptionRemoveRoleCrewmateCount.GetInt(); i++)
@@ -386,7 +386,7 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
         return null;
     }
 
-    private void KillFollowingCrewmate(PlayerControl target)
+    private void KillFollowingCrewmate(PlayerControl target, int order = 0)
     {
         target.SetRealKiller(Player);
         if (GameStates.CalledMeeting || MeetingHud.Instance != null)
@@ -399,7 +399,12 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
         // ワルキューレはもう死んでいるので、ワルキューレを殺し手にしたキルの判定は通らない。後追いする本人の死として起こす
         var state = PlayerState.GetByPlayerId(target.PlayerId);
         if (state != null) state.DeathReason = CustomDeathReason.FollowingSuicide;
-        if (GameStates.ExiledAnimate || AntiBlackout.IsCached) target.RpcExileV3(CustomDeathReason.FollowingSuicide);
+        if (GameStates.ExiledAnimate || AntiBlackout.IsCached)
+        {
+            // 追放の形は 1 人ごとに全員の情報を送り直すので、何人も同じフレームに送らないよう 0.3 秒ずつ空ける
+            if (order == 0) target.RpcExileV3(CustomDeathReason.FollowingSuicide);
+            else _ = new LateTask(() => { if (target != null && target.IsAlive()) target.RpcExileV3(CustomDeathReason.FollowingSuicide); }, 0.3f * order, "WalkureFollowExile");
+        }
         else target.RpcMurderPlayerV2(target);
         Logger.Info($"{target.GetNameWithRole().RemoveHtmlTags()} follows Walkure.", "Walkure");
     }

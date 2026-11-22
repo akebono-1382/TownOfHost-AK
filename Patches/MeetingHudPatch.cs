@@ -153,6 +153,9 @@ public static partial class MeetingHudPatch
 
             SoundManager.Instance.ChangeAmbienceVolume(0f);
             if (!GameStates.IsModHost) return;
+            // 名前の欄の組み立ての例外で、下の役職の会議の始めの処理と知らせの送信を飛ばさない
+            try
+            {
             foreach (var pva in __instance.playerStates)
             {
                 var pc = Utils.GetPlayerById(pva.PlayerId);
@@ -202,6 +205,8 @@ public static partial class MeetingHudPatch
                 // 役職/属性テキストは NameText の外(PlayerIcon側)に置いているため、
                 // 以前のように NameText 自体をずらす必要はない
             }
+            }
+            catch (System.Exception ex) { Logger.Exception(ex, "MeetingHud.Start.Postfix.Names"); }
             RoleHooks.ForEachRole(role => role.OnStartMeeting(), "OnStartMeeting");
             // 役職が OnStartMeeting で積んだ知らせを送るので、その後に呼ぶ
             RoleHooks.OnMeetingStart();

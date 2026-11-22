@@ -437,12 +437,15 @@ public sealed class EvilBlender : RoleBase, IImpostor, IUsePhantomButton
 
                 if (Player.IsAlive())
                     CustomRoleManager.OnCheckMurder(Player, pc, pc, pc, true, true, 10, CustomDeathReason.Suffocation);
-                else
+                // 使用者が生きている時、インポスターはキルの判定 (インポスター同士の無効) で死なない。死んだ後も同じにする
+                else if (!pc.GetCustomRole().IsImpostor() || pc.GetCustomRole().IsLoneImpostor())
                 {
                     // 使用者が死んだ・抜けた後も毒ガスは続く。殺し手が死んでいるキルの判定は取り消されるので、本人の死として起こす
-                    PlayerState.GetByPlayerId(pc.PlayerId).DeathReason = CustomDeathReason.Suffocation;
+                    var state = PlayerState.GetByPlayerId(pc.PlayerId);
+                    if (state != null) state.DeathReason = CustomDeathReason.Suffocation;
                     pc.SetRealKiller(TownOfHostL.Core.NativeObject.IsAlive(Player) ? Player : null);
-                    pc.RpcMurderPlayerV2(pc);
+                    if (GameStates.ExiledAnimate || AntiBlackout.IsCached) pc.RpcExileV3(CustomDeathReason.Suffocation);
+                    else pc.RpcMurderPlayerV2(pc);
                 }
 
                 i++;

@@ -299,7 +299,7 @@ public sealed class HadouHo : RoleBase, IImpostor, IUsePhantomButton
             var proj = dir * dot;
             var perp = toTarget - proj;
             if (perp.magnitude > 1.3f) continue;
-            if (target.GetCustomRole().IsImpostor())
+            if (target.GetCustomRole().IsImpostor() && !target.GetCustomRole().IsLoneImpostor())
             {
                 // インポスター同士のキルはキルの判定で無効になるので、仲間に当てる設定の時は判定を通さずに死なせる
                 PlayerState.GetByPlayerId(target.PlayerId).DeathReason = CustomDeathReason.Evaporation;
