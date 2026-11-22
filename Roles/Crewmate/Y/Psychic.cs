@@ -90,7 +90,7 @@ public sealed class Psychic : RoleBase
     public bool CanUseVent()
         => Player.IsAlive()
         && DivinationLeftCount > 0
-        && MyTaskState.CompletedTasksCount >= TaskTrigger;
+        && MyTaskState.HasCompletedEnoughCountOfTasks(TaskTrigger);
 
     public override bool OnEnterVent(PlayerPhysics physics, int ventId)
     {

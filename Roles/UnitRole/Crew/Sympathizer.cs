@@ -55,8 +55,8 @@ public sealed class Sympathizer : RoleBase
         seen ??= seer;
 
         if (seer.Is(CustomRoles.Sympathizer) && seen.Is(CustomRoles.Sympathizer)
-            && seer.GetPlayerTaskState().CompletedTasksCount >= SympaCheckedTasks
-            && seen.GetPlayerTaskState().CompletedTasksCount >= SympaCheckedTasks)
+            && seer.GetPlayerTaskState().HasCompletedEnoughCountOfTasks(SympaCheckedTasks)
+            && seen.GetPlayerTaskState().HasCompletedEnoughCountOfTasks(SympaCheckedTasks))
             return ColorString(RoleInfo.RoleColor, "◎");
 
         return string.Empty;

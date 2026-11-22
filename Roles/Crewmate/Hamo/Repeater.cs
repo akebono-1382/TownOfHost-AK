@@ -86,7 +86,7 @@ public sealed class Repeater : RoleBase, ISelfVoter
 
     private bool CanUseAbility()
         => Player.IsAlive() && remainingUses > 0
-        && (taskCountToUnlock <= 0 || MyTaskState.CompletedTasksCount >= taskCountToUnlock);
+        && MyTaskState.HasCompletedEnoughCountOfTasks(taskCountToUnlock);
 
     public override bool CheckAnyVote(byte votedForId, PlayerControl voter)
     {
@@ -190,7 +190,7 @@ public sealed class Repeater : RoleBase, ISelfVoter
         if (!CanUseAbility() && remainingUses <= 0)
             return $"{prefix}<color={c}>{GetString("RepeaterLowerNoUses")}</color>";
 
-        if (taskCountToUnlock > 0 && MyTaskState.CompletedTasksCount < taskCountToUnlock)
+        if (!MyTaskState.HasCompletedEnoughCountOfTasks(taskCountToUnlock))
             return $"{prefix}<color={c}>{GetString("RepeaterLowerLocked")}</color>";
 
         var stateText = GetString(isArmedThisMeeting ? "RepeaterLowerArmed" : "RepeaterLowerSelfVote");

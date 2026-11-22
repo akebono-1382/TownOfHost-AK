@@ -162,7 +162,7 @@ public sealed class MeetingSheriff : RoleBase, ISelfVoter
 
     }
 
-    public override string GetProgressText(bool comms = false) => Utils.ColorString(MyTaskState.CompletedTasksCount < cantaskcount ? Color.gray : Max <= Usedcount ? Color.gray : Color.cyan, $"({Max - Usedcount})");
+    public override string GetProgressText(bool comms = false) => Utils.ColorString(!MyTaskState.HasCompletedEnoughCountOfTasks((int)cantaskcount) ? Color.gray : Max <= Usedcount ? Color.gray : Color.cyan, $"({Max - Usedcount})");
 
     public override string GetLowerText(PlayerControl seer, PlayerControl seen = null, bool isForMeeting = false, bool isForHud = false)
 

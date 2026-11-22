@@ -68,22 +68,22 @@ public sealed class Braid : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
     public override CustomRoles TellResults(PlayerControl player) => Options.MadTellOpt();
     public override bool OnCompleteTask()
     {
-        if (KillflashtaskTrigger <= MyTaskState.CompletedTasksCount && OptionGiveKillFlash.GetBool())
+        if (MyTaskState.HasCompletedEnoughCountOfTasks(KillflashtaskTrigger) && OptionGiveKillFlash.GetBool())
         {
             DriverseeKillFlash = true;
             Logger.Info("キルフラの能力を付与。", "Braid");
         }
-        if (DeathreasontaskTrigger <= MyTaskState.CompletedTasksCount && OptionGiveKnowDeathreason.GetBool())
+        if (MyTaskState.HasCompletedEnoughCountOfTasks(DeathreasontaskTrigger) && OptionGiveKnowDeathreason.GetBool())
         {
             Driverseedeathreason = true;
             Logger.Info("死因の能力を付与。", "Braid");
         }
-        if (GuardtaskTrigger <= MyTaskState.CompletedTasksCount && OptionGiveGuard.GetBool())
+        if (MyTaskState.HasCompletedEnoughCountOfTasks(GuardtaskTrigger) && OptionGiveGuard.GetBool())
         {
             GivedGuard = true;
             Logger.Info("ガードを付与。", "Braid");
         }
-        if (WatchVotetaskTrigger <= MyTaskState.CompletedTasksCount && OptionGiveWatchVotes.GetBool())
+        if (MyTaskState.HasCompletedEnoughCountOfTasks(WatchVotetaskTrigger) && OptionGiveWatchVotes.GetBool())
         {
             DriverseeVote = true;
             Logger.Info("匿名投票を解除。", "Braid");

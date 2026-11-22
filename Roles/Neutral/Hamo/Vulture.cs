@@ -321,7 +321,7 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
 
         //キルフラッシュが見えるタスク数なら～
 
-        return OptKillflashTaskcount <= MyTaskState.CompletedTasksCount;
+        return MyTaskState.HasCompletedEnoughCountOfTasks(OptKillflashTaskcount);
 
     }
 
@@ -347,7 +347,7 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
 
         //タスク数に達しているか
 
-        if (OptOnikuArrowtaskcount <= MyTaskState.CompletedTasksCount && !isForMeeting)
+        if (MyTaskState.HasCompletedEnoughCountOfTasks(OptOnikuArrowtaskcount) && !isForMeeting)
 
         {
 

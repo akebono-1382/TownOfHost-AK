@@ -72,7 +72,7 @@ public sealed class Medic : RoleBase
     public bool CanUseVent()
     => Player.IsAlive()
     && UseVent
-    && MyTaskState.CompletedTasksCount >= TaskTrigger;
+    && MyTaskState.HasCompletedEnoughCountOfTasks(TaskTrigger);
 
     /// <summary>
     /// 使用する時true

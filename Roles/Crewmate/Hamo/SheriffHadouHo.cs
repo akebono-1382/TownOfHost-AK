@@ -76,7 +76,7 @@ public sealed class SheriffHadouHo : RoleBase, IUsePhantomButton, IUsePetButton
 
     bool IsBeamUnlocked =>
         BeamUnlockTaskCount <= 0 ||
-        (MyTaskState != null && MyTaskState.CompletedTasksCount >= BeamUnlockTaskCount);
+        (MyTaskState != null && MyTaskState.HasCompletedEnoughCountOfTasks(BeamUnlockTaskCount));
 
     enum BeamColorMode { Cyan, Yellow }
 
