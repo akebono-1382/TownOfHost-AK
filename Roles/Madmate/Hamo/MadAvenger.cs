@@ -92,15 +92,15 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
         }
         return true;
     }
-    public override string GetAbilityButtonText() => MyTaskState.IsTaskFinished && !(Utils.AllAlivePlayersCount >= Count) ? GetString("MadAvengerAbility") : GetString(StringNames.VentAbility);
+    public override string GetAbilityButtonText() => MyTaskState.IsTaskFinished && Utils.AllAlivePlayersCount >= Count ? GetString("MadAvengerAbility") : GetString(StringNames.VentAbility);
     public override bool OnEnterVent(PlayerPhysics physics, int ventId)
     {
         if (AmongUsClient.Instance.AmHost is false) return true;
-        if ((!IsTaskFinished && Utils.AllAlivePlayersCount >= Count) || !can)
+        if (!can)
         {
             return OptionVent.GetBool();
         }
-        if (Main.AllAlivePlayerControls.Count(pc => pc.Is(CustomRoleTypes.Impostor)) > 0)
+        if (Utils.AllAlivePlayersCount < Count || Main.AllAlivePlayerControls.Count(pc => pc.Is(CustomRoleTypes.Impostor)) > 0)
         {
             MyState.DeathReason = CustomDeathReason.Suicide;
             Player.RpcMurderPlayer(Player);
