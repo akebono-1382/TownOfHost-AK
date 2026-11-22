@@ -4,6 +4,8 @@ using UnityEngine;
 
 namespace TownOfHostL.Modules;
 
+// 役職辞典の本体と F4 は Core にあるので、ボタンも本編のかくれんぼと、同じ版の TOHL のホストの部屋にいる客の間に出す
+[TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
 [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
 public static class RoleDictionaryHudButton
 {
@@ -14,6 +16,8 @@ public static class RoleDictionaryHudButton
     {
         var b = __instance.MatchInfoButton;
         if (!b || b.name == Name) return;
+        // ほかの Mod や本編のホストの部屋では、本編のボタンのままにする
+        if (TownOfHostL.Core.VanillaHideAndSeek.IsClientMode && !OptionItem.HasRemoteValues) return;
         b.name = Name;
 
         b.OnClick = new UnityEngine.UI.Button.ButtonClickedEvent();

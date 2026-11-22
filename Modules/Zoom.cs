@@ -6,7 +6,9 @@ using UnityEngine;
 
 namespace TownOfHostL
 {
-    // https://github.com/tugaru1975/TownOfPlus/TOPmods/Zoom.cs 
+    // https://github.com/tugaru1975/TownOfPlus/TOPmods/Zoom.cs
+    // 自分のカメラだけの操作なので、TOHL 入りの客の間と本編のかくれんぼでも当てる
+    [TownOfHostL.Core.Modes.PatchBundle(TownOfHostL.Core.Modes.PatchBundles.Core)]
     [HarmonyPatch(typeof(HudManager), nameof(HudManager.Update))]
     public static class Zoom
     {

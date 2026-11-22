@@ -18,6 +18,8 @@ namespace TownOfHostL
             if (!Input.anyKeyDown) return;
             if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing || RoleDictionary.Typing) return;
             RoleDictionary.CheckHotkey();
+            // 客の間はホストの設定が届いている (同じ版の TOHL のホストと握手できた) 時だけ。届いていなければ一覧も出ず、コピーは自分の設定になる
+            if (TownOfHostL.Core.VanillaHideAndSeek.IsClientMode && OptionItem.HasRemoteValues) ControllerManagerUpdatePatch.OptionViewKeys();
             //解像度変更
             if (Input.GetKeyDown(KeyCode.F11))
             {
@@ -55,12 +57,12 @@ namespace TownOfHostL
     [HarmonyPatch(typeof(ControllerManager), nameof(ControllerManager.Update))]
     class ControllerManagerUpdatePatch
     {
-        public static void Postfix(ControllerManager __instance)
+        /// <summary>
+        /// 設定の一覧を見るキー (Tab と 1〜9 でページ・Alt+C で設定を文字でコピー)。
+        /// ホストはこのパッチから、TOHL 入りの客は <see cref="ControllerLocalKeysPatch"/> から呼ぶ (客の間はこのパッチが外れている)
+        /// </summary>
+        public static void OptionViewKeys()
         {
-            // どの操作もそのフレームに押されたキーで始まる。何も押されていないフレームは、キーの組ごとの配列も作らずに抜ける
-            if (!Input.anyKeyDown) return;
-            // 設定画面の検索欄に字を打っている間は、キー操作として受け取らない
-            if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing || RoleDictionary.Typing) return;
             if (GameStates.IsLobby)
             {
                 //カスタム設定切り替え
@@ -73,6 +75,23 @@ namespace TownOfHostL
                     if (ORGetKeysDown(KeyCode.Alpha1 + i, KeyCode.Keypad1 + i) && OptionShower.pages.Count >= i + 1)
                         OptionShower.currentPage = i;
                 }
+            }
+            //現在の設定をテキストとしてコピー
+            if (GetKeysDown(KeyCode.LeftAlt, KeyCode.C) && !Input.GetKey(KeyCode.LeftShift) && !GameStates.IsNotJoined)
+            {
+                Utils.CopyCurrentSettings();
+            }
+        }
+
+        public static void Postfix(ControllerManager __instance)
+        {
+            // どの操作もそのフレームに押されたキーで始まる。何も押されていないフレームは、キーの組ごとの配列も作らずに抜ける
+            if (!Input.anyKeyDown) return;
+            // 設定画面の検索欄に字を打っている間は、キー操作として受け取らない
+            if (SettingsSearchBox.IsTyping || SettingsUI.TextField.Typing || RoleDictionary.Typing) return;
+            OptionViewKeys();
+            if (GameStates.IsLobby)
+            {
                 // 現在の設定を文字列形式のデータに変換してコピー
                 if (GetKeysDown(KeyCode.O, KeyCode.LeftAlt))
                 {
@@ -88,11 +107,6 @@ namespace TownOfHostL
                 {
                     OptionSerializer.LoadFromClipboard();
                 }
-            }
-            //現在の設定をテキストとしてコピー
-            if (GetKeysDown(KeyCode.LeftAlt, KeyCode.C) && !Input.GetKey(KeyCode.LeftShift) && !GameStates.IsNotJoined)
-            {
-                Utils.CopyCurrentSettings();
             }
 
             //--以下ホスト専用コマンド--//
