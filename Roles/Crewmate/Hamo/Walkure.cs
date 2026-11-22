@@ -396,7 +396,11 @@ public sealed class Walkure : RoleBase, ISelfVoter, IKiller
             return;
         }
 
-        CustomRoleManager.OnCheckMurder(Player, target, target, target, true, true, 999, CustomDeathReason.FollowingSuicide);
+        // ワルキューレはもう死んでいるので、ワルキューレを殺し手にしたキルの判定は通らない。後追いする本人の死として起こす
+        var state = PlayerState.GetByPlayerId(target.PlayerId);
+        if (state != null) state.DeathReason = CustomDeathReason.FollowingSuicide;
+        if (GameStates.ExiledAnimate || AntiBlackout.IsCached) target.RpcExileV3(CustomDeathReason.FollowingSuicide);
+        else target.RpcMurderPlayerV2(target);
         Logger.Info($"{target.GetNameWithRole().RemoveHtmlTags()} follows Walkure.", "Walkure");
     }
 
