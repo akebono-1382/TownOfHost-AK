@@ -106,8 +106,7 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         if (!AmongUsClient.Instance.AmHost || remaining <= 0 || Camouflage.IsCamouflage) return;
         var source = Utils.GetPlayerById(sourceId);
         var target = Player.GetKillTarget(true);
-        if (source == null || target == null || target == source || !target.IsAlive()) return;
-        if (!Camouflage.PlayerSkins.TryGetValue(source.PlayerId, out var outfit) || outfit == null) return;
+        if (source == null || source.Data == null || target == null || target == source || !target.IsAlive()) return;
 
         ResetCooldown = true;
         remaining--;
@@ -115,7 +114,7 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         framed[target.PlayerId] = Time.time + duration;
         // インポスターが対象で、自覚できる設定なら本人にも見せる
         var targetSees = impostorAware && target.GetCustomRole().IsImpostor();
-        SendOutfit(target, outfit, targetSees);
+        SendOutfit(target, source, targetSees);
         Logger.Info($"{target.GetNameWithRole().RemoveHtmlTags()} を {source.GetNameWithRole().RemoveHtmlTags()} の姿に変えました(残り{remaining}回)", "Framer");
         Utils.NotifyRoles();
     }
@@ -146,27 +145,14 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         framed.Remove(id);
         var target = Utils.GetPlayerById(id);
         if (target == null || Camouflage.IsCamouflage) return;
-        if (!Camouflage.PlayerSkins.TryGetValue(id, out var outfit) || outfit == null) return;
-        SendOutfit(target, outfit, true);
+        // 自分の姿へ変身させると元の姿に戻る
+        SendOutfit(target, target, true);
     }
-    private static PlayerControl GetOutfitOwner(NetworkedPlayerInfo.PlayerOutfit outfit)
-    {
-        foreach (var pc in Main.AllPlayerControls)
-        {
-            if (pc == null || pc.Data == null) continue;
-            foreach (var kv in pc.Data.Outfits)
-            {
-                if (ReferenceEquals(kv.Value, outfit)) return pc;
-            }
-        }
-        return null;
-    }
-    // target の姿を outfit にする。includeTarget が false なら本人には送らない(本人の画面では元のまま)
-    private static void SendOutfit(PlayerControl target, NetworkedPlayerInfo.PlayerOutfit outfit, bool includeTarget)
+    // target を pc の姿にする。includeTarget が false なら本人には送らない(本人の画面では元のまま)
+    private static void SendOutfit(PlayerControl target, PlayerControl pc, bool includeTarget)
     {
         if (target == null || target.Data == null || target.Data.Disconnected || !AmongUsClient.Instance.AmHost) return;
-        var pc = GetOutfitOwner(outfit);
-        if (pc == null) return;
+        if (pc == null || pc.Data == null) return;
 
         if (includeTarget)
         {
