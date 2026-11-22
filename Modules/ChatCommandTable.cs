@@ -548,7 +548,7 @@ public static class ChatCommandTable
     private static void RemoteVoice(ChatCommandContext c)
     {
         var to = c.Player.PlayerId;
-        var colorId = c.Player.Data.DefaultOutfit.ColorId;
+        var colorId = VoiceReader.OwnColor(c.Player);
         var color = Palette.GetColorName(colorId);
         if (VoiceReader.VoiceReaderMode == null || !VoiceReader.VoiceReaderMode.GetBool())
             Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceNotAvailable")), true, sendTo: to);

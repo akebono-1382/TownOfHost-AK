@@ -114,7 +114,7 @@ namespace TownOfHostL
                 Logger.Exception(ex, "LoadVoiceList");
             }
         }
-        public static void Read(string chat, int colorId, string tag)
+        public static void Read(string chat, PlayerControl speaker, string tag)
         {
             if (!InitFinished) return;
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return;
@@ -122,8 +122,8 @@ namespace TownOfHostL
 
             if (chat.TrimStart().StartsWith("/")) return;
 
-            if (tag == "SendChatAlive")
-                ReadChatClient(chat, colorId);
+            if (tag == "SendChatAlive" && speaker != null)
+                ReadChat(chat, ResolveVoiceIdx(speaker));
         }
         public static void ReadHost(string chat, string tag)
         {
@@ -133,8 +133,8 @@ namespace TownOfHostL
 
             if (chat.TrimStart().StartsWith("/")) return;
 
-            if (tag == "SendChatHost")
-                ReadChatHost(chat);
+            if (tag == "SendChatHost" && PlayerControl.LocalPlayer != null)
+                ReadChat(chat, ResolveVoiceIdx(PlayerControl.LocalPlayer));
         }
         public static string SetVoiceNo(int colorId, int voiceNo)
         {
@@ -200,13 +200,34 @@ namespace TownOfHostL
         }
         private static OptionItem GetOptionItem(int colorId)
             => colorId >= 0 && colorId < ColorVoices.Length ? ColorVoices[colorId] : null;
-        private static void ReadChatHost(string chat)
+        // 声は人ではなく見た目に付ける。変身・迷彩・見た目の入れ替えの間は、その見た目の持ち主の声で読み、声で正体が分からないようにする
+        private static int ResolveVoiceIdx(PlayerControl speaker)
         {
-            ReadChat(chat, VoiceReaderHost.GetInt());
+            var owner = ApparentOwner(speaker, out int apparentColor);
+            // 誰の物でもない見た目 (持ち主のいない迷彩の色など) は、その色の声。着ている人が誰でも同じ声になる
+            if (owner == null) return GetVoiceIdx(apparentColor);
+            if (owner.AmOwner) return VoiceReaderHost.GetInt();
+            return GetVoiceIdx(OwnColor(owner));
         }
-        private static void ReadChatClient(string chat, int colorId)
+        /// <summary>その人の本来の色。試合中は開始時に控えた外見の色 (迷彩などは既定の外見も書き換えるため)</summary>
+        public static int OwnColor(PlayerControl pc)
+            => GameStates.IsInGame && Camouflage.PlayerSkins.TryGetValue(pc.PlayerId, out var outfit) ? outfit.ColorId : pc.Data.DefaultOutfit.ColorId;
+        private static PlayerControl ApparentOwner(PlayerControl speaker, out int apparentColor)
         {
-            ReadChat(chat, GetVoiceIdx(colorId));
+            apparentColor = OwnColor(speaker);
+            if (!GameStates.IsInGame) return speaker;
+            int current = speaker.CurrentOutfit?.ColorId ?? apparentColor;
+            if (current == apparentColor) return speaker;
+            apparentColor = current;
+            PlayerControl found = null;
+            foreach (var pc in Main.AllPlayerControls)
+            {
+                if (pc == null || pc.Data == null || OwnColor(pc) != current) continue;
+                // 本来の色が重なる時 (色をそろえる遊び方など) は持ち主を決められないので、本人の声のまま
+                if (found != null) return speaker;
+                found = pc;
+            }
+            return found;
         }
         private static void ReadChat(string chat, int voiceNo)
         {
@@ -282,6 +303,11 @@ namespace TownOfHostL
         private enum PlaySoundFlags : int
         { SND_MEMORY = 0x0004, }
 
+        // 発言が続いても前の声を遮らないよう、1 本の作業で順に合成して鳴らす。溜まりすぎたら古い物から捨てる
+        private const int MaxQueue = 10;
+        private static readonly Queue<(string url, string text, int voiceType)> queue = new();
+        private static bool working;
+
         private static HttpClient client = null;
         private static HttpClient GetHttpInstance()
         {
@@ -290,66 +316,54 @@ namespace TownOfHostL
         }
         public static void ReadChat(string url, string chat, int voiceType, int volume = -1, int speed = -1)
         {
-            VoiceVoxHTTPRequest(url, chat, voiceType, volume, speed);
+            lock (queue)
+            {
+                queue.Enqueue((url, chat, voiceType));
+                while (queue.Count > MaxQueue) queue.Dequeue();
+                if (working) return;
+                working = true;
+            }
+            System.Threading.Tasks.Task.Run(Work);
         }
-        public static async void VoiceVoxHTTPRequest(string url, string text, int voiceType, int volume = -1, int speed = -1)
+        private static async System.Threading.Tasks.Task Work()
         {
-            var query = "";
-            HttpRequestMessage request = null;
-            HttpResponseMessage response = null;
-            //音声クエリ
+            while (true)
+            {
+                (string url, string text, int voiceType) item;
+                lock (queue)
+                {
+                    if (queue.Count == 0) { working = false; return; }
+                    item = queue.Dequeue();
+                }
+                var wav = await Synthesize(item.url, item.text, item.voiceType);
+                if (wav == null || wav.Length == 0) continue;
+                // SND_ASYNC を付けないので、鳴り終わるまでここで待つ (次の声と重ならない)
+                try { PlaySound(wav, IntPtr.Zero, PlaySoundFlags.SND_MEMORY); }
+                catch (Exception e) { Logger.Info($"playError, exception: {e}", "VoiceVoxHTTPRequest"); }
+            }
+        }
+        private static async System.Threading.Tasks.Task<byte[]> Synthesize(string url, string text, int voiceType)
+        {
             try
             {
-                request = new HttpRequestMessage(new HttpMethod("POST"), $"{url}/audio_query?text={text}&speaker={voiceType}");
+                using var queryRequest = new HttpRequestMessage(HttpMethod.Post, $"{url}/audio_query?text={text}&speaker={voiceType}");
+                queryRequest.Headers.TryAddWithoutValidation("accept", "application/json");
+                queryRequest.Content = new StringContent("");
+                using var queryResponse = await GetHttpInstance().SendAsync(queryRequest);
+                if (!queryResponse.IsSuccessStatusCode) return null;
+                var query = await queryResponse.Content.ReadAsStringAsync();
 
-                request.Headers.TryAddWithoutValidation("accept", "application/json");
-
-                request.Content = new StringContent("");
-                request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
-
-                response = await GetHttpInstance().SendAsync(request);
-                //Logger.Info($"send: {request?.RequestUri}, result: {response}", $"VoiceVoxHTTPRequest");
-
-                query = response.Content.ReadAsStringAsync().Result;
+                using var synthRequest = new HttpRequestMessage(HttpMethod.Post, $"{url}/synthesis?speaker={voiceType}&enable_interrogative_upspeak=true");
+                synthRequest.Headers.TryAddWithoutValidation("accept", "audio/wav");
+                synthRequest.Content = new StringContent(query, Encoding.UTF8, "application/json");
+                using var synthResponse = await GetHttpInstance().SendAsync(synthRequest);
+                if (!synthResponse.IsSuccessStatusCode) return null;
+                return await synthResponse.Content.ReadAsByteArrayAsync();
             }
             catch (Exception e)
             {
-                Logger.Info($"sendAudio_queryError: {request?.RequestUri}, exception: {e}", $"VoiceVoxHTTPRequest");
-            }
-            // 音声合成
-            try
-            {
-                request = new HttpRequestMessage(new HttpMethod("POST"), $"{url}/synthesis?speaker={voiceType}&enable_interrogative_upspeak=true");
-
-                request.Headers.TryAddWithoutValidation("accept", "audio/wav");
-
-                request.Content = new StringContent(query);
-                request.Content.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-
-                response = await GetHttpInstance().SendAsync(request);
-                //Logger.Info($"send: {request?.RequestUri}, result: {response}", $"VoiceVoxHTTPRequest");
-            }
-            catch (Exception e)
-            {
-                Logger.Info($"sendSynthesisError: {request?.RequestUri}, exception: {e}", $"VoiceVoxHTTPRequest");
-            }
-            if (response == null) return;
-            // 再生
-            try
-            {
-                var httpStream = await response.Content.ReadAsStreamAsync();
-
-                byte[] buffer = new byte[httpStream.Length];
-                httpStream.Read(buffer, 0, buffer.Length);
-                httpStream.Close();
-
-                _ = PlaySound(buffer, IntPtr.Zero, PlaySoundFlags.SND_MEMORY);
-
-                Logger.Info($"ChatRead voiceType: {voiceType}, chat: {text}", $"VoiceVoxHTTPRequest");
-            }
-            catch (Exception e)
-            {
-                Logger.Info($"streamError , exception: {e}", $"VoiceVoxHTTPRequest");
+                Logger.Info($"synthesisError: speaker {voiceType}, exception: {e}", "VoiceVoxHTTPRequest");
+                return null;
             }
         }
     }
