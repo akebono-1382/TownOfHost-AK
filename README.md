@@ -16,7 +16,8 @@
 
 - ホスト以外も Mod を入れていい？
   - 入れても遊べます。TOH_L はホストだけが入れれば動く Mod なので、参加する人が入れる必要はありません。
-  - TOH_L を入れた人が他人の部屋に参加している間は、TOH_L の機能は止まり、本編のプレイヤーとして遊びます。TOH_L のホストの部屋でも、本編やほかの Mod のホストの部屋でも同じです。ホストと TOH_L のバージョンが違っても参加できます。
+  - ホストが同じバージョンの TOH_L なら、参加した人の画面にも TOH_L の表示が出ます。ロビーの設定の一覧、イントロの役職と陣営、タスクの欄の役職の説明、結果画面の全員の役職の一覧です。キルや能力のボタンの表示と、役職ごとの残り回数などはまだ本編のままです。
+  - ホストのバージョンが違う TOH_L の時と、本編やほかの Mod のホストの部屋では、TOH_L の機能は止まり、本編のプレイヤーとして遊びます。この場合も参加はできます。
   - 部屋を抜けて自分で部屋を立てると、TOH_L のホストに戻ります。参加中の部屋でホストを引き継いだ場合は、その部屋では本編のホストのままです。
 
 - ほかの Mod と一緒に入れられる？
@@ -46,7 +47,7 @@ This Readme is basically for Japanese only, and you may not be able to read it e
 
 We also use a translator for all in-game translations into English. If there is something wrong, please write in discord with the changed words and sentences and we may be able to help.<br>
 
-TownOfHost-L is a host-only mod: only the host needs to install it. Players who have TownOfHost-L installed can also join other rooms; while they are not the host, the mod's features are turned off and they play as normal players. Public lobbies are supported.<br>
+TownOfHost-L is a host-only mod: only the host needs to install it. Players who have TownOfHost-L installed can also join other rooms. If the host runs the same version of TownOfHost-L, they see the lobby settings list, their role in the intro and the task list, and every player's role on the results screen. In any other room, the mod's features are turned off and they play as normal players. Public lobbies are supported.<br>
 
 TownOfHost-L is a modified version of [TownOfHost_Y](https://github.com/Yumenopai/TownOfHost_Y), which is itself based on [TownOfHost](https://github.com/tukasa0001/TownOfHost). It has been modified by haru, waffle and other TownOfHost-L contributors since November 2026, and is licensed under GPL-3.0, the same as the original ([LICENSE](LICENSE)).<br>
 
