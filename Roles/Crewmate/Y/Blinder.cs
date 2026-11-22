@@ -69,7 +69,8 @@ public sealed class Blinder : RoleBase
     }
     public static void ApplyGameOptionsByOther(byte id, IGameOptions opt)
     {
-        if (!CustomRoles.Blinder.IsPresent()) return;
+        // 配役の表 (IsPresent) では見ない。試合中にブラインダーになった人の分も効かせる
+        if (BlindPlayerIdList.Count == 0) return;
 
         if (BlindPlayerIdList.Contains(id))
         {

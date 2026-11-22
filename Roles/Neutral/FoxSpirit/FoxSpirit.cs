@@ -49,9 +49,10 @@ public sealed class FoxSpirit : RoleBase, ISystemTypeUpdateHook, ISoloWinner
     private static OptionItem OptionIgnoreGhostTask;
     private bool KilledAfterFinishTask;
     private static bool IgnoreGhostTask;
-    /// <summary>妖狐が配られた試合で、死後のタスクを免除する設定なら、死んだ人のタスクを免除する</summary>
+    /// <summary>妖狐がいる試合で、死後のタスクを免除する設定なら、死んだ人のタスクを免除する
+    /// (妖狐の実体ができた時にだけ登録され、試合の始めに外れるので、配役の表 (IsPresent) は見ない)</summary>
     private static bool IsGhostTaskIgnored(NetworkedPlayerInfo p)
-        => IgnoreGhostTask && p.IsDead && CustomRoles.FoxSpirit.IsPresent() && !TownOfHostL.Core.PlayerTraits.KeepsTasksWhenDead(p.Object);
+        => IgnoreGhostTask && p.IsDead && !TownOfHostL.Core.PlayerTraits.KeepsTasksWhenDead(p.Object);
     private enum OptionName
     {
         FoxSpiritTaskCount,
