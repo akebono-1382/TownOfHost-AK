@@ -22,8 +22,6 @@ namespace TownOfHostL
         private static string UrlBoyomi = "http://localhost:50080";
         // VOICEVOX のエンジンは既定で 127.0.0.1 で待つ
         private static string UrlVoiceVox = "http://127.0.0.1:50021";
-        // VoiceList.txt に声の行が無い時は、VOICEVOX の声の一覧を取って使う
-        private static bool AutoVoices;
         private static bool ModeSpecified;
         private static Dictionary<int, int> VoiceType = new();
         private static Dictionary<int, string> VoiceName = new();
@@ -48,7 +46,7 @@ namespace TownOfHostL
             LoadVoiceList();
             if (VoiceType.Count == 0 && (!ModeSpecified || ReadMode == Mode.VoiceVox))
             {
-                AutoVoices = true;
+                // VoiceList.txt に声の行が無い時は、VOICEVOX の声の一覧を取って使う
                 ReadMode = Mode.VoiceVox;
                 // 前回取った一覧で先に設定を作る (保存した声の番号が、読み込みの時に選択肢の数で切られないように)
                 var cached = LoadSpeakerCache();
