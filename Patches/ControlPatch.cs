@@ -145,7 +145,7 @@ namespace TownOfHostL
                 Utils.ShowActiveSettings();
             }
             //TOHオプションをデフォルトに設定
-            if (GetKeysDown(KeyCode.Delete, KeyCode.LeftControl))
+            if (GetKeysDown(KeyCode.Delete, KeyCode.LeftControl) && !(HudManager.InstanceExists && HudManager.Instance.Chat && HudManager.Instance.Chat.IsOpenOrOpening))
             {
                 OptionItem.AllOptions.ToArray().Where(x => x is not PresetOptionItem).Do(x => x.SetValue(x.DefaultValue));
             }

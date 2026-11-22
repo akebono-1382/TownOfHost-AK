@@ -68,7 +68,7 @@ public class HostPanelButton : MonoBehaviour
         if (!InRoom) HostPanel.IsOpen = false;
 
         var panel = HostPanel.Instance;
-        if (panel != null)
+        if (panel != null && !HostPanel.Warming)
         {
             var want = InRoom ? HostPanel.IsOpen : AutoRehost.Pending || AutoRehost.FailureText != null;
             if (panel.enabled != want) panel.enabled = want;

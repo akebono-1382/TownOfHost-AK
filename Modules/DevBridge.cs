@@ -69,7 +69,7 @@ static class DevBridge
                     var sp = new Vector3(float.Parse(p[0]), Screen.height - float.Parse(p[1]), 0f);
                     var cam = Camera.main;
                     var w = cam.ScreenToWorldPoint(sp);
-                    var hit = Physics2D.OverlapPointAll(w).Select(c => c.GetComponent<PassiveButton>()).Where(x => x && x.isActiveAndEnabled).FirstOrDefault();
+                    var hit = Physics2D.OverlapPointAll(w).Select(c => c.GetComponent<PassiveButton>()).Where(x => x && x.isActiveAndEnabled && (!x.ClickMask || x.ClickMask.OverlapPoint(w))).FirstOrDefault();
                     if (!hit) { sb.AppendLine("NOHIT"); break; }
                     hit.OnClick.Invoke();
                     sb.AppendLine("CLICKED " + PathOf(hit.transform));
@@ -83,6 +83,10 @@ static class DevBridge
             case "unchoose":
                 TownOfHostL.Modules.SpawnEditor.SpawnRoomOptions.Reset(int.Parse(a[1]));
                 sb.AppendLine("UNCHOOSE " + a[1]);
+                break;
+            case "pko":
+                PikeoAI.Command(new ChatCommandContext(("/pko " + a[1]).Split(' '), PlayerControl.LocalPlayer, null));
+                sb.AppendLine("PKO");
                 break;
             case "dict":
                 RoleDictionary.Toggle();

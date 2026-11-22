@@ -62,6 +62,9 @@ internal sealed class SectionPage
     private UiScreen _screen;
     private ScrollView _list;
     private Button _resetBtn, _undoBtn;
+    private Label _resetLabel;
+    private float _resetArmedAt = -100f;
+    private const float ResetArmSeconds = 3f;
     private bool _built;
     private IntPtr _menu;
 
@@ -233,7 +236,9 @@ internal sealed class SectionPage
         if (edit)
         {
             float bw = (SideW - 0.05f) / 2f;
-            _resetBtn = new Button(new Label(Translator.GetString("SettingsUI.ResetAll"), 1.2f) { Width = bw - 0.3f, MinFontSize = 0.4f, NoWrap = true, TextAlign = TextAlignmentOptions.Center }, ResetAll) { Size = new Vector2(bw, BarH), Color = ResetColor() };
+            _resetArmedAt = -100f;
+            _resetLabel = new Label(Translator.GetString("SettingsUI.ResetAll"), 1.2f) { Width = bw - 0.3f, MinFontSize = 0.4f, NoWrap = true, TextAlign = TextAlignmentOptions.Center };
+            _resetBtn = new Button(_resetLabel, ResetAll) { Size = new Vector2(bw, BarH), Color = ResetColor() };
             _undoBtn = new Button(Translator.GetString("SettingsUI.Undo"), Undo, 1.2f) { Size = new Vector2(bw, BarH), Color = UndoColor };
             col.Add(new Stack(true, _resetBtn, _undoBtn) { Gap = 0.05f });
         }
@@ -316,6 +321,14 @@ internal sealed class SectionPage
     private void ResetAll()
     {
         if (!CanEdit()) return;
+        if (Time.unscaledTime - _resetArmedAt > ResetArmSeconds)
+        {
+            _resetArmedAt = Time.unscaledTime;
+            _resetLabel?.SetText(Translator.GetString("SettingsUI.ResetAllConfirm"));
+            return;
+        }
+        _resetArmedAt = -100f;
+        _resetLabel?.SetText(Translator.GetString("SettingsUI.ResetAll"));
         bool any = false;
         OptHistory.BeginGroup();
         OptEditor.Busy++;
@@ -376,6 +389,11 @@ internal sealed class SectionPage
         }
         _resetBtn?.SetColor(ResetColor());
         _undoBtn?.SetColor(UndoColor);
+        if (_resetArmedAt > 0f && Time.unscaledTime - _resetArmedAt > ResetArmSeconds)
+        {
+            _resetArmedAt = -100f;
+            _resetLabel?.SetText(Translator.GetString("SettingsUI.ResetAll"));
+        }
     }
 
     // 外 (プリセット・コマンド・検索の結果の行・取り消し) で値を変えた後。出る行が変わっていれば組み直す
@@ -418,6 +436,11 @@ internal sealed class SectionPage
     // 毎フレーム (頁が見えている間): カーソルが乗った図のある行の図に切り替え、図を動かす
     public void Tick()
     {
+        if (_resetArmedAt > 0f && Time.unscaledTime - _resetArmedAt > ResetArmSeconds)
+        {
+            _resetArmedAt = -100f;
+            _resetLabel?.SetText(Translator.GetString("SettingsUI.ResetAll"));
+        }
         if (_preview == null || !Visible) return;
         var mouse = Input.mousePosition;
         if (mouse != _lastMouse && _hits.Count > 0)
