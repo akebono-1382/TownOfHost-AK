@@ -226,6 +226,9 @@ public partial class TaskState
         }
         hasTasks = true;
         AllTasksCount = player.Data.Tasks.Count;
+        // 部屋タスクを持つ役職 (マーリンなど) は、部屋タスクの数も自分のタスクに数える
+        if (player.GetRoleClass() is Roles.Core.Interfaces.IRoomTasker roomTasker && roomTasker.GetMaxTaskCount() is int roomTasks)
+            AllTasksCount += roomTasks;
         Logger.Info($"{player.GetNameWithRole()}: TaskCounts = {CompletedTasksCount}/{AllTasksCount}", "TaskState.Init");
     }
     public void Update(PlayerControl player)
