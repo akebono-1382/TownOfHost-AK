@@ -521,7 +521,7 @@ namespace TownOfHostL
             if (player != null)
             {
                 var tag = !player.Data.IsDead ? "SendChatAlive" : "SendChatDead";
-                VoiceReader.Read(text, Palette.GetColorName(player.Data.DefaultOutfit.ColorId), tag);
+                VoiceReader.Read(text, player.Data.DefaultOutfit.ColorId, tag);
             }
 
             if (!AmongUsClient.Instance.AmHost) return;

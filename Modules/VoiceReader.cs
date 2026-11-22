@@ -24,24 +24,13 @@ namespace TownOfHostL
 
         public static OptionItem VoiceReaderMode;
         public static OptionItem VoiceReaderHost;
-        public static OptionItem VoiceReaderRed;
-        public static OptionItem VoiceReaderBlue;
-        public static OptionItem VoiceReaderGreen;
-        public static OptionItem VoiceReaderPink;
-        public static OptionItem VoiceReaderOrange;
-        public static OptionItem VoiceReaderYellow;
-        public static OptionItem VoiceReaderBlack;
-        public static OptionItem VoiceReaderWhite;
-        public static OptionItem VoiceReaderPurple;
-        public static OptionItem VoiceReaderBrown;
-        public static OptionItem VoiceReaderCyan;
-        public static OptionItem VoiceReaderLime;
-        public static OptionItem VoiceReaderMaroon;
-        public static OptionItem VoiceReaderRose;
-        public static OptionItem VoiceReaderBanana;
-        public static OptionItem VoiceReaderGray;
-        public static OptionItem VoiceReaderTan;
-        public static OptionItem VoiceReaderCoral;
+        // 本編の ColorId の順。設定の鍵は "VoiceReader" + この名前
+        private static readonly string[] ColorKeys =
+        {
+            "Red", "Blue", "Green", "Pink", "Orange", "Yellow", "Black", "White", "Purple",
+            "Brown", "Cyan", "Lime", "Maroon", "Rose", "Banana", "Gray", "Tan", "Coral",
+        };
+        private static readonly OptionItem[] ColorVoices = new OptionItem[ColorKeys.Length];
 
         [PluginModuleInitializer]
         public static void Init()
@@ -58,42 +47,9 @@ namespace TownOfHostL
                 .SetGameMode(CustomGameMode.All);
             VoiceReaderHost = StringOptionItem.Create("VoiceReaderHost", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
                 .SetGameMode(CustomGameMode.All);
-            VoiceReaderRed = StringOptionItem.Create("VoiceReaderRed", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderBlue = StringOptionItem.Create("VoiceReaderBlue", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderGreen = StringOptionItem.Create("VoiceReaderGreen", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderPink = StringOptionItem.Create("VoiceReaderPink", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderOrange = StringOptionItem.Create("VoiceReaderOrange", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderYellow = StringOptionItem.Create("VoiceReaderYellow", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderBlack = StringOptionItem.Create("VoiceReaderBlack", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderWhite = StringOptionItem.Create("VoiceReaderWhite", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderPurple = StringOptionItem.Create("VoiceReaderPurple", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderBrown = StringOptionItem.Create("VoiceReaderBrown", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderCyan = StringOptionItem.Create("VoiceReaderCyan", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderLime = StringOptionItem.Create("VoiceReaderLime", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderMaroon = StringOptionItem.Create("VoiceReaderMaroon", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderRose = StringOptionItem.Create("VoiceReaderRose", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderBanana = StringOptionItem.Create("VoiceReaderBanana", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderGray = StringOptionItem.Create("VoiceReaderGray", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderTan = StringOptionItem.Create("VoiceReaderTan", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
-            VoiceReaderCoral = StringOptionItem.Create("VoiceReaderCoral", VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
-                .SetGameMode(CustomGameMode.All);
+            for (int i = 0; i < ColorKeys.Length; i++)
+                ColorVoices[i] = StringOptionItem.Create("VoiceReader" + ColorKeys[i], VoiceName.Values.ToArray(), 0, TabGroup.ModMainSettings, true).SetParent(VoiceReaderMode)
+                    .SetGameMode(CustomGameMode.All);
         }
         private static readonly string VOICE_LIST_PATH = @"./TOHL_DATA/VoiceList.txt";
         public static void LoadVoiceList()
@@ -158,17 +114,16 @@ namespace TownOfHostL
                 Logger.Exception(ex, "LoadVoiceList");
             }
         }
-        public static void Read(string chat, string colorName, string tag)
+        public static void Read(string chat, int colorId, string tag)
         {
             if (!InitFinished) return;
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return;
             if (chat == null || chat.TrimEnd() == "") return;
-            if (colorName == null || colorName == "") return;
 
             if (chat.TrimStart().StartsWith("/")) return;
 
             if (tag == "SendChatAlive")
-                ReadChatClient(chat, colorName);
+                ReadChatClient(chat, colorId);
         }
         public static void ReadHost(string chat, string tag)
         {
@@ -181,15 +136,15 @@ namespace TownOfHostL
             if (tag == "SendChatHost")
                 ReadChatHost(chat);
         }
-        public static string SetVoiceNo(string colorName, int voiceNo)
+        public static string SetVoiceNo(int colorId, int voiceNo)
         {
             if (!InitFinished) return "";
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return "";
             if (voiceNo < 0 || voiceNo >= VoiceType.Count) return "";
-            var item = GetOptionItem(colorName);
+            var item = GetOptionItem(colorId);
             if (item == null) return "";
             item.SetValue(voiceNo);
-            Logger.Info($"SetVoice {colorName} => voiceNo: {voiceNo}, max: {VoiceType.Count - 1}", "SetVoiceNo");
+            Logger.Info($"SetVoice color {colorId} => voiceNo: {voiceNo}, max: {VoiceType.Count - 1}", "SetVoiceNo");
             return VoiceName[voiceNo];
         }
         public static string SetHostVoiceNo(int voiceNo)
@@ -201,70 +156,32 @@ namespace TownOfHostL
             Logger.Info($"SetVoice Host => voiceNo: {voiceNo}, max: {VoiceType.Count - 1}", "SetVoiceNo");
             return VoiceName[voiceNo];
         }
-        public static string GetVoiceName(string colorName)
+        public static string GetVoiceName(int colorId)
         {
             if (!InitFinished) return "";
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return "";
-            var item = GetOptionItem(colorName);
+            var item = GetOptionItem(colorId);
             if (item == null) return "";
-            var voiceNo = item.GetInt();
-            return VoiceName[voiceNo];
+            return VoiceName.GetValueOrDefault(item.GetInt(), "");
         }
         public static void ResetVoiceNo()
         {
             if (!InitFinished) return;
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return;
-            VoiceReaderRed.SetValue(0);
-            VoiceReaderBlue.SetValue(0);
-            VoiceReaderGreen.SetValue(0);
-            VoiceReaderPink.SetValue(0);
-            VoiceReaderOrange.SetValue(0);
-            VoiceReaderYellow.SetValue(0);
-            VoiceReaderBlack.SetValue(0);
-            VoiceReaderWhite.SetValue(0);
-            VoiceReaderPurple.SetValue(0);
-            VoiceReaderBrown.SetValue(0);
-            VoiceReaderCyan.SetValue(0);
-            VoiceReaderLime.SetValue(0);
-            VoiceReaderMaroon.SetValue(0);
-            VoiceReaderRose.SetValue(0);
-            VoiceReaderBanana.SetValue(0);
-            VoiceReaderGray.SetValue(0);
-            VoiceReaderTan.SetValue(0);
-            VoiceReaderCoral.SetValue(0);
+            foreach (var item in ColorVoices) item?.SetValue(0);
         }
         public static void SetRandomVoiceNo()
         {
             if (!InitFinished) return;
             if (VoiceReaderMode == null || !VoiceReaderMode.GetBool()) return;
-            List<int> list = new();
-            foreach (var voiceNo in VoiceType.Keys.ToArray())
-                list.Add(voiceNo);
-            var exclusive = list.Count >= 18;       //VoiceTypeが18種類以上あるなら重複なし
-
-            VoiceReaderRed.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderBlue.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderGreen.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderPink.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderOrange.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderYellow.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderBlack.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderWhite.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderPurple.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderBrown.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderLime.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderCyan.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderMaroon.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderRose.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderBanana.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderGray.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderTan.SetValue(GetRandIndex(list, exclusive));
-            VoiceReaderCoral.SetValue(GetRandIndex(list, exclusive));
+            List<int> list = new(VoiceType.Keys);
+            var exclusive = list.Count >= ColorVoices.Length;       //色の数だけ声があるなら重複なし
+            foreach (var item in ColorVoices) item?.SetValue(GetRandIndex(list, exclusive));
         }
         private static int GetRandIndex(List<int> list, bool exclusive = false)
         {
             if (list.Count == 0) return 0;
-            var rIdx = IRandom.Instance.Next(0, list.Count - 1);
+            var rIdx = IRandom.Instance.Next(list.Count);
             var voiceNo = list[rIdx];
             if (exclusive) list.RemoveAt(rIdx);
             return voiceNo;
@@ -281,56 +198,15 @@ namespace TownOfHostL
             }
             return sb.ToString();
         }
-        private static OptionItem GetOptionItem(string colorName)
-        {
-            switch (colorName)
-            {
-                case "レッド":
-                    return VoiceReaderRed;
-                case "ブルー":
-                    return VoiceReaderBlue;
-                case "グリーン":
-                    return VoiceReaderGreen;
-                case "ピンク":
-                    return VoiceReaderPink;
-                case "オレンジ":
-                    return VoiceReaderOrange;
-                case "イエロー":
-                    return VoiceReaderYellow;
-                case "ブラック":
-                    return VoiceReaderBlack;
-                case "ホワイト":
-                    return VoiceReaderWhite;
-                case "パープル":
-                    return VoiceReaderPurple;
-                case "ブラウン":
-                    return VoiceReaderBrown;
-                case "シアン":
-                    return VoiceReaderCyan;
-                case "ライム":
-                    return VoiceReaderLime;
-                case "マルーン":
-                    return VoiceReaderMaroon;
-                case "ローズ":
-                    return VoiceReaderRose;
-                case "バナナ":
-                    return VoiceReaderBanana;
-                case "グレー":
-                    return VoiceReaderGray;
-                case "タン":
-                    return VoiceReaderTan;
-                case "コーラル":
-                    return VoiceReaderCoral;
-            }
-            return null;
-        }
+        private static OptionItem GetOptionItem(int colorId)
+            => colorId >= 0 && colorId < ColorVoices.Length ? ColorVoices[colorId] : null;
         private static void ReadChatHost(string chat)
         {
             ReadChat(chat, VoiceReaderHost.GetInt());
         }
-        private static void ReadChatClient(string chat, string colorName)
+        private static void ReadChatClient(string chat, int colorId)
         {
-            ReadChat(chat, GetVoiceIdx(colorName));
+            ReadChat(chat, GetVoiceIdx(colorId));
         }
         private static void ReadChat(string chat, int voiceNo)
         {
@@ -363,9 +239,9 @@ namespace TownOfHostL
                 return 0;
             }
         }
-        private static int GetVoiceIdx(string colorName)
+        private static int GetVoiceIdx(int colorId)
         {
-            var item = GetOptionItem(colorName);
+            var item = GetOptionItem(colorId);
             if (item == null) return 0;
             return item.GetInt();
         }

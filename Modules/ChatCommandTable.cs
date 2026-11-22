@@ -548,14 +548,15 @@ public static class ChatCommandTable
     private static void RemoteVoice(ChatCommandContext c)
     {
         var to = c.Player.PlayerId;
-        var color = Palette.GetColorName(c.Player.Data.DefaultOutfit.ColorId);
+        var colorId = c.Player.Data.DefaultOutfit.ColorId;
+        var color = Palette.GetColorName(colorId);
         if (VoiceReader.VoiceReaderMode == null || !VoiceReader.VoiceReaderMode.GetBool())
             Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceNotAvailable")), true, sendTo: to);
         else if (c.Arg(1) == "n")
-            Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceNow"), color, VoiceReader.GetVoiceName(color)), true, sendTo: to);
+            Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceNow"), color, VoiceReader.GetVoiceName(colorId)), true, sendTo: to);
         else if (c.Args.Length > 1 && int.TryParse(c.Args[1], out int voiceNo))
         {
-            var name = VoiceReader.SetVoiceNo(color, voiceNo);
+            var name = VoiceReader.SetVoiceNo(colorId, voiceNo);
             if (!string.IsNullOrEmpty(name))
                 Utils.SendMessageAutoSplit(string.Format(GetString("Message.VoiceChange"), color, name), true, sendTo: to);
             else
