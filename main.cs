@@ -54,13 +54,13 @@ public partial class Main : BasePlugin
     // ==========
     //Sorry for many Japanese comments.
     public const string PluginGuid = "6bc9fc19-1629-412a-989d-acf4e12140ff";
-    public const string PluginVersion = "2026.11.2";
+    public const string PluginVersion = "0.0.1";
     // サポートされている最低のAmongUsバージョン
     public static readonly string LowestSupportedVersion = "2026.9.29";
     // このバージョンのみで公開ルームを無効にする場合
     public static readonly bool IsPublicAvailableOnThisVersion = true;
     // プレリリースかどうか
-    public static bool IsPrerelease { get; } = true;
+    public static bool IsPrerelease { get; } = false;
     public const string PluginSubVersion = "β";
     public const string PluginVersionName = "";
 

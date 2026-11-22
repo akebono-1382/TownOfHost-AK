@@ -6559,3 +6559,8 @@ CCYellowCatInfo,You have become the YellowCat,黄陣営に所属した,你成为
 "SettingsUI.Sec.Display","Roles and add-ons","役職と属性の表示","","","","",""
 "SettingsUI.Sec.Safety","Cheat protection","不正対策","","","","",""
 "SettingsUI.Sec.TeamChat","Team chat","陣営チャット","","","","",""
+"PikeoAI.Title","Pikeo AI","ぴけおAI","","","","",""
+"CommandUsage.PikeoAI","<message>","メッセージ","","","","",""
+"PikeoAI.Busy","Still thinking, wait a moment.","いま考え中ぴけ。ちょっと待つぴけ。","","","","",""
+"PikeoAI.TooFast","Too many questions. Try again in a bit.","聞きすぎぴけ。少し待ってからにするぴけ。","","","","",""
+"PikeoAI.Failed","Could not reach the AI. Try again later.","AI につながらなかったぴけ。あとでもう一回ぴけ。","","","","",""
