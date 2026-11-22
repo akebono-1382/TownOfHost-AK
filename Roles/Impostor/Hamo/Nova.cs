@@ -9,7 +9,7 @@ using TownOfHostL.Roles.Core.Interfaces;
 
 namespace TownOfHostL.Roles.Impostor;
 
-// 役職の元: UchuAddon (TeamUchuAddon 制作・TownOfHost-hamo 経由)。UchuAddon では SuperNewRoles の波動砲が元
+// 役職の元: SuperNewRoles の波動砲 (TownOfHost-hamo 経由)
 // ノヴァ: 一直線上にビームを放つインポスター(星砲)。波動砲を参考にした作り。
 // ファントムのボタンでチャージを始める(チャージ中とビーム中はその場から動けない)。
 // チャージ中に歩こうとすると、照準(★)がその方向へ少しずつ回る。チャージが終わった後、もう一度ボタンを押すと向きが決まり、
@@ -18,7 +18,6 @@ namespace TownOfHostL.Roles.Impostor;
 // ダミーを動かす通信(テレポート)は多すぎるとサーバーにキックされるので、照準はゆっくり・向きが変わった時だけ動かす。
 public sealed class Nova : RoleBase, IImpostor, IUsePhantomButton
 {
-    // 役職の元: TownOfHost-hamo
     public static readonly SimpleRoleInfo RoleInfo =
         SimpleRoleInfo.Create(
             typeof(Nova),

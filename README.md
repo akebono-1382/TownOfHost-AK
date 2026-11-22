@@ -154,14 +154,14 @@ Thank you for finding and using TOH_L!<br>
   - hamo から移した役職 (役職ごとの元の Mod):
     - TownOfHost-hamo: 守護者・ナイスハッカー・リピーター・イビルコマンダー・フレーマー・マエストロ・サロゲート・マッドカイザー・アンチヒーロー・マッドマジック
     - [TownOfHost-K](https://github.com/KYMario/TownOfHost-K): アナライザー・ナイスアドナー・ウルトラスター・アンチレポーター・バルーナー・爆弾魔・ドライバー・イビルアドナー・イビルブレンダー・マジシャン・大狼・マッドアベンジャー・妖狐・ジャッカルウルフ・ブレイド・カメレオン
-    - [SuperNewRoles](https://github.com/ykundesu/SuperNewRoles): 天秤・ミーティングシェリフ・賢者・村長・イビルギャンブラー・波動砲・ペンギン・突き落とし師・侍・フリーター・波動砲ジャッカル・弾・陰陽師・式神・パブロフの犬・スペランカー・マグロ
+    - [SuperNewRoles](https://github.com/ykundesu/SuperNewRoles): 天秤・ミーティングシェリフ・賢者・村長・イビルギャンブラー・波動砲・ペンギン・突き落とし師・侍・フリーター・波動砲ジャッカル・弾・陰陽師・式神・パブロフの犬・スペランカー・マグロ・ノヴァ (波動砲が元)
     - [TownOfHost-Pko](https://github.com/satokazoku/TownOfHost-Pko): ナイスワーカホリック・波動砲シェリフ・ワルキューレ・イビルリンカー・ヘイトキラー・タイムリーパー・スタンドマスター・スタンド・ゾンビ
     - [ExtremeRoles](https://github.com/yukieiji/ExtremeRoles): アサシン・マーリン・エボルバー・イーター
     - [Nebula on the Ship](https://github.com/Dolly1016/Nebula-Public): デストロイヤー
     - [Revolutionary Host Roles](https://github.com/sansaaaaai/Revolutionary-host-roles): リローダー
     - [The Other Roles: GM Edition](https://github.com/yukinogatari/TheOtherRoles-GM): ペスト医師
     - [TheOtherRoles](https://github.com/TheOtherRolesAU/TheOtherRoles): ヴァルチャー
-    - [UchuAddon](https://github.com/TeamUchuaddon/UchuAddon): オボルス・ノヴァ (UchuAddon では SuperNewRoles の波動砲が元)
+    - [UchuAddon](https://github.com/TeamUchuaddon/UchuAddon): オボルス
   - 役職の共通の仕組み (ダブルトリガー・ワンクリックのファントムボタン・部屋のタスク・自投票・演出の送り方など)
   - 日ごとのゲームの記録の形
   - 放置の検出の流れ
@@ -190,7 +190,7 @@ Thank you for finding and using TOH_L!<br>
   - プレイヤー情報 (NetworkedPlayerInfo) の同期
   - YouTube ライブのコメントの読み取り (配信のチャット欄のページから鍵と続きの値を取る方法・End K not 経由で参照)
 - [UchuAddon](https://github.com/TeamUchuaddon/UchuAddon) (TeamUchuAddon 制作)
-  - オボルスの役職と、ノヴァの役職の案 (UchuAddon では SuperNewRoles の波動砲が元)。どちらも TownOfHost-hamo 経由
+  - オボルスの役職 (TownOfHost-hamo 経由)
 - [Town Of Host For E](https://github.com/AsumuAkaguma/TownOfHost_ForE)
   - YouTube ライブのコメントの読み取り (TownOfHost-K が参考にした元)
 - [Unity Doorstop (Pietrodjaowjao 版)](https://github.com/Pietrodjaowjao/UnityDoorstop) (LGPL-2.1・元は [NeighTools/UnityDoorstop](https://github.com/NeighTools/UnityDoorstop))

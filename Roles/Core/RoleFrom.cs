@@ -182,7 +182,7 @@ public static class RoleFrom
         [CustomRoles.NormalShapeshifter] = From.AmongUs,
         [CustomRoles.NormalTracker] = From.AmongUs,
         [CustomRoles.NormalViper] = From.AmongUs,
-        [CustomRoles.Nova] = From.UchuAddon,
+        [CustomRoles.Nova] = From.SuperNewRoles,
         [CustomRoles.Obolus] = From.UchuAddon,
         [CustomRoles.Ogre] = From.TownOfHost_Y,
         [CustomRoles.Onmyoji] = From.SuperNewRoles,
