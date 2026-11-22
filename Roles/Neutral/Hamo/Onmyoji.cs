@@ -702,8 +702,7 @@ public sealed class Onmyoji : RoleBase, IKiller, ISelfVoter, IUsePetButton
 
     {
 
-        if (Is(PlayerControl.LocalPlayer)) return;
-
+        // ホストが陰陽師の時も手元の役職を替える (本編のキルボタンはホストの本編の役職がインポスター系でないと押せない)
         if (!Player.IsAlive()) return;
 
 
