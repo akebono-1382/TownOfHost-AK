@@ -469,7 +469,7 @@ namespace TownOfHostL
 
         // 発言が続いても前の声を遮らないよう、1 本の作業で順に合成して鳴らす。溜まりすぎたら古い物から捨てる
         private const int MaxQueue = 10;
-        private static readonly Queue<(string url, string text, int voiceType)> queue = new();
+        private static readonly Queue<(string url, string text, int voiceType, int volume, int speed)> queue = new();
         private static bool working;
 
         private static HttpClient client = null;
@@ -482,7 +482,7 @@ namespace TownOfHostL
         {
             lock (queue)
             {
-                queue.Enqueue((url, chat, voiceType));
+                queue.Enqueue((url, chat, voiceType, volume, speed));
                 while (queue.Count > MaxQueue) queue.Dequeue();
                 if (working) return;
                 working = true;
@@ -493,20 +493,21 @@ namespace TownOfHostL
         {
             while (true)
             {
-                (string url, string text, int voiceType) item;
+                (string url, string text, int voiceType, int volume, int speed) item;
                 lock (queue)
                 {
                     if (queue.Count == 0) { working = false; return; }
                     item = queue.Dequeue();
                 }
-                var wav = await Synthesize(item.url, item.text, item.voiceType);
+                var wav = await Synthesize(item.url, item.text, item.voiceType, item.volume, item.speed);
                 if (wav == null || wav.Length == 0) continue;
                 // SND_ASYNC を付けないので、鳴り終わるまでここで待つ (次の声と重ならない)
                 try { PlaySound(wav, IntPtr.Zero, PlaySoundFlags.SND_MEMORY); }
                 catch (Exception e) { Logger.Info($"playError, exception: {e}", "VoiceVoxHTTPRequest"); }
             }
         }
-        private static async System.Threading.Tasks.Task<byte[]> Synthesize(string url, string text, int voiceType)
+        // 音量と速さは声の一覧の 3・4 列目 (棒読みちゃんと同じく 100 が標準)。-1 はエンジンの既定のまま
+        private static async System.Threading.Tasks.Task<byte[]> Synthesize(string url, string text, int voiceType, int volume, int speed)
         {
             try
             {
@@ -516,6 +517,16 @@ namespace TownOfHostL
                 using var queryResponse = await GetHttpInstance().SendAsync(queryRequest);
                 if (!queryResponse.IsSuccessStatusCode) return null;
                 var query = await queryResponse.Content.ReadAsStringAsync();
+                if (volume >= 0 || speed > 0)
+                {
+                    var node = JsonNode.Parse(query);
+                    if (node != null)
+                    {
+                        if (volume >= 0) node["volumeScale"] = volume / 100f;
+                        if (speed > 0) node["speedScale"] = speed / 100f;
+                        query = node.ToJsonString();
+                    }
+                }
 
                 using var synthRequest = new HttpRequestMessage(HttpMethod.Post, $"{url}/synthesis?speaker={voiceType}&enable_interrogative_upspeak=true");
                 synthRequest.Headers.TryAddWithoutValidation("accept", "audio/wav");
