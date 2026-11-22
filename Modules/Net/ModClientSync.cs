@@ -413,16 +413,29 @@ public static class ModClientSync
             if (linkedHostId >= 0) Reset();
             return;
         }
-        if (linkedHostId == client.HostId) return;
+        if (linkedHostId == client.HostId)
+        {
+            // 結果画面からロビーへ戻ると、ホストからは入り直しに見えて送り先から外れている。
+            // ホストは入ってきた人に版を送り直すので、受けるたびに返し直す (ホストは送り先に居れば何もしない)
+            if (Time.realtimeSinceStartup - lastReplyAt >= 3f) Reply(client);
+            return;
+        }
         Reset();
         linkedHostId = client.HostId;
         OptionItem.BeginRemoteValues();
+        Reply(client);
+        Logger.Info("ホストが同じ版の TOHL なので、TOHL の画面を使います", "ModClientSync");
+    }
+
+    private static float lastReplyAt = float.NegativeInfinity;
+    private static void Reply(AmongUsClient client)
+    {
+        lastReplyAt = Time.realtimeSinceStartup;
         var writer = client.StartRpcImmediately(PlayerControl.LocalPlayer.NetId, (byte)CustomRPC.VersionCheck, SendOption.Reliable, client.HostId);
         writer.Write(Main.PluginVersion);
         writer.Write(BuildTag);
         writer.Write(Main.ForkId);
         client.FinishRpcImmediately(writer);
-        Logger.Info("ホストが同じ版の TOHL なので、TOHL の画面を使います", "ModClientSync");
     }
 
     /// <summary>客の間、毎フレーム。ホストが替わったら (自分が引き継いだ時も) 届いた物を捨てて本編の客に戻る</summary>
