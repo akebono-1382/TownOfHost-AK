@@ -530,8 +530,9 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
         target.RpcChangeRole(CustomRoles.Stand);
 
-        // 見え方の表に残す (会議明けの配り直しで、この見え方へ戻す)
-        target.RpcSetRoleNormal(RoleTypes.Crewmate);
+        // 見え方の表に残す (会議明けの配り直しで、この見え方へ戻す)。
+        // canOverride を false で送ると本編の客で roleAssigned が立ち、呼び出し時の Phantom などの役職替えが捨てられる
+        target.RpcSetRoleNormal(RoleTypes.Crewmate, canOverrideRole: true);
 
 
 
