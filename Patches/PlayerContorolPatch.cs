@@ -315,11 +315,24 @@ public static class PlayerControlCheckShapeshiftPatch
             {
                 var min = mpdistance.OrderBy(c => c.Value).FirstOrDefault();//一番値が小さい
                 PlayerControl targetm = min.Key;
-                targetm.RpcSetCustomRole(targetRole);
-                Logger.Info($"Make SKMadmate:{targetm.name}", "Shapeshift");
-                Main.SKMadmateNowCount++;
-                Utils.MarkEveryoneDirtySettings();
-                Utils.NotifyRoles();
+                // 君臨者・マーリン・独裁者・エイリアンの乗っ取りは変えない
+                if (targetm.GetCustomRole() is not (CustomRoles.King or CustomRoles.Merlin or CustomRoles.AlienHijack or CustomRoles.Autocrat))
+                {
+                    // ワルキューレは役職を替えようとした変身を跳ね返す (変身も取り消す)
+                    var source = shapeshifter.Is(CustomRoles.Egoist) || targetRole is CustomRoles.Jackaldoll
+                        ? Roles.Crewmate.Walkure.RoleChangeSource.Jackal
+                        : Roles.Crewmate.Walkure.RoleChangeSource.Impostor;
+                    if (Roles.Crewmate.Walkure.TryRejectRoleChange(shapeshifter, targetm, source))
+                    {
+                        shapeshifter.RpcRejectShapeshift();
+                        return false;
+                    }
+                    targetm.RpcSetCustomRole(targetRole);
+                    Logger.Info($"Make SKMadmate:{targetm.name}", "Shapeshift");
+                    Main.SKMadmateNowCount++;
+                    Utils.MarkEveryoneDirtySettings();
+                    Utils.NotifyRoles();
+                }
             }
         }
         // 役職の処理

@@ -134,6 +134,8 @@ namespace TownOfHostL.Roles.Neutral
         }
         public void SetSidekick(PlayerControl jackal, PlayerControl sidekick)
         {
+            // ワルキューレはサイドキックにされるのを跳ね返す
+            if (Roles.Crewmate.Walkure.TryRejectRoleChange(jackal, sidekick, Roles.Crewmate.Walkure.RoleChangeSource.Jackal)) return;
             jackal.RpcProtectedMurderPlayer(sidekick);
             jackal.SetKillCooldown();
 
