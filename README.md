@@ -2,26 +2,33 @@
 
 ## TownOfHost-Lへようこそ！
 ### よくある質問
-- 公開ルームは使えないの？
-  - innersloth公式からホストMOD各種〈TOH_Y,本家TOH,TOH4E,TOH-K,TOHEシリーズ,SNR(SHR)など〉へのアナウンスに基づいて、TOH系列は**公開ルーム(野良)で使用出来ないように**MODで制限をかけています。
-  - バニラユーザーが意図せずmod部屋に入れてしまい、ユーザーの混乱を招いたり、また公式への問い合わせが増加している為です。名前の上に書いてあるからいいだろ？というわけにもいかないのです。
-  - 非公開ルームでコードを共有して遊ぶのには問題ありませんが、公開ルームでのMOD部屋への誘導を促すための部屋作成はおやめ下さい。
+- 公開ルームは使えるの？
+  - 使えます。公式サーバーでは、TOH_L の部屋に Mod の部屋であることを示す印 (Mod GUID) を付けて立てます。
+  - TOH_L を入れた人が「ゲームを探す」で部屋を探すと、初期設定では TOH_L の部屋だけが表示されます。クライアント設定の「TOH_Lの部屋だけ表示」を切ると、ほかの部屋も探せます。
+  - 本編 (Mod なし) のプレイヤーも、部屋コードで TOH_L の部屋に入れます。
 
 - 役職の説明はどこを見ればいい？
-  - ゲーム内のヘルプコマンドや、[WIKIWIKI]()をご覧ください。
+  - ゲーム内の役職辞典や、チャットのヘルプコマンド (`/h` `/help`) をご覧ください。
   - 自身の役職説明が一番初めの会議にチャットで表示される設定もあります。
 
 - マッドの道連れないの？
   - 入れるマッドを選んでから、バフ属性を付与する>>リベンジャーの選択で道連れマッドを作成できます。それ以外にもたくさんの属性を付与することで様々な能力をもたせることが可能です。
 
-- ホスト以外もMODいれていい？
-  - 現状考慮して作成していない部分が多い為、サポートしていません。MODを導入している際、公開/非公開ルームに関わらず既に作成されている部屋には参加することができません。ホストで部屋立てをすることは通常通り可能です。
+- ホスト以外も Mod を入れていい？
+  - 入れても遊べます。TOH_L はホストだけが入れれば動く Mod なので、参加する人が入れる必要はありません。
+  - TOH_L を入れた人が他人の部屋に参加している間は、TOH_L の機能は止まり、本編のプレイヤーとして遊びます。TOH_L のホストの部屋でも、本編やほかの Mod のホストの部屋でも同じです。ホストと TOH_L のバージョンが違っても参加できます。
+  - 部屋を抜けて自分で部屋を立てると、TOH_L のホストに戻ります。参加中の部屋でホストを引き継いだ場合は、その部屋では本編のホストのままです。
+
+- ほかの Mod と一緒に入れられる？
+  - 本家TOH・TOH_Y を含め、ほかの Mod と同じ Among Us に一緒に入れることはできません。TOH_L だけを入れてください。
 
 - ペットの問題は？
-  - MOD側で制御しているため、死亡した方についていたペットは生存者には見えなくなります。現在のバニラの仕様とは異なりますのでご注意ください。
+  - ペットを撫でて能力を使う役職があるため、試合中は生きている全員にペットが付きます (ペットを付けていない人には仮のペットが付きます)。どの役職でも同じように付くので、ペットの有無で役職は分かりません。
+  - 死亡した方のペットは外れ、生存者には見えなくなります。現在のバニラの仕様とは異なりますのでご注意ください。
 
 - TOH_Yとなにがちがうの？
-  - 様々な役職や機能がたくさん追加されています。本家TOH、TOH_Yの機能も一部を除いて同じように使用できます。本家TOH、TOH_Yの仕様についてはTOH_Yでは現在WIKIWIKIなどでは記載を省略しているため、本家TOH、TOH_YのGitHub・WIKIWIKIをご確認ください。<br>
+  - TOH_Y の役職と機能を元に、作りを大きく組み直しています。役職を多く追加したほか、ホストの操作盤・役職辞典・チャットの便利機能・配信向けの機能 (観客席・コメントの板・視聴者の干渉) などを足しています。
+  - TOH_Y と同じ名前の役職・機能でも、挙動が変わっている所があります。
 
 ## ★この Mod について
 
@@ -30,9 +37,7 @@
 
 この Mod は、[TownOfHost](https://github.com/tukasa0001/TownOfHost) を元にした [TownOfHost_Y](https://github.com/Yumenopai/TownOfHost_Y) を改変したものです。2026年11月から、haru・waffle ほか TownOfHost-L の開発者が改変しています。ライセンスは元と同じ GPL-3.0 です ([LICENSE](LICENSE))。<br>
 
-このMODはTownOfHost_Yの機能・役職はそのままに、若干の機能追加や新役職を追加したMODとなります。追加された内容については、下記をご覧ください。<br>
-また、**本家TOH、TOH_Yを含む**、別MODとの共存はできません。必ず1つのMODを共有して使用してください。<br>
-本家TOH、TOH_Yと別の開発者が作成しているので、_の問題などに関して本家TOH、TOH_Yの方に問い合わせないでください。<br>
+本家TOH、TOH_Yと別の開発者が作成しているので、この Mod の問題などに関して本家TOH、TOH_Yの方に問い合わせないでください。<br>
 
 基本、このMODのバグ報告や質問などは[Discord](https://discord.gg/Bv8XRBvCXW)でのみ対応しております。<br>
 
@@ -41,24 +46,23 @@ This Readme is basically for Japanese only, and you may not be able to read it e
 
 We also use a translator for all in-game translations into English. If there is something wrong, please write in discord with the changed words and sentences and we may be able to help.<br>
 
+TownOfHost-L is a host-only mod: only the host needs to install it. Players who have TownOfHost-L installed can also join other rooms; while they are not the host, the mod's features are turned off and they play as normal players. Public lobbies are supported.<br>
+
 TownOfHost-L is a modified version of [TownOfHost_Y](https://github.com/Yumenopai/TownOfHost_Y), which is itself based on [TownOfHost](https://github.com/tukasa0001/TownOfHost). It has been modified by haru, waffle and other TownOfHost-L contributors since November 2026, and is licensed under GPL-3.0, the same as the original ([LICENSE](LICENSE)).<br>
 
 Thank you for finding and using TOH_L!<br>
 
 ## ★リリース
-**最新バージョンは[こちらからダウンロード]()**<br>
+**最新バージョンは[こちらからダウンロード](https://github.com/haru03741-glitch/TownOfHost_L/releases/latest)**<br>
 
 ※[TownOfHost](https://github.com/tukasa0001/TownOfHost) Fork<br>
-※[TownOfHost_Y]([https://github.com/tukasa0001/TownOfHost](https://github.com/Yumenopai/TownOfHost_Y)) Fork<br>
-
-本家TOHで搭載されている機能の説明は[本家TOH/GitHub](https://github.com/tukasa0001/TownOfHost#readme)からReadMeをご覧ください。
-TOH_Yに搭載されている機能の説明は[TOH_Yのwikiwiki](https://wikiwiki.jp/tohy_amongus/)をご覧ください。<br>
+※[TownOfHost_Y](https://github.com/Yumenopai/TownOfHost_Y) Fork<br>
 
 ## TOH_L外部サイト
-[WIKIWIKI]()・[Discord](https://discord.gg/Bv8XRBvCXW)・[X/Twitter]()
+[Discord](https://discord.gg/Bv8XRBvCXW)
 
 ## 開発者
-- 
+- haru・waffle ほか TownOfHost-L の開発者
 - TownOfHostの開発者様は省略。
 - TownOfHost_Yの開発者様は省略。
 
