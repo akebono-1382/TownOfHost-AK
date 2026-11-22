@@ -306,13 +306,15 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
 
         var pos = info.AppearanceTarget.GetTruePosition();
 
-        DiePlayerPos.Add(info.AppearanceTarget.PlayerId, pos);
+        // 生き返った人がまた死ぬと同じ番号が来るので、足すのではなく上書きする
+        if (DiePlayerPos.TryGetValue(info.AppearanceTarget.PlayerId, out var oldPos)) GetArrow.Remove(Player.PlayerId, oldPos);
+        DiePlayerPos[info.AppearanceTarget.PlayerId] = pos;
 
         GetArrow.Add(Player.PlayerId, pos);
 
         //Viperの死体なら削除検知を
 
-        if (info.AppearanceKiller.GetCustomRole() is CustomRoles.Viper) Viperkilledplayers.Add(info.AppearanceTarget.PlayerId, Utils.ViperDissolveTime);
+        if (info.AppearanceKiller.GetCustomRole() is CustomRoles.Viper) Viperkilledplayers[info.AppearanceTarget.PlayerId] = Utils.ViperDissolveTime;
 
 
 
