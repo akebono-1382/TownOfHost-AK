@@ -129,7 +129,7 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         ObjectOptionitem.Create(RoleInfo, "AssassinMerlin", true, null).SetColor(Merlin.RoleInfo.RoleColor);
         OptionMerlinHasTask = BooleanOptionItem.Create(RoleInfo, OptionName.MerlinHasTask, false, false);
         OptionMerlinNomalTask = Options.OverrideTasksData.Create(RoleInfo, rolename: CustomRoles.Merlin, tasks: (true, 2, 0, 0), OptionMerlinHasTask);
-        OptionMerlinWorkTask = IntegerOptionItem.Create(RoleInfo, OptionName.WalkerWalkTaskCount, (0, 99, 1), 6, false, OptionMerlinWorkTask);
+        OptionMerlinWorkTask = IntegerOptionItem.Create(RoleInfo, OptionName.WalkerWalkTaskCount, (0, 99, 1), 6, false, OptionMerlinHasTask);
         OptionMerlinCanSeeNeutral = BooleanOptionItem.Create(RoleInfo, OptionName.MerlinCanSeeNeutral, false, false);
         OptionMerlinCanSeeMadmate = BooleanOptionItem.Create(RoleInfo, OptionName.MerlinCanSeeMadmate, true, false, OptionMerlinCanSeeNeutral);
         OptionMerlinOnlyNeutralKiller = BooleanOptionItem.Create(RoleInfo, OptionName.MerlinOnlyNeutralKiller, false, false, OptionMerlinCanSeeNeutral);
