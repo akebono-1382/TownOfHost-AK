@@ -212,7 +212,11 @@ public static partial class AntiBlackout
             {
                 if (!filledCrew.TryGetValue(clientId, out var filled)) filledCrew[clientId] = filled = new();
                 filled.Add(exiledForFill);
+                lacking--;
             }
+            // 死者も追放者も足りず頭数をそろえられない (総人数 2 人の卓など)。本編の客はこの会議の後で暗転し、操作が戻らない
+            if (lacking > 0 && !pc.IsModClient())
+                logger.Warn($"{pc.name} の画面で生きたクルーが {lacking} 人足りない (会議の後で暗転する)");
 
             if (count > 0)
             {
