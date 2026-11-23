@@ -761,6 +761,8 @@ public sealed class Evolver : RoleBase, IImpostor, IUsePhantomButton
 
 
 
+    public override string GetAbilityButtonText() => GetString("EvolverAbilityText");
+
     public override string GetProgressText(bool comms = false)
 
     {

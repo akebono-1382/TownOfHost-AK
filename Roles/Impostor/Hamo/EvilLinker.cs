@@ -127,6 +127,8 @@ public sealed class EvilLinker : RoleBase, IImpostor, IUsePhantomButton, IUsePet
 
     bool IUsePhantomButton.IsPhantomRole => true;
 
+    public override string GetAbilityButtonText() => Translator.GetString("EvilLinkerAbilityText");
+
     bool IUsePhantomButton.IsresetAfterKill => false;
 
 

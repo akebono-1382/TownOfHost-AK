@@ -336,6 +336,7 @@ public sealed class StandMaster : RoleBase, ILNKiller, IUsePhantomButton
 
 
     public bool IsPhantomRole => true;
+    public override string GetAbilityButtonText() => Translator.GetString("StandMasterAbilityText");
 
     public bool IsresetAfterKill => false;
 
