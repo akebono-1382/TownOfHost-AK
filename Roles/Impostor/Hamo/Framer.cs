@@ -33,7 +33,7 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
         meetingNotice = OptionMeetingNotice.GetBool();
         impostorAware = OptionImpostorAware.GetBool();
         sourceId = byte.MaxValue;
-        framed.Clear();
+        // 姿を変えた人の一覧は全員の共有なので、ここでは消さない (試合の途中で誰かがこの役職になった時に、ほかの人が姿を変えさせた相手が元に戻らなくなる)。試合の始めは Init が空にする
     }
 
     private static OptionItem OptionKillCooldown;
@@ -60,6 +60,8 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
     private byte sourceId;
     // 姿を変えている人 → 元に戻す時刻
     public static readonly Dictionary<byte, float> framed = new();
+    [Attributes.GameModuleInitializer]
+    public static void Init() => framed.Clear();
     private bool usedSinceMeeting;
 
     private static void SetupOptionItem()

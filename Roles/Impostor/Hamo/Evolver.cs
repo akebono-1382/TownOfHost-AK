@@ -87,7 +87,8 @@ public sealed class Evolver : RoleBase, IImpostor, IUsePhantomButton
 
         pendingEvolve = null;
 
-        EatenBodies.Clear();
+        // EatenBodies は全員の共有なので、ここでは消さない (試合の途中で誰かがエボルバーになった時に、ほかの人が食べた死体が通報できるようになる)。
+        // 試合の始めは Init と OnSpawn(initialState) が空にする
 
 
 

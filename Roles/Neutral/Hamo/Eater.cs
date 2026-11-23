@@ -76,6 +76,8 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
 
     readonly Dictionary<byte, Vector3> deadBodyPositions = new();
     static readonly HashSet<byte> EatenBodies = new();
+    [Attributes.GameModuleInitializer]
+    public static void Init() => EatenBodies.Clear();
 
     int eatOrSwallowCount;
     bool eatMode;
@@ -92,7 +94,7 @@ public sealed class Eater : RoleBase, IKiller, IUsePhantomButton, IKillFlashSeea
         eatOrSwallowCount = 0;
         eatMode = true;
         pendingSwallow = null;
-        EatenBodies.Clear();
+        // 食べた死体の一覧は全員の共有なので、ここでは消さない (試合の途中で誰かがこの役職になった時に、ほかの人が食べた死体が通報できるようになる)。試合の始めは Init が空にする
         Viperkilledplayers = new();
     }
     public override void Add()

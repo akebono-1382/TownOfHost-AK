@@ -63,7 +63,7 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
 
         turneat = 0;
 
-        staticEatedPlayers.Clear();
+        // 食べた死体の一覧は全員の共有なので、ここでは消さない (試合の途中で誰かがこの役職になった時に、ほかの人が食べた死体が通報できるようになる)。試合の始めは Init が空にする
 
         Viperkilledplayers = new();
 
@@ -117,6 +117,10 @@ public sealed class Vulture : RoleBase, IKillFlashSeeable, IAdditionalWinner
     Dictionary<byte, float> Viperkilledplayers = new();//とける予定の死体
 
     static List<byte> staticEatedPlayers = new();//食べられたおにく
+
+    [Attributes.GameModuleInitializer]
+
+    public static void Init() => staticEatedPlayers.Clear();
 
     int turneat;
 
