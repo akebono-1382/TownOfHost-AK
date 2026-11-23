@@ -42,7 +42,6 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         NowState = AssassinMeeting.WaitMeeting;
         MarlinIds = new();
         isDeadCache = new();
-        NowUse = false;
         GuessId = byte.MaxValue;
         cancallmeetingkill = OptionCanCallMeetingKill.GetBool();
         CustomRoleManager.GameEndCountAdjustersOthers.Add(CountWaitingAssassins);
@@ -61,7 +60,10 @@ public sealed class Assassin : RoleBase, IImpostor, IUsePhantomButton, IDoubleTr
         }
     }
     byte GuessId;
+    // アサシン会議の間。全員の自分投票の能力を止めるので、試合の始めに必ず戻す (アサシンがいない試合にも残さない)
     public static bool NowUse;
+    [Attributes.GameModuleInitializer]
+    public static void InitStatic() => NowUse = false;
     public static List<byte> MarlinIds = new();
     public AssassinMeeting NowState;
     static Dictionary<byte, (bool isDead, bool Disconnected)> isDeadCache = new();

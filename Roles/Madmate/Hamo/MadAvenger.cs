@@ -35,7 +35,6 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
         canSeeDeathReason = Options.MadmateCanSeeDeathReason.GetBool();
         Count = OptionCount.GetFloat();
         Cooldown = OptionCooldown.GetFloat();
-        Skill = false;
         Guessd = new(GameData.Instance.PlayerCount);
         fin = false;
         can = false;
@@ -48,7 +47,10 @@ public sealed class MadAvenger : RoleBase, IKillFlashSeeable, IDeathReasonSeeabl
     private static OptionItem OptionCount;
     private static OptionItem OptionVent;
     private static OptionItem OptionCanseeimpostorCount;
+    // 革命会議の間。全員の自分投票の能力を止めるので、試合の始めに必ず戻す (マッドアベンジャーがいない試合にも残さない)
     public static bool Skill;
+    [Attributes.GameModuleInitializer]
+    public static void InitStatic() => Skill = false;
     float Cooldown;
     float Count;
     bool fin;

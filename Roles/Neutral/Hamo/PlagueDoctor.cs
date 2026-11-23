@@ -115,6 +115,8 @@ public sealed class PlagueDoctor : RoleBase, IKiller
     private static Dictionary<byte, float> InfectInfos;
     private static bool InfectActive;
     private static bool LateCheckWin;
+    [Attributes.GameModuleInitializer]
+    public static void InitLateCheckWin() => LateCheckWin = false;
     private static List<PlagueDoctor> PlagueDoctors = new();
     static bool NonPlague;
 

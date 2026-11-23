@@ -34,11 +34,6 @@ public sealed class Braid : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
         canSeeDeathReason = Options.MadmateCanSeeDeathReason.GetBool();
         BraidCanSeeDriver = OptionBraidCanSeeDriver.GetBool();
         DriverCanSeeBraid = OptionDriverCanSeeBraid.GetBool();
-        TaskFin = false;
-        DriverseeKillFlash = false;
-        Driverseedeathreason = false;
-        DriverseeVote = false;
-        GivedGuard = false;
         HasGuard = true;
         KillflashtaskTrigger = OptionGiveKillFlashtaskTrigger.GetInt();
         DeathreasontaskTrigger = OptionGiveKnowDeathreasontaskTrigger.GetInt();
@@ -55,6 +50,16 @@ public sealed class Braid : RoleBase, IKillFlashSeeable, IDeathReasonSeeable
     public static bool Driverseedeathreason;
     public static bool DriverseeVote;
     public static bool GivedGuard;
+    // ドライバーに渡した能力はドライバーが読むので、ブレイドのいない試合に残さないよう試合の始めに戻す
+    [Attributes.GameModuleInitializer]
+    public static void InitStatic()
+    {
+        TaskFin = false;
+        DriverseeKillFlash = false;
+        Driverseedeathreason = false;
+        DriverseeVote = false;
+        GivedGuard = false;
+    }
     private static bool canSeeKillFlash;
     private static bool canSeeDeathReason;
     public static bool BraidCanSeeDriver;

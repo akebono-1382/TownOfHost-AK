@@ -31,10 +31,11 @@ public sealed class EvilDyer : RoleBase, IImpostor
         CustomRoleManager.EveryoneNeedsSeenNamesOthers.Add(() => IsColorCamouflage);
         killCooldown = OptionKillCooldown.GetFloat();
         dyerTime = OptionDyerTime.GetFloat();
-
-        IsColorCamouflage = false;
     }
     public static bool IsColorCamouflage = false;
+    // 名前の隠しの判定が毎回読むので、染めの途中で試合が終わっても次の試合に残さない
+    [Attributes.GameModuleInitializer]
+    public static void InitStatic() => IsColorCamouflage = false;
     // 染めの世代。続けてキルした時や会議で戻した後に、古い戻しの予約が走らないようにする
     private static int dyeId;
     // 0 = 赤
