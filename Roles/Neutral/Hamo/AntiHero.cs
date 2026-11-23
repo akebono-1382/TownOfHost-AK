@@ -197,11 +197,18 @@ public sealed class AntiHero : RoleBase, IAdditionalWinner, IKiller
 
 
 
+        remainingKillCount--;
+    }
+
+    // 守りなどでキルが止められた時は「キルした」ことにしない。キル無しの追加勝利・乗っ取る陣営・印は、キルが成立した時だけ変える
+    public void OnMurderPlayerAsKiller(MurderInfo info)
+    {
+        if (info.AttemptTarget == null || info.IsSuicide) return;
+        if (!AmongUsClient.Instance.AmHost) return;
         var targetRole = info.AttemptTarget.GetCustomRole();
 
 
 
-        remainingKillCount--;
 
         hasKilledEver = true;
 

@@ -85,7 +85,6 @@ public sealed class BountyHunter : RoleBase, IImpostor
                 Logger.Info($"{killer?.Data?.PlayerName}:ターゲットをキル", "BountyHunter");
                 Main.AllPlayerKillCooldown[killer.PlayerId] = SuccessKillCooldown;
                 killer.SyncSettings();//キルクール処理を同期
-                ResetTarget();
             }
             else
             {
@@ -95,6 +94,12 @@ public sealed class BountyHunter : RoleBase, IImpostor
             }
         }
         return;
+    }
+    // 守りでキルが止められた時は狙いを引き直さない (倒した時だけ次の狙いへ)
+    public void OnMurderPlayerAsKiller(MurderInfo info)
+    {
+        if (!AmongUsClient.Instance.AmHost || info.IsSuicide) return;
+        if (GetTarget() == info.AttemptTarget) ResetTarget();
     }
     public override void OnFixedUpdate(PlayerControl player)
     {

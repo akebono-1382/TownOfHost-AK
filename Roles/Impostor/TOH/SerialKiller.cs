@@ -61,8 +61,10 @@ namespace TownOfHostL.Roles.Impostor
         ///</summary>
         public bool HasKilled()
             => Player != null && Player.IsAlive() && MyState.GetKillCount(true) > 0;
-        public void OnCheckMurderAsKiller(MurderInfo info)
+        // 守りでキルが止められた時は自爆までの時間を戻さない (キルが成立した時だけ)
+        public void OnMurderPlayerAsKiller(MurderInfo info)
         {
+            if (info.IsSuicide) return;
             var killer = info.AttemptKiller;
             SuicideTimer = null;
             killer.MarkDirtySettings();

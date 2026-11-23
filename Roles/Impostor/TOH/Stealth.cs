@@ -49,10 +49,11 @@ public sealed class Stealth : RoleBase, IImpostor
     /// <summary>暗くしている部屋</summary>
     private SystemTypes? darkenedRoom = null;
 
-    public void OnCheckMurderAsKiller(MurderInfo info)
+    // 守りでキルが止められた時は暗くしない (キルが成立した時だけ)
+    public void OnMurderPlayerAsKiller(MurderInfo info)
     {
-        // キルできない，もしくは普通のキルじゃないならreturn
-        if (!info.CanKill || !info.DoKill || info.IsSuicide || info.IsAccident || info.IsFakeSuicide)
+        // 普通のキルじゃないならreturn
+        if (!AmongUsClient.Instance.AmHost || info.IsSuicide || info.IsAccident || info.IsFakeSuicide)
         {
             return;
         }
