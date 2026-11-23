@@ -28,5 +28,8 @@ namespace TownOfHostL
         public void WritePacked(int val) => Writer.WritePacked(val);
         public void WritePacked(uint val) => Writer.WritePacked(val);
         public void WriteNetObject(InnerNetObject obj) => Writer.WriteNetObject(obj);
+        // Unity の Object を Write に渡すと bool への暗黙の変換で 1 バイトの真偽値が書かれるので、コンパイルで止める。番号は WriteNetObject で書く
+        [System.Obsolete("Use WriteNetObject for InnerNetObject; UnityEngine.Object would be written as a bool.", true)]
+        public void Write(UnityEngine.Object obj) => throw new System.NotSupportedException();
     }
 }

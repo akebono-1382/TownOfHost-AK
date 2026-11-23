@@ -233,6 +233,9 @@ namespace TownOfHostL
         public CustomRpcSender WritePacked(int val) => Write(w => w.WritePacked(val));
         public CustomRpcSender WritePacked(uint val) => Write(w => w.WritePacked(val));
         public CustomRpcSender WriteNetObject(InnerNetObject obj) => Write(w => w.WriteNetObject(obj));
+        // Unity の Object を Write に渡すと bool への暗黙の変換で 1 バイトの真偽値が書かれるので、コンパイルで止める。番号は WriteNetObject で書く
+        [System.Obsolete("Use WriteNetObject for InnerNetObject; UnityEngine.Object would be written as a bool.", true)]
+        public CustomRpcSender Write(UnityEngine.Object obj) => throw new System.NotSupportedException();
         #endregion
 
         private CustomRpcSender Write(Action<MessageWriter> action)
