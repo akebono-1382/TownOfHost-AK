@@ -55,10 +55,13 @@ public sealed class Jack : RoleBase, IImpostor
     {
         // 使用回数がない時は通常キル
         if (!info.CanKill || removeKillLimit == 0) return;
+        // 守りで止まるキルは 1 回押しにしない (遅れて走る特殊キルは守りを通らないので、相手が死んでしまう)
+        if (info.CheckHasGuard()) return;
 
         var (killer, target) = info.AttemptTuple;
         info.DoKill = killer.CheckDoubleTrigger(target, () =>
         {
+            if (!killer.IsAlive() || !target.IsAlive()) return;
             target.SetRealKiller(killer);
             killer.RpcMurderPlayer(target, true);
 

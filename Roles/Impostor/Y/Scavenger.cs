@@ -78,10 +78,13 @@ public sealed class Scavenger : RoleBase, IImpostor
     {
         if (!Is(info.AttemptKiller) || info.IsSuicide) return;
         if (!IsEatUpKillLimit || limitCount <= 0) return;
+        // 守りで止まるキルは 1 回押しにしない (遅れて走る特殊キルは守りを通らないので、相手が死んでしまう)
+        if (!info.CanKill || info.CheckHasGuard()) return;
 
         (var killer, var target) = info.AttemptTuple;
         info.CanKill = killer.CheckDoubleTrigger(target, () =>
         {
+            if (!killer.IsAlive() || !target.IsAlive()) return;
             var killerId = killer.PlayerId;
             var targetId = target.PlayerId;
 

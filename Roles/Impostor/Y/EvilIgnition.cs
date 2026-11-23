@@ -86,12 +86,15 @@ public sealed class EvilIgnition : RoleBase, IImpostor
     {
         if (!Is(info.AttemptKiller) || info.IsSuicide) return;
         if (ignitionCount <= 0) return;
+        // 守りで止まるキルは 1 回押しにしない (遅れて走る特殊キルは守りを通らないので、相手が死んでしまう)
+        if (!info.CanKill || info.CheckHasGuard()) return;
 
         (var killer, var target) = info.AttemptTuple;
         info.CanKill = killer.CheckDoubleTrigger(target, () => { IgnitionKill(killer, target); });
     }
     void IgnitionKill(PlayerControl killer, PlayerControl target)
     {
+        if (!killer.IsAlive() || !target.IsAlive()) return;
         target.SetRealKiller(killer);
         killer.RpcMurderPlayer(target, true);
         Logger.Info($"{killer.GetNameWithRole()}：発火 発火先→{target.GetNameWithRole()} || 残り{ignitionCount}回", "EvilFire");
