@@ -177,7 +177,7 @@ public sealed class Framer : RoleBase, IImpostor, IUsePhantomButton, IDoubleTrig
             if (clientId == -1) continue;
 
             sender.AutoStartRpc(target.NetId, (byte)RpcCalls.Shapeshift, clientId)
-                .Write(pc)
+                .WriteNetObject(pc)
                 .Write(false)
                 .EndRpc();
         }
