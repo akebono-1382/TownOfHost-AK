@@ -100,6 +100,8 @@ class VotingCompleteStatePatch
 [HarmonyPatch(typeof(ExileController), nameof(ExileController.WrapUp))]
 class ExileWrapUpStatePatch
 {
+    // 追放の確定 (ExilePatch の WrapUp の Postfix) より先に走る。優先度が無いと順は型の並びで決まり、ファイルの増減で入れ替わる
+    [HarmonyPriority(Priority.First)]
     public static void Postfix()
     {
         GameStates.CalledMeeting = false;
