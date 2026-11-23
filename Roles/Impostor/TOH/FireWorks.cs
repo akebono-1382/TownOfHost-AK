@@ -121,6 +121,8 @@ public sealed class FireWorks : RoleBase, IImpostor
                                 fireTarget.SetRealKiller(Player);
                                 fireTarget.RpcMurderPlayer(fireTarget);
                             }
+                            // 範囲が重なる花火で同じ人を 2 回死なせない
+                            break;
                         }
                     }
                     if (suicide)
