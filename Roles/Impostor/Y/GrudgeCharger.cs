@@ -115,6 +115,16 @@ public sealed class GrudgeCharger : RoleBase, IImpostor
         if (KillWaitPlayer == null) return;
         if (!Player.IsAlive()) return;
 
+        // 狙いが他の理由で死んだり抜けたりしたら外す (残すと会議まで次の狙いを選べない)
+        if (!KillWaitPlayer.IsAlive())
+        {
+            ClearTarget();
+            Player.MarkDirtySettings();
+            Player.RpcResetAbilityCooldown();
+            Utils.NotifyRoles(SpecifySeer: Player);
+            return;
+        }
+
         if (killLimit <= 0) return;
 
         Vector2 GCpos = Player.transform.position; //GCの位置

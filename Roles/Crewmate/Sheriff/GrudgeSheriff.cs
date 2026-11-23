@@ -163,6 +163,15 @@ public sealed class GrudgeSheriff : RoleBase
             KillWaitPlayer = null;
             return;
         }
+        // 狙いが他の理由で死んだり抜けたりしたら外す (残すと幽霊に近づいた時に撃ち、クルーなら誤射で自分が死ぬ)
+        if (!KillWaitPlayer.IsAlive())
+        {
+            KillWaitPlayerSelect = null;
+            KillWaitPlayer = null;
+            Player.MarkDirtySettings();
+            Utils.NotifyRoles(SpecifySeer: Player);
+            return;
+        }
 
         Vector2 GSpos = Player.transform.position;//GSの位置
 
