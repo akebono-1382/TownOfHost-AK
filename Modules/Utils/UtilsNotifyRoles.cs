@@ -375,11 +375,6 @@ namespace TownOfHost
                                 TargetPlayerName = $"<size=0>{TargetPlayerName}</size> ";
                                 name = $"<size=0>{name}</size>";
                             }
-                            if (Camouflager.NowUse)
-                            {
-                                TargetPlayerName = $"メロンソーダ<size=0>{TargetPlayerName}</size> ";
-                                name = $"メロンソーダ<size=0>{name}</size>";
-                            }
                             //全てのテキストを合成します。
                             var lineheight = string.Format("<line-height={0}%>", "85");
                             string TargetName = $"{lineheight}{TargetRoleText}{(TemporaryName ? name : TargetPlayerName)}{((TemporaryName && nomarker) ? "" : TargetDeathReason + TargetMark + TargetSuffix)}";
