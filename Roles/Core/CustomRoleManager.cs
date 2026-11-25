@@ -317,6 +317,7 @@ public static class CustomRoleManager
     public static void OnMurderPlayer(PlayerControl appearanceKiller, PlayerControl appearanceTarget)
     {
         if (!AmongUsClient.Instance.AmHost) return;
+        
 
         //MurderInfoの取得
         if (CheckMurderInfos.TryGetValue(appearanceKiller.PlayerId, out var info))
@@ -896,7 +897,8 @@ public enum CustomRoles
     Miner,
     Blinker,
     Timeleaper,
-    Melonsoda,
+    Rocket,
+    Hatekiller,
     //DEBUG only Impostor
     //Madmate
     MadGuardian,

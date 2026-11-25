@@ -168,6 +168,10 @@ public class MeetingVoteManager
             numVotes = 0;
         }
 
+        var voterpc = voter.GetPlayerControl();
+        var votedpc = voteFor.GetPlayerControl();
+        Hatekiller.CheckVote(voterpc, votedpc, numVotes);
+
         if (doVote)
         {
             vote.DoVote(voteFor, numVotes);

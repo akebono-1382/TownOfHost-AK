@@ -522,7 +522,7 @@ namespace TownOfHost
         public static OptionItem OptionBatchSetting;
         public static OptionItem OptionAllImpostorKillCool;
         public static OptionItem OptionAllNeutralKillCool;
-
+        public static OptionItem ChRoleText;
         // プリセット対象外
         public static OptionItem NoGameEnd;
         public static OptionItem AutoDisplayLastResult;
@@ -1137,6 +1137,8 @@ namespace TownOfHost
                     OptionItem.SyncAllOptions();
                     OptionSaver.Save();
                 });
+            ChRoleText = BooleanOptionItem.Create(113600, "ChRoleText", true, TabGroup.MainSettings, false)
+                .SetColor(UtilsRoleText.GetRoleColor(CustomRoles.LastNeutral));
             RandomPreset = BooleanOptionItem.Create(113500, "RandomPreset", false, TabGroup.MainSettings, true)
                 .SetHeader(true)
                 .SetColorcode("#49a484");
@@ -1234,7 +1236,7 @@ namespace TownOfHost
                     }
                     foreach (var info in RoleList.OrderBy(role => role.OptionSort.SortNumber))
                     {
-                        if (info.RoleName is CustomRoles.AlienHijack or CustomRoles.RaccoonChild or CustomRoles.SKMadmate or CustomRoles.Emptiness) continue;
+                        if (info.RoleName is CustomRoles.AlienHijack or CustomRoles.RaccoonChild or CustomRoles.SKMadmate or CustomRoles.Emptiness or CustomRoles.GM) continue;
                         SetupRoleOptions(info);
                         info.OptionCreator?.Invoke();
                     }

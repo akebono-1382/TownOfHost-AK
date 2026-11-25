@@ -30,13 +30,19 @@ public sealed class GM : RoleBase, IKillFlashSeeable
     : base(
         RoleInfo,
         player,
-        () => HasTask.False
+        () => HasTask.False 
     )
     {
     }
-    bool? IKillFlashSeeable.CheckKillFlash(MurderInfo info) => true;
+    bool? IKillFlashSeeable.CheckKillFlash(MurderInfo _) => true;
     public override void StartGameTasks()
     {
-        if (Player.IsAlive()) Player.RpcExileV3();
+        if (Player.PlayerId != 0)
+        {
+            Player.RpcSetCustomRole(CustomRoles.Crewmate);
+            return;
+        }
+        Player.RpcExileV3();
+        Player.GetPlayerState().SetDead();
     }
 }

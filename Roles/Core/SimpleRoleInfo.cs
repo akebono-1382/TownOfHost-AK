@@ -188,7 +188,14 @@ public class SimpleRoleInfo
             AddHaveRole,
             Desc
             );
-        roleInfo.Description = new SingleRoleDescription(roleInfo);
+        if (roleName.IsVanilla())
+        {
+            roleInfo.Description = new VanillaRoleDescription(roleInfo, baseRoleType());
+        }
+        else
+        {
+            roleInfo.Description = new SingleRoleDescription(roleInfo);
+        }
         return roleInfo;
     }
     public static SimpleRoleInfo CreateForVanilla(
@@ -276,13 +283,14 @@ public class SimpleRoleInfo
                 customRoleType = CustomRoleTypes.Impostor;
                 countType = CountTypes.Impostor;
                 configId = 40;
+                OptionSort = (0, 2);
                 break;
             case RoleTypes.Viper:
                 roleName = CustomRoles.Viper;
                 customRoleType = CustomRoleTypes.Impostor;
                 countType = CountTypes.Impostor;
                 configId = 23050;
-                OptionSort = (0, 2);
+                OptionSort = (0, 3);
                 break;
             default:
                 roleName = CustomRoles.Crewmate;

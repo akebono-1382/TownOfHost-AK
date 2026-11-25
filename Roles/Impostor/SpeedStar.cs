@@ -5,8 +5,6 @@ using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 
 namespace TownOfHost.Roles.Impostor;
-// Memo
-// スピードブースター・トラッパーとの相性最悪だからどうにかする
 public sealed class SpeedStar : RoleBase, IImpostor, IUsePhantomButton
 {
     public static readonly SimpleRoleInfo RoleInfo =
@@ -80,7 +78,15 @@ public sealed class SpeedStar : RoleBase, IImpostor, IUsePhantomButton
             {
                 foreach (var pc in PlayerCatch.AllPlayerControls)
                 {
-                    Main.AllPlayerSpeed[pc.PlayerId] = allplayerspeed[pc.PlayerId];
+                    //トラッパー等でずっと動けなくならないように
+                    if (allplayerspeed[pc.PlayerId] == Main.MinSpeed)
+                    {
+                        Main.AllPlayerSpeed[pc.PlayerId] = Main.NormalOptions.PlayerSpeedMod;
+                    }
+                    else
+                    {
+                        Main.AllPlayerSpeed[pc.PlayerId] = allplayerspeed[pc.PlayerId];
+                    }
                 }
                 _ = new LateTask(() => UtilsOption.MarkEveryoneDirtySettings(), 0.2f, "", true);
                 Player.RpcResetAbilityCooldown();

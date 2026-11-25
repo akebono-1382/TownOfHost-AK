@@ -1,13 +1,9 @@
-using System.Linq;
 using AmongUs.GameOptions;
 using HarmonyLib;
 using Hazel;
-using TownOfHost.Modules;
 using TownOfHost.Roles.Core;
 using TownOfHost.Roles.Core.Interfaces;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.ParticleSystem.PlaybackState;
 
 namespace TownOfHost.Roles.Crewmate;
 

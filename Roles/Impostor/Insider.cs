@@ -110,9 +110,12 @@ namespace TownOfHost.Roles.Impostor
 
         public override void OverrideDisplayRoleNameAsSeer(PlayerControl seen, ref bool enabled, ref Color roleColor, ref string roleText, ref bool addon)
         {
+            if (Is(seen)) return;
+
             addon = false;
             enabled |= KnowTargetRole(seen);
-            if (Player.IsAlive() && !CanSeeRole(seen.GetCustomRole()))
+            //未設定の場合不明にしない
+            if (Player.IsAlive() && !CanSeeRole(seen.GetCustomRole()) && CanSeeRoles.Count > 0)
             {
                 roleColor = ModColors.NeutralGray;
                 roleText = GetString("Unknown");

@@ -86,28 +86,26 @@ static class Event
     }
     public static Dictionary<CustomRoles, Func<bool>> EventRoles = new()
     {
-        //{CustomRoles.Melonsoda, () => Special || April}
     };
     public static HashSet<CustomRoles> remove = new()
     {
-        //封印
-        CustomRoles.Explosioner,
-        CustomRoles.RocketLauncher,
+        //Event
         CustomRoles.Altair,
         CustomRoles.Vega,
         CustomRoles.Cakeshop,
-        CustomRoles.Poisoner,
+
+        //封印
+        CustomRoles.Explosioner,
+        CustomRoles.RocketLauncher,
         CustomRoles.Busker,
+        CustomRoles.Usurper,
 
         //一旦封印
         CustomRoles.Godfather,
         CustomRoles.Janitor,
         CustomRoles.Mafia,
-        CustomRoles.Raccoon,
-        CustomRoles.RaccoonChild,
-        CustomRoles.Blinker,
         CustomRoles.EvilChainer,
-        CustomRoles.Melonsoda,
+        CustomRoles.Poisoner,
     };
 
     public static Dictionary<(CustomRoles role, bool isApiData), bool> cachedEventFlags = new(EventRoles.Count);

@@ -58,7 +58,7 @@ namespace TownOfHost
         //Sorry for many Japanese comments.
         public const string PluginGuid = "com.akebono.TownOfHost-AK";
         public const string PluginVersion = "11.21";
-        public const string PluginShowVersion = "11.21a";
+        public const string PluginShowVersion = "11.21b";
         public const string ModVersion = ".0";//リリースver用バージョン変更
 
         /// 配布するデバッグ版なのであればtrue。リリース時にはfalseにすること。
@@ -356,6 +356,7 @@ namespace TownOfHost
         NotGather,
         Hit,
         Suffocation,
+        Launched,
         etc = -1
     }
     //WinData

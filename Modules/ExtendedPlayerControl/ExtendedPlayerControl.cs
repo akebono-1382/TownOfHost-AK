@@ -409,6 +409,13 @@ namespace TownOfHost
             float killdis = NormalGameOptionsV12.KillDistances[Mathf.Clamp(GameManager.Instance.LogicOptions.currentGameOptions.GetInt(Int32OptionNames.KillDistance), 0, 2)];
 
             if (pc.Data.IsDead || pc.inVent) return null;
+            if (Rocket.OptionGrabedCanKill.GetBool() is false)
+            {
+                foreach (var rkt in Rocket.Rockets)
+                {
+                    if (rkt.GrabbedPlayers.Contains(pc.PlayerId)) return null;
+                }
+            }
 
             var roletype = pc.GetCustomRole().GetCustomRoleTypes();
             Vector2 psi = pc.GetTruePosition();
@@ -421,6 +428,8 @@ namespace TownOfHost
 
                 if (tage == null || tage.inVent || !tage.IsAlive()) continue;
                 if (pc.Is(CustomRoles.Havoc) && tage.Is(CustomRoles.Havoc)) continue;
+                if (Rocket.LaunchedPlayers.ContainsKey(tage.PlayerId)) continue;
+                if (pc.GetRoleClass() is Rocket rocket && rocket.Ignore.Contains(tage.PlayerId)) continue;
 
                 if (!SuddenDeathMode.NowSuddenDeathTemeMode && IsOneclick && tage.GetCustomRole().GetCustomRoleTypes() == roletype && roletype is CustomRoleTypes.Impostor
                 && !tage.Is(CustomRoles.OneWolf) && !pc.Is(CustomRoles.OneWolf) && !pc.Is(CustomRoles.Amnesiac)) continue;
@@ -794,6 +803,10 @@ namespace TownOfHost
                 return player.TryGetKilltarget();
             }
             var players = player.GetPlayersInAbilityRangeSorted(false);
+            if (player.GetRoleClass() is Rocket rkt && rkt.Ignore.Contains(players[0].PlayerId))
+            {
+                players.Remove(players[0]);
+            }
             return players.Count <= 0 ? null : players[0];
         }
         public static bool IsWinner(this PlayerControl player, CustomWinner? team = null)

@@ -195,7 +195,10 @@ namespace TownOfHost
                         PlayerControl target = null;
                         if (!__instance.CanUseKillButton()) target = null;
                         else { target = __instance.TryGetKilltarget(); }
-                        HudManager.Instance.KillButton.SetTarget(target);
+                        if (player.GetRoleClass() is Rocket rkt is false || !rkt.Ignore.Contains(target.PlayerId))
+                        {
+                            HudManager.Instance.KillButton.SetTarget(target);
+                        }
                     }
                 }
                 if (GameStates.task) GameStates.turntimer += Time.fixedDeltaTime;

@@ -321,7 +321,7 @@ namespace TownOfHost
             if (clientId == -1)
             {
                 Logger.Error($"clientIdが-1!", "RpcSetRoleDesync");
-                //return;
+                return;
             }
             //player: ロールの変更対象
 
@@ -542,7 +542,8 @@ namespace TownOfHost
                 {
                     if (player.PlayerId == PlayerControl.LocalPlayer.PlayerId)
                     {
-                        if (GameStates.IsMeeting is false)
+                        //GMでモーションはただうるさいだけなので消す
+                        if (GameStates.IsMeeting is false && !PlayerControl.LocalPlayer.Is(CustomRoles.GM))
                             DestroyableSingleton<HudManager>.Instance.KillOverlay.ShowKillAnimation(player.Data, player.Data);
                     }
                     else

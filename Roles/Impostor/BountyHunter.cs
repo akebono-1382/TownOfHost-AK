@@ -188,7 +188,7 @@ public sealed class BountyHunter : RoleBase, IImpostor
         ChangeTimer = 0f;
 
         Logger.Info($"{Player.GetNameWithRole().RemoveHtmlTags()}:ターゲットリセット", "BountyHunter");
-        Player.RpcResetAbilityCooldown();//タイマー（変身クールダウン）のリセットと
+        Player.RpcResetAbilityCooldown();
 
         var cTargets = new List<PlayerControl>(PlayerCatch.AllAlivePlayerControls
         .Where(pc =>
@@ -207,6 +207,11 @@ public sealed class BountyHunter : RoleBase, IImpostor
         if (cTargets.Count <= 0)
         {
             Logger.Warn("ターゲットの指定に失敗しました:ターゲット候補が存在しません", "BountyHunter");
+            if (Target.IsAlive())
+            {
+                Logger.Warn($"ターゲット候補が存在しまないため、ターゲットを前回のターゲット({Target.GetNameWithRole().RemoveHtmlTags()}にしました)", "BountyHunter");
+                return Target;
+            }
             return null;
         }
 

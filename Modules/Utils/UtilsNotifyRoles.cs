@@ -368,14 +368,14 @@ namespace TownOfHost
 
                             if (((IsActive(SystemTypes.Comms) && Options.CommsCamouflage.GetBool())
                             || (role is CustomRoles.Monochromer && seerisAlive)
-                            || (Camouflager.NowUse && Melonsoda.Owner == byte.MaxValue)
+                            || Camouflager.NowUse
                             || (SuddenDeathMode.SuddenCannotSeeName && !TemporaryName))
                             && (!((targetrole as Jumper)?.Jumping == true)))
                             {
                                 TargetPlayerName = $"<size=0>{TargetPlayerName}</size> ";
                                 name = $"<size=0>{name}</size>";
                             }
-                            if (Camouflager.NowUse & Melonsoda.Owner != byte.MaxValue)
+                            if (Camouflager.NowUse)
                             {
                                 TargetPlayerName = $"メロンソーダ<size=0>{TargetPlayerName}</size> ";
                                 name = $"メロンソーダ<size=0>{name}</size>";

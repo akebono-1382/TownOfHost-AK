@@ -37,13 +37,11 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
     public static void Init()
     {
         NowUse = false;
-        MyUse = false;
     }
     static OptionItem OptionKillCoolDown;
     static OptionItem OptionCooldown;
     static OptionItem OptionAblitytime;
     public static bool NowUse;
-    public static bool MyUse;
     float Limit;
     List<byte> VentPlayers = new();
     enum OptionName { GhostNoiseSenderTime/* 効果時間って翻訳一緒なので・・・ */}
@@ -103,7 +101,6 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
                         .EndRpc();
                     sender.SendMessage();
                 }
-                else if (Melonsoda.Owner == byte.MaxValue) Camouflage.RpcSetSkin(target);
                 remove.Add(id);
             }
 
@@ -120,7 +117,6 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
         {
             Limit = -100;
             NowUse = false;
-            MyUse = false;
             PlayerCatch.AllPlayerControls.Do(pc => Camouflage.RpcSetSkin(pc, force: null));
             _ = new LateTask(() =>
             {
@@ -140,7 +136,6 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
     public override void OnReportDeadBody(PlayerControl reporter, NetworkedPlayerInfo target)
     {
         NowUse = false;
-        MyUse = false;
         Limit = -50;
         VentPlayers.Clear();
     }
@@ -189,7 +184,6 @@ public sealed class Camouflager : RoleBase, IImpostor, IUsePhantomButton
 
         Limit = OptionAblitytime.GetFloat();
         NowUse = true;
-        MyUse = true;
         _ = new LateTask(() =>
         {
             UtilsNotifyRoles.NotifyRoles(ForceLoop: true);

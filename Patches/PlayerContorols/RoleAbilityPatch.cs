@@ -295,7 +295,6 @@ namespace TownOfHost
     [HarmonyPatch(typeof(Vent), nameof(Vent.ExitVent))]
     class OcCoVentExitPatch
     {
-        public static float timer;
         public static bool Prefix(Vent __instance)
         {
             var user = PlayerControl.LocalPlayer;

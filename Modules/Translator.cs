@@ -120,13 +120,13 @@ namespace TownOfHost
             foreach (var re in Event.remove)
             {
                 var name = nameof(re);
-                if (str.StartsWith(name) && !str.Contains("InfoLong") && (str == name || str.Contains("Info"))) return "";
+                if (str == name || str == $"{name}Info" || str.StartsWith($"{name}Desc")) return "";
             }
             foreach (var ev in Event.EventRoles.Keys)
             {
                 if (Event.CheckRole(ev)) continue;
                 var name = nameof(ev);
-                if (str.StartsWith(name) && !str.Contains("InfoLong") && (str == name || str.Contains("Info"))) return "";
+                if (str == name || str == $"{name}Info" || str.StartsWith($"{name}Desc")) return "";
             }
 
             if (translateMaps.TryGetValue(str, out var dic) && (!dic.TryGetValue((int)langId, out res) || res == "")) //strに該当する&無効なlangIdかresが空

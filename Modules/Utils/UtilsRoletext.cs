@@ -130,6 +130,14 @@ namespace TownOfHost
                         case CustomRoles.Faction:
                             roleText = GetRoleColorAndtext(CustomRoles.Faction) + roleText;
                             break;
+                        case CustomRoles.LastImpostor:
+                        case CustomRoles.LastNeutral:
+                            if (Options.ChRoleText.GetBool())
+                            {
+                                break;
+                            }
+                            roleText = Utils.ColorString(roleColor, GetString("Last-")) + roleText;
+                            break;
                     }
                 }
             }
@@ -172,8 +180,8 @@ namespace TownOfHost
                         case CustomRoles.Powerful: sb.Append(Powerful.SubRoleMark); break;
                         case CustomRoles.Absorb: sb.Append(Absorb.SubRoleMark); break;
                         case CustomRoles.Trapping: sb.Append(Trapping.SubRoleMark); break;
-                        case CustomRoles.LastImpostor: sb.Append(LastImpostor.SubRoleMark); break;
-                        case CustomRoles.LastNeutral: sb.Append(LastNeutral.SubRoleMark); break;
+                        case CustomRoles.LastImpostor: if (Options.ChRoleText.GetBool()) sb.Append(LastImpostor.SubRoleMark); break;
+                        case CustomRoles.LastNeutral: if (Options.ChRoleText.GetBool()) sb.Append(LastNeutral.SubRoleMark); break;
                         case CustomRoles.Medicalrecord: sb.Append(Medicalrecord.SubRoleMark); break;
 
                         //デバフ
@@ -552,8 +560,10 @@ namespace TownOfHost
                 {
                     if (role is CustomRoles.NotAssigned or
                                 CustomRoles.LastImpostor or
-                                CustomRoles.LastNeutral //or
-                    //            CustomRoles.Amanojaku
+                                CustomRoles.LastNeutral
+                                //従来のラスト表示を使うならcontinue
+                                && Options.ChRoleText.GetBool() is false
+                                //or CustomRoles.Amanojaku
                     ) continue;
                     if (role is CustomRoles.Amnesia && amkesu) continue;
                     if (role.IsAddOn() && mark) continue;

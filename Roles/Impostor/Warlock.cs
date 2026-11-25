@@ -146,7 +146,7 @@ public sealed class Warlock : RoleBase, IImpostor, IUsePhantomButton
             {
                 Logger.Info($"{killTarget.GetNameWithRole().RemoveHtmlTags()}was killed", "Warlock");
             }
-            Player.SetKillCooldown();
+            //Player.SetKillCooldown();
             CursedPlayer = null;
             Achievements.RpcCompleteAchievement(Player.PlayerId, 1, achievements[0]);
             if (killTarget.IsTeammate(Player))

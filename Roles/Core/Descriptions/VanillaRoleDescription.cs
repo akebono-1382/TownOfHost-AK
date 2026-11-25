@@ -12,9 +12,8 @@ public class VanillaRoleDescription : RoleDescription
         this.vanillaRoleType = vanillaRoleType;
     }
     private readonly RoleTypes vanillaRoleType;
-
     public override string Blurb => DestroyableSingleton<RoleManager>.Instance.GetRole(vanillaRoleType).Blurb;
     public override string Description => vanillaRoleType is RoleTypes.Detective or RoleTypes.Viper or RoleTypes.Judge ?
-    DestroyableSingleton<RoleManager>.Instance.GetRole(vanillaRoleType).BlurbMed :
-    DestroyableSingleton<RoleManager>.Instance.GetRole(vanillaRoleType).BlurbLong;
+        DestroyableSingleton<RoleManager>.Instance.GetRole(vanillaRoleType).BlurbMed :
+        DestroyableSingleton<RoleManager>.Instance.GetRole(vanillaRoleType).BlurbLong;
 }

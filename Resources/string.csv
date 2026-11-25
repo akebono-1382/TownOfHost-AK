@@ -91,7 +91,8 @@
 "Miner","Miner","マイナー"
 "Blinker","Blinker","ブリンカー"
 "Timeleaper","Time Leaper","タイムリーパー"
-"Melonsoda","Melon Soda","メロンソーダ"
+"Rocket","Rocket","ロケット"
+"Hatekiller","Hate Killer","ヘイトキラー"
 "#ImpostorName"
 
 "# マッドメイト系役職"
@@ -415,6 +416,8 @@
 "MinerInfo","","自分だけの穴を掘ろう"
 "BlinkerInfo","","君が見ていたのは残像さ"
 "TimeleaperInfo","","あの時をもう一度やり直そう"
+"RocketInfo","","空高く打ち上がれ！"
+"HatekillerInfo","","疑心こそが力となる"
 "#ImpostorInfo"
 
 "# マッドメイト系役職"
@@ -564,7 +567,7 @@
 "TaskPlayerBInfo","Be the first to complete your tasks","タスクを誰よりも早く済ませよう","抢在其他人之前完成任务","搶在其他人之前完成任務","Выполняйте свои задачи раньше всех","Realize as suas tarefas antes de qualquer outra pessoa",""
 
 "# GM"
-"GMInfo","You are the Game Master","ゲームマスターだ","你是管理员，在旁边看戏吧","當吃瓜群眾在一旁看戲吧","Вы Мастер Игры","Você é o Mestre de Jogo (MJ)","Você é o Mestre do Jogo (GM)"
+"GMInfo","You are the Game Master","騙し合いを空から見守ろう","你是管理员，在旁边看戏吧","當吃瓜群眾在一旁看戲吧","Вы Мастер Игры","Você é o Mestre de Jogo (MJ)","Você é o Mestre do Jogo (GM)"
 
 "# GhostRoll"
 "GhostbuttonerInfo","Call Meeting","おっと。あぶないあぶない"
@@ -694,6 +697,8 @@
 "MinerInfoLong","","シェイプシフトすることで穴を掘ることができる。\n穴を二つ掘ると二つの穴が接続される。\n接続された穴に誰かが近づくと近づいたプレイヤーがその穴と接続された穴にテレポートする。"
 "BlinkerInfoLong","","ワンクリックボタンを使用するとテレポート位置を設定できる。\nその後キルをすると設定した位置までテレポートする。なおテレポート時位置はリセットされる。\nテレポート位置を指定するまでキルすることはできない。"
 "TimeleaperInfoLong","","ワンクリックボタンを使用すると一定時間録画することができる。\n録画が終わると録画を始めた時まで時間が巻き戻る。クールダウン・シェイプは戻らない。"
+"RocketInfoLong","","キルボタンを使用するとターゲットを掴むことができる。\n掴まれたプレイヤーはロケットの位置に拘束される。\n一人以上掴んでいる状態でワンクリックボタンを押すと掴まれたプレイヤーを打ち上げることができる。\n打ち上げられたプレイヤーは上に飛んでいき、一定時間経過又は会議開始時に死体が残らず死亡する。打ち上げられているプレイヤーは誰からもキルできず、打ち上げられている状態だとタスク・キルが不可能になる。\nペンギンと違い、掴める人数に制限はない。\n通常キルを行うことはできない。"
+"HatekillerInfoLong","","会議で自身に投票された票数1票につき、1ターンだけキルクールが設定値だけ減少する。(設定有)"
 "#ImpostorInfoLong"
 
 "# マッドメイト系役職"
@@ -1088,6 +1093,7 @@
 "SlotRole14","SlotRole 14","排他的設定 14"
 "SlotRole15","SlotRole 15","排他的設定 15"
 "NoTaskAllComp","","タスクを持たないプレイヤーのタスクをすべて完了させる"
+"ChRoleText","","ラスト系属性の表示方法を変更する"
 
 "## マップ改造"
 "MapModification","Map Modifications","マップ改造","地图修改","","Модификации для карт","Modificações do Mapa",""
@@ -1371,6 +1377,11 @@
 "TaskWin","","勝利に必要なタスク数"
 "SyncCoolKillcool","","キルとクールダウンを同期する"
 "FriendlyFire","Friendly Fire","フレンドリーファイアを有効にする"
+"# 公式の「通気口」をMODの「ベント」に統一する"
+"EngineerCooldown","","ベントクールダウン"
+"EngineerInVentCooldown","","ベントに入れる時間"
+"PhantomCanKillInvis","","透明化中もキルできる"
+"PhantomCanSeeNakama","","透明化中も味方インポスターからは視認できる"
 
 "## Impostor Role Setting"
 "AlienFirstAbility","Firse Turn Have Ability","初手ターンから能力を持っている"
@@ -1597,6 +1608,16 @@
 "BlinkerMeetingKeep","","会議後テレポート位置をリセットする"
 "TimeleaperRecTime","Recording Time","録画する時間"
 "TimeleaperleapSpeed","Time Leap Speed","時間を巻き戻す速度"
+"RocketFirstGrabCooldown","First Grab Cooldown","最初の掴むクールダウン"
+"RocketSecondGrabCooldown","Second Grab Cooldown","二人目以降の掴むクールダウン"
+"RocketLaunchCooldown","Launch Cooldown","打ち上げクールダウン"
+"RocketGrabedCanKill","Grabbed Player Can Kill Rocket","掴まれているプレイヤーがキルできる"
+"RocketLaunchAfterMeeting","Launch After Meeting","会議終了時掴んでいたプレイヤーを打ち上げる"
+"HatekillerFirstKillCooldown","First Kill Cooldown","初期キルクールダウン"
+"HatekillerDecreaseKillCool","Vote Kill Cooldown","一票で減少するキルクールダウン"
+"HatekillerMinKillCooldown","Min Kill Cooldown","最低キルクールダウン"
+"HatekillerImpostorVote","Count Impostor Vote","他インポスターの投票もカウントする"
+"HatekillerSelfVote","Count Self Vote","自投票もカウントする"
 
 "## MadMate Role Setting"
 "MadmateOption","MadMate Options","マッドメイト系役職の設定"
@@ -2466,6 +2487,7 @@
 "DeathReason.NotGather","NotGather","集えず",
 "DeathReason.Hit","Hit","命中"
 "DeathReason.Suffocation","Suffocation","窒息"
+"DeathReason.Launched","Launched","打ち上げ"
 "DeathReason.etc","Other","その他","其他","其他","Другое","Outros",""
 "Alive","Alive","生存","存活","存活","Выжил","Vivo",""
 "Win","Wins","勝利","胜利","勝利"," Победили","Vitória",""
@@ -2506,7 +2528,7 @@
 "NiceLogger_Ability","installation","設置"
 "EvilHackerAbility","Admin","アドミン"
 "StealthAbility","add rooms","追加"
-"MadAvengerAbility","Call Meeting","革命を起こす"
+"MadAvengerAbility","Call Meeting","革命"
 "CamebackerAbility","CameBack","カムバック"
 "ToiletFanAbility","Open","オープン！"
 "SpeedStarAbility","SpeedUp!","ブースト"
@@ -2994,5 +3016,4 @@
 "MM_MismatchedForkId","Cannot join because the host’s mods do not match yours","ホストとMODが一致しないため、参加できません。"
 "Unknown","Unknown","不明"
 "EvilBlender_Sabotage","PoisonGas","毒ガス"
-"SkinWarning","","<#ff1919>!!アンチチートが発生する可能性があります!!</color>"
-"CamoWarn","","<#ff1919>!!シェイプシフト系役職と併用しないでください!!</color>"
+"CrewmateGhost","Ghost","ゴースト"

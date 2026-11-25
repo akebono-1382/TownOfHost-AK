@@ -155,7 +155,7 @@ namespace TownOfHost
             };
         }
         public static bool NowKillFlash = false;
-        public static void KillFlash(this PlayerControl player, bool force = false)
+        public static void KillFlash(this PlayerControl player, bool force = false, bool blackout = true)
         {
             //キルフラッシュ(ブラックアウト+リアクターフラッシュ)の処理
             bool ReactorCheck = IsActive(GetCriticalSabotageSystemType());
@@ -165,7 +165,7 @@ namespace TownOfHost
 
             //実行
             var state = PlayerState.GetByPlayerId(player.PlayerId);
-            if (!force && !GameStates.CalledMeeting) state.IsBlackOut = true; //ブラックアウト
+            if (!force && !GameStates.CalledMeeting && blackout) state.IsBlackOut = true; //ブラックアウト
             if (player.IsModClient() && !force)
             {
                 if (player.PlayerId == 0)
@@ -185,7 +185,7 @@ namespace TownOfHost
             player.MarkDirtySettings();
             _ = new LateTask(() =>
             {
-                if (!GameStates.CalledMeeting) state.IsBlackOut = false; //ブラックアウト解除
+                if (!GameStates.CalledMeeting && blackout) state.IsBlackOut = false; //ブラックアウト解除
                 player.MarkDirtySettings();
             }, Options.KillFlashDuration.GetFloat(), "RemoveKillFlash");
         }
@@ -201,7 +201,12 @@ namespace TownOfHost
                 }
                 return;
             }
-            var systemtypes = GetCriticalSabotageSystemType();
+            //MOD入りでもリアフラになっちゃうのが微妙。
+            foreach (var pc in PlayerCatch.AllPlayerControls)
+            {
+                pc.KillFlash(true, false);
+            }
+            /*var systemtypes = GetCriticalSabwotageSystemType();
             ShipStatus.Instance.RpcUpdateSystem(systemtypes, 128);
 
             NowKillFlash = true;
@@ -221,7 +226,7 @@ namespace TownOfHost
                     AmongUsClient.Instance.FinishRpcImmediately(messageWriter);
                 }
             }, Options.KillFlashDuration.GetFloat(), "Fix Reactor");
-            _ = new LateTask(() => NowKillFlash = false, Options.KillFlashDuration.GetFloat() * 2, "", true);
+            _ = new LateTask(() => NowKillFlash = false, Options.KillFlashDuration.GetFloat() * 2, "", true);*/
         }
         public static void BlackOut(this IGameOptions opt, bool IsBlackOut)
         {

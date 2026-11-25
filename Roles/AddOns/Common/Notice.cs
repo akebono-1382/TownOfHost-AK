@@ -65,7 +65,7 @@ namespace TownOfHost.Roles.AddOns.Common
                 CustomRoleTypes.Crewmate => CustomRoles.Crewmate,
                 CustomRoleTypes.Impostor => CustomRoles.Impostor,
                 CustomRoleTypes.Madmate => CustomRoles.Madmate,
-                _ => CustomRoles.Jester
+                _ => CustomRoles.Monochromer
             });
             return Utils.ColorString(color, GetString(team.ToString()));
         }
