@@ -138,7 +138,7 @@ HostModなので部屋主のみModを導入すれば、<br>
 　会議時の役職表示、会議拡張、ワーカホリック,属性名、一部役職を参考/移植させて頂きました！<br>
 
 [Town Of Host For E](https://github.com/AsumuAkaguma/TownOfHost_ForE) <br>
-　機能やコメント取得一部処理の参考にさせて頂きました！<br>
+　機能やコメント取得一部処理、ペットトリガーの参考にさせて頂きました！<br>
 
 [Town Of Host-hamo](https://github.com/rar006/TownOfHost-hamo) <br>
 　アライグマ、アライグマの子を移植/参考<br>
